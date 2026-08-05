@@ -1,8 +1,9 @@
 export const siteConfig = {
   name: 'Dosyora',
   title: 'Dosyora',
+  seoTitle: 'DOSYORA | Yapay Zekâ Destekli Belge Okuma ve Dijital Arşiv',
   description:
-    'Dosyora; fatura, fiş, makbuz ve ticari belgeleri yapay zekâ ile okuyan, arşivleyen ve muhasebe süreçlerini hızlandıran web tabanlı bir platformdur.',
+    'DOSYORA; belge okuma, temel arşiv, Excel aktarım şablonları, Akıllı Ofis, Belge Üretme ve sektörel çözümler sunan web tabanlı platformdur.',
   locale: 'tr_TR',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://dosyora.com',
 } as const
@@ -16,6 +17,8 @@ export const siteRoutes = [
   { path: '/hakkimizda', label: 'Hakkımızda' },
   { path: '/iletisim', label: 'İletişim' },
   { path: '/demo', label: 'Demo' },
+  { path: '/kvkk', label: 'KVKK' },
+  { path: '/gizlilik', label: 'Gizlilik' },
 ] as const
 
 export const mainNavItems = [
@@ -28,10 +31,11 @@ export const mainNavItems = [
 ] as const
 
 export const footerNavItems = [
-  { path: '/urun', label: 'Ürün' },
-  { path: '/cozumler', label: 'Çözümler' },
+  { path: '/#roadmap', label: 'Roadmap' },
+  { path: '/demo', label: 'Demo' },
+  { path: '/kvkk', label: 'KVKK' },
+  { path: '/gizlilik', label: 'Gizlilik' },
   { path: '/iletisim', label: 'İletişim' },
-  { path: '/blog', label: 'Blog' },
 ] as const
 
 export type SiteRoutePath = (typeof siteRoutes)[number]['path']

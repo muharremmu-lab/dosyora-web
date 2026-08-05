@@ -12,17 +12,18 @@ export function HeroSection() {
           </Badge>
 
           <h1 className="text-[2rem] font-bold leading-[1.12] tracking-tight text-[var(--ds-color-text)] sm:text-[2.5rem] lg:text-[2.75rem]">
-            Muhasebe belgelerinizi
-            <br />
-            yapay zekâ ile okuyun,
-            <br />
-            arşivleyin ve yönetin.
+            Muhasebe belgelerinizi yapay zekâ ile okuyun, arşivleyin ve muhasebe programınıza
+            aktarın.
           </h1>
 
-          <p className="mt-5 max-w-lg text-base leading-relaxed text-[var(--ds-color-text-muted)] sm:text-lg">
-            Dosyora; fatura, fiş, makbuz, ekstre ve diğer ticari belgeleri otomatik okur, arşivler
-            ve kullandığınız muhasebe süreçlerini hızlandırır.
-          </p>
+          <div className="mt-5 max-w-lg space-y-3 text-base leading-relaxed text-[var(--ds-color-text-muted)] sm:text-lg">
+            <p>
+              DOSYORA; fatura, fiş, serbest meslek makbuzu, ekstre, gider pusulası ve diğer ticari
+              belgeleri otomatik okur.
+            </p>
+            <p>Belgeleri güvenli şekilde arşivler.</p>
+            <p>Muhasebe programlarına uygun Excel aktarım şablonları üretir.</p>
+          </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
             <ButtonLink href="/demo" variant="primary" className="px-5 py-2.5">

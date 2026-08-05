@@ -8,8 +8,8 @@ export function SiteFooter() {
 
   return (
     <footer className="border-t border-[var(--ds-color-border)] bg-[var(--ds-color-surface)]">
-      <SectionContainer className="py-[var(--ds-space-12)] sm:py-[var(--ds-space-16)]">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr]">
+      {/* production redeploy trigger */}
+      <SectionContainer className="py-[var(--ds-space-12)] sm:py-[var(--ds-space-16)]">        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr]">
           <div className="max-w-md">
             <Link
               href="/"

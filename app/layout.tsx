@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 
+import { GoogleAnalytics } from '@/components/analytics'
+import { analyticsConfig, isGoogleAnalyticsEnabled } from '@/lib/analytics'
 import './globals.css'
 import { inter } from '@/lib/design-system/fonts'
 import { rootMetadata } from '@/lib/metadata'
@@ -14,6 +16,9 @@ export default function RootLayout({
   return (
     <html lang="tr" className={inter.variable}>
       <body className="min-h-screen bg-[var(--ds-color-surface)] font-sans text-[var(--ds-color-text)] antialiased">
+        {isGoogleAnalyticsEnabled() && analyticsConfig.gaMeasurementId ? (
+          <GoogleAnalytics measurementId={analyticsConfig.gaMeasurementId} />
+        ) : null}
         {children}
       </body>
     </html>
