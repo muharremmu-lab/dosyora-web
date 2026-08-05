@@ -1,0 +1,53 @@
+@layer components {
+  .ds-display {
+    font-family: var(--ds-font-family);
+    font-size: var(--ds-text-display-size);
+    line-height: var(--ds-text-display-line);
+    font-weight: var(--ds-text-display-weight);
+    letter-spacing: -0.02em;
+  }
+
+  .ds-h1 {
+    font-family: var(--ds-font-family);
+    font-size: var(--ds-text-h1-size);
+    line-height: var(--ds-text-h1-line);
+    font-weight: var(--ds-text-h1-weight);
+    letter-spacing: -0.02em;
+  }
+
+  .ds-h2 {
+    font-family: var(--ds-font-family);
+    font-size: var(--ds-text-h2-size);
+    line-height: var(--ds-text-h2-line);
+    font-weight: var(--ds-text-h2-weight);
+    letter-spacing: -0.01em;
+  }
+
+  .ds-h3 {
+    font-family: var(--ds-font-family);
+    font-size: var(--ds-text-h3-size);
+    line-height: var(--ds-text-h3-line);
+    font-weight: var(--ds-text-h3-weight);
+  }
+
+  .ds-body-lg {
+    font-family: var(--ds-font-family);
+    font-size: var(--ds-text-body-lg-size);
+    line-height: var(--ds-text-body-lg-line);
+    font-weight: var(--ds-text-body-lg-weight);
+  }
+
+  .ds-body {
+    font-family: var(--ds-font-family);
+    font-size: var(--ds-text-body-size);
+    line-height: var(--ds-text-body-line);
+    font-weight: var(--ds-text-body-weight);
+  }
+
+  .ds-small {
+    font-family: var(--ds-font-family);
+    font-size: var(--ds-text-small-size);
+    line-height: var(--ds-text-small-line);
+    font-weight: var(--ds-text-small-weight);
+  }
+}

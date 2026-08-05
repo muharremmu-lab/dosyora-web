@@ -1,0 +1,5 @@
+export { DashboardMockup } from './dashboard-mockup'
+export { HeroSection } from './hero-section'
+export { SiteFooter } from './site-footer'
+export { SiteHeader } from './site-header'
+export { TrustSection } from './trust-section'

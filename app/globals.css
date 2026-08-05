@@ -1,26 +1,42 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import 'tailwindcss';
+@import '../styles/design-tokens.css';
+@import '../styles/typography.css';
+@import '../styles/animations.css';
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-ds-primary: var(--ds-color-primary);
+  --color-ds-secondary: var(--ds-color-secondary);
+  --color-ds-accent: var(--ds-color-accent);
+  --color-ds-success: var(--ds-color-success);
+  --color-ds-warning: var(--ds-color-warning);
+  --color-ds-danger: var(--ds-color-danger);
+  --color-ds-surface: var(--ds-color-surface);
+  --color-ds-surface-alt: var(--ds-color-surface-alt);
+  --color-ds-border: var(--ds-color-border);
+  --color-ds-text: var(--ds-color-text);
+  --color-ds-text-muted: var(--ds-color-text-muted);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  --font-sans: var(--ds-font-family);
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  --radius-ds-sm: var(--ds-radius-sm);
+  --radius-ds-md: var(--ds-radius-md);
+  --radius-ds-lg: var(--ds-radius-lg);
+  --radius-ds-xl: var(--ds-radius-xl);
+
+  --shadow-ds-sm: var(--ds-shadow-sm);
+  --shadow-ds-md: var(--ds-shadow-md);
+  --shadow-ds-lg: var(--ds-shadow-lg);
+
+  --spacing-ds-1: var(--ds-space-1);
+  --spacing-ds-2: var(--ds-space-2);
+  --spacing-ds-3: var(--ds-space-3);
+  --spacing-ds-4: var(--ds-space-4);
+  --spacing-ds-6: var(--ds-space-6);
+  --spacing-ds-8: var(--ds-space-8);
+  --spacing-ds-12: var(--ds-space-12);
+  --spacing-ds-16: var(--ds-space-16);
+  --spacing-ds-24: var(--ds-space-24);
+
+  --breakpoint-ds-tablet: 48rem;
+  --breakpoint-ds-desktop: 64rem;
 }

@@ -1,0 +1,45 @@
+@layer utilities {
+  .ds-animate-fade {
+    animation: ds-fade var(--ds-duration-base) var(--ds-ease-standard) both;
+  }
+
+  .ds-animate-slide-up {
+    animation: ds-slide-up var(--ds-duration-base) var(--ds-ease-standard) both;
+  }
+
+  .ds-transition-hover {
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-duration: var(--ds-duration-fast);
+    transition-timing-function: var(--ds-ease-standard);
+  }
+
+  .ds-hover-scale {
+    transition: transform var(--ds-duration-fast) var(--ds-ease-standard);
+  }
+
+  .ds-hover-scale:hover {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes ds-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ds-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
