@@ -1,4 +1,4 @@
-import { createClient, type Client } from '@libsql/client'
+import { createClient, type Client } from '@libsql/client/web'
 
 import { runMigrations } from './migrations'
 import { logDbInitError, logDbInitStart, logDbInitSuccess } from './libsql-log'
