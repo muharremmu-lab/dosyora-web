@@ -3,8 +3,13 @@ import { createClient, type Client } from '@libsql/client/web'
 import { runMigrations } from './migrations'
 import { logDbInitError, logDbInitStart, logDbInitSuccess } from './libsql-log'
 
+const databaseUrl = process.env.TURSO_DATABASE_URL!
+const tursoUrl = databaseUrl.startsWith('libsql://')
+  ? databaseUrl.replace('libsql://', 'https://')
+  : databaseUrl
+
 export const db = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
+  url: tursoUrl,
   authToken: process.env.TURSO_AUTH_TOKEN,
 })
 
