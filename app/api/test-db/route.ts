@@ -1,9 +1,9 @@
 export const runtime = 'nodejs'
 
-// import { db } from '@/lib/db/client'
+import { db } from '@/lib/db/client'
 
 export async function GET() {
-  // await db.execute('SELECT 1')
+  await db.execute('SELECT 1')
   return Response.json({
     urlPrefix: process.env.TURSO_DATABASE_URL?.slice(0, 20),
     urlSuffix: process.env.TURSO_DATABASE_URL?.slice(-20),
