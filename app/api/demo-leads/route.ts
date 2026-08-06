@@ -3,7 +3,7 @@ export const runtime = 'nodejs'
 import type { NextRequest } from 'next/server'
 
 import { parseAccountStatus, parsePositiveInt } from '@/lib/admin/query'
-import { logApiError, logApiWarning } from '@/lib/api-logger'
+import { logApiError, logApiInfo, logApiWarning } from '@/lib/api-logger'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { buildDemoRequestContext } from '@/lib/demo-policy/context'
 import { processDemoRequest } from '@/lib/demo-policy/service'
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const rateLimit = checkRateLimit(`demo-leads:${meta.ip_address}`, FORM_RATE_LIMIT)
 
     if (!rateLimit.allowed) {
-      logApiWarning('demo_lead_rate_limited', { ip: meta.ip_address })
+      logApiWarning('demo_failed_rate_limited', { ip: meta.ip_address })
       return jsonError('Çok fazla istek gönderildi. Lütfen daha sonra tekrar deneyin.', 429)
     }
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const validation = validateDemoLeadPayload(body)
 
     if (!validation.success) {
-      logApiWarning('demo_lead_validation_failed', {
+      logApiWarning('demo_failed_validation', {
         ip: meta.ip_address,
         errors: validation.errors,
       })
@@ -49,8 +49,20 @@ export async function POST(request: NextRequest) {
     )
 
     if (result.outcome !== 'created') {
+      logApiWarning('demo_failed', {
+        ip: meta.ip_address,
+        email: validation.data.email,
+        outcome: result.outcome,
+      })
       return jsonError(result.message, result.status)
     }
+
+    logApiInfo('demo_success', {
+      ip: meta.ip_address,
+      email: result.lead.email,
+      leadId: result.lead.id,
+      documentLimit: result.documentLimit,
+    })
 
     return jsonOk(
       {
@@ -60,7 +72,7 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     )
   } catch (error) {
-    logApiError('demo_lead_create_failed', {}, error)
+    logApiError('demo_failed_server', {}, error)
     return jsonError('Sunucu hatası.', 500)
   }
 }
@@ -74,7 +86,7 @@ export async function GET(request: NextRequest) {
     const accountStatus = parseAccountStatus(searchParams.get('status'))
     const source = searchParams.get('source') ?? undefined
 
-    const result = listDemoLeads({ page, limit, search, accountStatus, source })
+    const result = await listDemoLeads({ page, limit, search, accountStatus, source })
     return jsonOk(result)
   } catch (error) {
     logApiError('demo_leads_list_failed', {}, error)

@@ -14,12 +14,26 @@ import { logApiError } from '@/lib/api-logger'
 
 export async function GET() {
   try {
+    const [
+      totalDemoLeads,
+      newDemoLeads,
+      todayDemoLeads,
+      totalContactMessages,
+      newContactMessages,
+    ] = await Promise.all([
+      countAllDemoAccounts(),
+      countDemoAccountsByStatus('ACTIVE'),
+      countDemoAccountsToday(),
+      countAllContactMessages(),
+      countContactMessagesByStatus('NEW'),
+    ])
+
     return jsonOk({
-      totalDemoLeads: countAllDemoAccounts(),
-      newDemoLeads: countDemoAccountsByStatus('ACTIVE'),
-      todayDemoLeads: countDemoAccountsToday(),
-      totalContactMessages: countAllContactMessages(),
-      newContactMessages: countContactMessagesByStatus('NEW'),
+      totalDemoLeads,
+      newDemoLeads,
+      todayDemoLeads,
+      totalContactMessages,
+      newContactMessages,
     })
   } catch (error) {
     logApiError('admin_stats_failed', {}, error)

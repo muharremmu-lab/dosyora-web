@@ -25,7 +25,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return jsonError('Geçersiz kayıt.', 400)
     }
 
-    const lead = getDemoLeadById(id)
+    const lead = await getDemoLeadById(id)
     if (!lead) {
       return jsonError('Kayıt bulunamadı.', 404)
     }
@@ -63,7 +63,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       documentLimit = parsed
     }
 
-    const lead = updateDemoLead(id, {
+    const lead = await updateDemoLead(id, {
       account_status: accountStatus as AccountStatus | undefined,
       document_limit: documentLimit,
     })

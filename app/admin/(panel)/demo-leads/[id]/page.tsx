@@ -17,7 +17,7 @@ export default async function DemoLeadDetailPage({ params }: DemoLeadDetailPageP
     notFound()
   }
 
-  const lead = getDemoLeadById(id)
+  const lead = await getDemoLeadById(id)
   if (!lead) {
     notFound()
   }

@@ -6,7 +6,11 @@ import { useEffect, useState } from 'react'
 
 import { ButtonLink } from '@/components/ui/button'
 import { cn } from '@/lib/design-system/cn'
+import { getCustomerLoginUrl, isExternalCustomerLogin } from '@/lib/customer-portal'
 import { mainNavItems, siteConfig } from '@/lib/site'
+
+const customerLoginUrl = getCustomerLoginUrl()
+const customerLoginExternal = isExternalCustomerLogin(customerLoginUrl)
 
 export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false)
@@ -56,6 +60,13 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <ButtonLink
+            href={customerLoginUrl}
+            variant="outline"
+            {...(customerLoginExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            Müşteri Girişi
+          </ButtonLink>
           <ButtonLink href="/demo" variant="primary">
             Demo Talep Et
           </ButtonLink>
@@ -89,6 +100,14 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
+            <ButtonLink
+              href={customerLoginUrl}
+              variant="outline"
+              className="mt-3 w-full"
+              {...(customerLoginExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            >
+              Müşteri Girişi
+            </ButtonLink>
             <ButtonLink href="/demo" variant="primary" className="mt-3 w-full">
               Demo Talep Et
             </ButtonLink>

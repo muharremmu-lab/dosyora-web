@@ -38,9 +38,9 @@ export async function processDemoRequest(
 ): Promise<DemoPolicyResult> {
   const normalizedEmail = context.email
 
-  const existingAccount = findDemoAccountByEmail(normalizedEmail)
+  const existingAccount = await findDemoAccountByEmail(normalizedEmail)
   if (existingAccount) {
-    logApiWarning('demo_email_duplicate', {
+    logApiWarning('demo_failed_duplicate_email', {
       email: normalizedEmail,
       ip: context.ipAddress,
       existingLeadId: existingAccount.id,
@@ -53,10 +53,10 @@ export async function processDemoRequest(
     }
   }
 
-  const ipQuota = getIpDemoQuota(context.ipAddress)
+  const ipQuota = await getIpDemoQuota(context.ipAddress)
 
   if (isIpQuotaExceeded(ipQuota.demo_count)) {
-    logApiWarning('demo_ip_quota_exceeded', {
+    logApiWarning('demo_failed_ip_quota_exceeded', {
       email: normalizedEmail,
       ip: context.ipAddress,
       demoCount: ipQuota.demo_count,
@@ -71,7 +71,7 @@ export async function processDemoRequest(
 
   const documentLimit = getDocumentLimitForIpCount(ipQuota.demo_count)
   if (documentLimit === null) {
-    logApiWarning('demo_ip_quota_exceeded', {
+    logApiWarning('demo_failed_ip_quota_exceeded', {
       email: normalizedEmail,
       ip: context.ipAddress,
       demoCount: ipQuota.demo_count,
@@ -85,20 +85,13 @@ export async function processDemoRequest(
   }
 
   try {
-    const lead = createDemoAccount({
+    const lead = await createDemoAccount({
       ...input,
       email: normalizedEmail,
       document_limit: documentLimit,
     })
 
-    incrementIpDemoQuota(context.ipAddress)
-
-    logApiWarning('demo_ip_new_account', {
-      email: normalizedEmail,
-      ip: context.ipAddress,
-      documentLimit,
-      leadId: lead.id,
-    })
+    await incrementIpDemoQuota(context.ipAddress)
 
     await notificationService.notifyDemoLeadCreated(lead)
 
@@ -108,7 +101,7 @@ export async function processDemoRequest(
       documentLimit,
     }
   } catch (error) {
-    logApiError('demo_creation_failed', {
+    logApiError('demo_failed_creation', {
       email: normalizedEmail,
       ip: context.ipAddress,
     }, error)

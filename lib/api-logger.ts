@@ -1,5 +1,16 @@
 type LogContext = Record<string, unknown>
 
+export function logApiInfo(event: string, context: LogContext) {
+  const payload = {
+    level: 'info',
+    event,
+    timestamp: new Date().toISOString(),
+    ...context,
+  }
+
+  console.info(JSON.stringify(payload))
+}
+
 export function logApiError(event: string, context: LogContext, error?: unknown) {
   const payload = {
     level: 'error',

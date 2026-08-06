@@ -1,23 +1,28 @@
-import type Database from 'better-sqlite3'
+import type { Client } from '@libsql/client'
 
-function columnExists(database: Database.Database, table: string, column: string): boolean {
-  const columns = database.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>
-  return columns.some((item) => item.name === column)
+async function columnExists(client: Client, table: string, column: string): Promise<boolean> {
+  const result = await client.execute({
+    sql: `PRAGMA table_info(${table})`,
+  })
+
+  return result.rows.some((row) => String(row.name) === column)
 }
 
-function addColumnIfMissing(
-  database: Database.Database,
+async function addColumnIfMissing(
+  client: Client,
   table: string,
   column: string,
   definition: string,
 ) {
-  if (!columnExists(database, table, column)) {
-    database.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+  if (!(await columnExists(client, table, column))) {
+    await client.execute({
+      sql: `ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`,
+    })
   }
 }
 
-export function runMigrations(database: Database.Database) {
-  database.exec(`
+export async function runMigrations(client: Client) {
+  await client.executeMultiple(`
     CREATE TABLE IF NOT EXISTS demo_leads (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -66,10 +71,11 @@ export function runMigrations(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at);
   `)
 
-  addColumnIfMissing(database, 'demo_leads', 'document_limit', 'INTEGER')
-  addColumnIfMissing(database, 'demo_leads', 'account_status', 'TEXT')
+  await addColumnIfMissing(client, 'demo_leads', 'document_limit', 'INTEGER')
+  await addColumnIfMissing(client, 'demo_leads', 'account_status', 'TEXT')
+  await addColumnIfMissing(client, 'demo_leads', 'used_documents', 'INTEGER NOT NULL DEFAULT 0')
 
-  database.exec(`
-    CREATE INDEX IF NOT EXISTS idx_demo_leads_account_status ON demo_leads(account_status);
-  `)
+  await client.execute({
+    sql: `CREATE INDEX IF NOT EXISTS idx_demo_leads_account_status ON demo_leads(account_status)`,
+  })
 }

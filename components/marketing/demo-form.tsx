@@ -78,14 +78,30 @@ export function DemoForm() {
         className="rounded-[var(--ds-radius-lg)] border border-[color:color-mix(in_srgb,var(--ds-color-success)_35%,var(--ds-color-border))] bg-[color:color-mix(in_srgb,var(--ds-color-success)_6%,var(--ds-color-surface))] p-8 text-center"
       >
         <h2 className="text-xl font-semibold text-[var(--ds-color-text)]">Teşekkür ederiz.</h2>
-        <p className="mt-3 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-          Demo hesabınız otomatik olarak oluşturuldu.
-        </p>
-        {documentLimit ? (
-          <p className="mt-2 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-            Hesabınıza {documentLimit} belge okuma hakkı tanımlandı.
-          </p>
-        ) : null}
+        <ul className="mt-4 space-y-2 text-left text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
+          <li className="flex items-start gap-2">
+            <span aria-hidden="true" className="text-[var(--ds-color-success)]">
+              ✓
+            </span>
+            <span>Demo hesabınız oluşturuldu.</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span aria-hidden="true" className="text-[var(--ds-color-success)]">
+              ✓
+            </span>
+            <span>
+              {documentLimit
+                ? `Belge hakkınız tanımlandı (${documentLimit} belge).`
+                : 'Belge hakkınız tanımlandı.'}
+            </span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span aria-hidden="true" className="text-[var(--ds-color-success)]">
+              ✓
+            </span>
+            <span>Müşteri Girişi üzerinden hesabınıza erişebilirsiniz.</span>
+          </li>
+        </ul>
       </div>
     )
   }

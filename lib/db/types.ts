@@ -38,6 +38,12 @@ export type DemoLead = {
   user_agent: string | null
   document_limit: number | null
   account_status: AccountStatus | null
+  used_documents: number
+}
+
+export function getRemainingDocuments(lead: Pick<DemoLead, 'document_limit' | 'used_documents'>): number | null {
+  if (lead.document_limit == null) return null
+  return Math.max(0, lead.document_limit - (lead.used_documents ?? 0))
 }
 
 export type ContactMessage = {

@@ -7,7 +7,7 @@ import {
   createAdminSessionToken,
   validateAdminCredentials,
 } from '@/lib/admin-auth'
-import { logApiWarning } from '@/lib/api-logger'
+import { logApiError, logApiWarning } from '@/lib/api-logger'
 import { jsonError, jsonOk } from '@/lib/api-response'
 
 export async function POST(request: NextRequest) {
@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
     })
 
     return response
-  } catch {
+  } catch (error) {
+    logApiError('admin_login_failed', {}, error)
     return jsonError('Sunucu hatası.', 500)
   }
 }

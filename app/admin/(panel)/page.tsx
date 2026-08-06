@@ -9,27 +9,34 @@ import {
   countDemoAccountsToday,
 } from '@/lib/db/demo-leads'
 
-export default function AdminDashboardPage() {
-  const stats = {
-    totalDemoAccounts: countAllDemoAccounts(),
-    activeDemoAccounts: countDemoAccountsByStatus('ACTIVE'),
-    todayDemoAccounts: countDemoAccountsToday(),
-    disabledDemoAccounts: countDemoAccountsByStatus('DISABLED'),
-    totalContactMessages: countAllContactMessages(),
-    newContactMessages: countContactMessagesByStatus('NEW'),
-  }
+export default async function AdminDashboardPage() {
+  const [
+    totalDemoAccounts,
+    activeDemoAccounts,
+    todayDemoAccounts,
+    disabledDemoAccounts,
+    totalContactMessages,
+    newContactMessages,
+  ] = await Promise.all([
+    countAllDemoAccounts(),
+    countDemoAccountsByStatus('ACTIVE'),
+    countDemoAccountsToday(),
+    countDemoAccountsByStatus('DISABLED'),
+    countAllContactMessages(),
+    countContactMessagesByStatus('NEW'),
+  ])
 
   return (
-    <AdminShell title="Dashboard" description="Demo hesapları ve iletişim mesajları özeti">
+    <AdminShell title="Dashboard" description="Demo talepleri ve iletişim mesajları özeti">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Toplam Demo Hesabı" value={stats.totalDemoAccounts} />
-        <StatCard label="Aktif Hesaplar" value={stats.activeDemoAccounts} />
-        <StatCard label="Bugünkü Demo Hesapları" value={stats.todayDemoAccounts} />
-        <StatCard label="Devre Dışı Hesaplar" value={stats.disabledDemoAccounts} />
+        <StatCard label="Toplam Demo Hesabı" value={totalDemoAccounts} />
+        <StatCard label="Aktif Hesaplar" value={activeDemoAccounts} />
+        <StatCard label="Bugünkü Demo Hesapları" value={todayDemoAccounts} />
+        <StatCard label="Devre Dışı Hesaplar" value={disabledDemoAccounts} />
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        <StatCard label="İletişim Formları" value={stats.totalContactMessages} />
-        <StatCard label="Yeni İletişim Mesajları" value={stats.newContactMessages} />
+        <StatCard label="İletişim Formları" value={totalContactMessages} />
+        <StatCard label="Yeni İletişim Mesajları" value={newContactMessages} />
       </div>
     </AdminShell>
   )

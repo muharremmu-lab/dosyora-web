@@ -1,4 +1,4 @@
-import { getDb } from './client'
+import { dbInsert, dbQueryOne } from './query'
 import type { IpDemoQuota } from './types'
 
 const WINDOW_DAYS = 30
@@ -13,11 +13,11 @@ function isExpired(expiresAt: string): boolean {
   return new Date(expiresAt).getTime() <= Date.now()
 }
 
-export function getIpDemoQuota(ipAddress: string): IpDemoQuota {
-  const db = getDb()
-  const existing = db
-    .prepare('SELECT * FROM ip_demo_quota WHERE ip_address = ?')
-    .get(ipAddress) as IpDemoQuota | undefined
+export async function getIpDemoQuota(ipAddress: string): Promise<IpDemoQuota> {
+  const existing = await dbQueryOne<IpDemoQuota>(
+    'SELECT * FROM ip_demo_quota WHERE ip_address = :ip_address',
+    { ip_address: ipAddress },
+  )
 
   if (!existing || isExpired(existing.window_expires_at)) {
     const now = new Date().toISOString()
@@ -28,16 +28,17 @@ export function getIpDemoQuota(ipAddress: string): IpDemoQuota {
       window_expires_at: addDaysIso(WINDOW_DAYS),
     }
 
-    db.prepare(
+    await dbInsert(
       `
       INSERT INTO ip_demo_quota (ip_address, demo_count, window_started_at, window_expires_at)
-      VALUES (@ip_address, @demo_count, @window_started_at, @window_expires_at)
+      VALUES (:ip_address, :demo_count, :window_started_at, :window_expires_at)
       ON CONFLICT(ip_address) DO UPDATE SET
         demo_count = excluded.demo_count,
         window_started_at = excluded.window_started_at,
         window_expires_at = excluded.window_expires_at
     `,
-    ).run(quota)
+      quota,
+    )
 
     return quota
   }
@@ -45,20 +46,20 @@ export function getIpDemoQuota(ipAddress: string): IpDemoQuota {
   return existing
 }
 
-export function incrementIpDemoQuota(ipAddress: string): IpDemoQuota {
-  const quota = getIpDemoQuota(ipAddress)
-  const db = getDb()
+export async function incrementIpDemoQuota(ipAddress: string): Promise<IpDemoQuota> {
+  const quota = await getIpDemoQuota(ipAddress)
 
-  db.prepare(
+  await dbInsert(
     `
     UPDATE ip_demo_quota
-    SET demo_count = @demo_count
-    WHERE ip_address = @ip_address
+    SET demo_count = :demo_count
+    WHERE ip_address = :ip_address
   `,
-  ).run({
-    ip_address: ipAddress,
-    demo_count: quota.demo_count + 1,
-  })
+    {
+      ip_address: ipAddress,
+      demo_count: quota.demo_count + 1,
+    },
+  )
 
   return {
     ...quota,

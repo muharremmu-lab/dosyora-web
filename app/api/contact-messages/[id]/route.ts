@@ -25,7 +25,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
       return jsonError('Geçersiz kayıt.', 400)
     }
 
-    const message = getContactMessageById(id)
+    const message = await getContactMessageById(id)
     if (!message) {
       return jsonError('Kayıt bulunamadı.', 404)
     }
@@ -54,7 +54,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return jsonError('Geçersiz durum.', 400)
     }
 
-    const message = updateContactMessage(id, {
+    const message = await updateContactMessage(id, {
       status: status as ContactMessageStatus | undefined,
       notes: body.notes !== undefined ? String(body.notes) : undefined,
     })

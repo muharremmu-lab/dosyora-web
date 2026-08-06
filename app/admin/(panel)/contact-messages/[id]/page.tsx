@@ -17,7 +17,7 @@ export default async function ContactMessageDetailPage({ params }: ContactMessag
     notFound()
   }
 
-  const message = getContactMessageById(id)
+  const message = await getContactMessageById(id)
   if (!message) {
     notFound()
   }

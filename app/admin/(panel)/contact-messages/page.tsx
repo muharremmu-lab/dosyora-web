@@ -22,7 +22,7 @@ export default async function ContactMessagesPage({ searchParams }: ContactMessa
   const search = params.search?.trim() || undefined
   const status = parseContactMessageStatus(params.status ?? null)
 
-  const result = listContactMessages({ page, limit: 20, search, status })
+  const result = await listContactMessages({ page, limit: 20, search, status })
 
   return (
     <AdminShell title="İletişim Mesajları" description="Gelen iletişim formlarını yönetin">

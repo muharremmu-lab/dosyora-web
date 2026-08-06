@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { Button, Card } from '@/components/ui'
-import { ACCOUNT_STATUSES, type AccountStatus, type DemoLead } from '@/lib/db/types'
+import { ACCOUNT_STATUSES, getRemainingDocuments, type AccountStatus, type DemoLead } from '@/lib/db/types'
 import { ACCOUNT_STATUS_LABELS } from '@/lib/admin/labels'
 import { formInputClassName } from '@/lib/form-styles'
 
@@ -86,6 +86,16 @@ export function DemoLeadDetailForm({ lead }: DemoLeadDetailFormProps) {
           <div>
             <dt className="text-[var(--ds-color-text-muted)]">Belge Limiti</dt>
             <dd className="font-medium text-[var(--ds-color-text)]">{lead.document_limit ?? '—'}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--ds-color-text-muted)]">Kullanılan Belge</dt>
+            <dd className="font-medium text-[var(--ds-color-text)]">{lead.used_documents}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--ds-color-text-muted)]">Kalan Belge</dt>
+            <dd className="font-medium text-[var(--ds-color-text)]">
+              {getRemainingDocuments(lead) ?? '—'}
+            </dd>
           </div>
           <div>
             <dt className="text-[var(--ds-color-text-muted)]">IP</dt>
