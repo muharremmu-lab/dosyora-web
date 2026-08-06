@@ -1,4 +1,4 @@
-import { LibsqlError } from '@libsql/client'
+import type { ResultSet } from '@libsql/client'
 
 import { logApiError, logApiInfo } from '@/lib/api-logger'
 
@@ -10,31 +10,87 @@ function serializeArgs(args: SqlLogArgs): unknown {
   return args
 }
 
+export type DbExecuteDiagnostic = {
+  event: string
+  operation: string
+  sql: string
+  args: SqlLogArgs
+  durationMs: number
+  httpStatus: number | null
+  libsqlCode: string | null
+  response: unknown | null
+  error: unknown | null
+}
+
 function extractHttpStatus(error: unknown): number | null {
-  if (!(error instanceof LibsqlError)) return null
+  if (!(error instanceof Error)) return null
 
   const match = error.message.match(/HTTP status (\d+)/i)
   if (match) return Number(match[1])
 
-  return typeof error.rawCode === 'number' ? error.rawCode : null
+  const libsql = error as { rawCode?: number; code?: string }
+  return typeof libsql.rawCode === 'number' ? libsql.rawCode : null
 }
 
-function buildLibsqlErrorPayload(error: unknown) {
-  if (!(error instanceof LibsqlError)) {
-    return {
-      libsqlCode: null,
-      httpStatus: null,
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : null,
-    }
+function extractLibsqlCode(error: unknown): string | null {
+  if (!(error instanceof Error)) return null
+  const libsql = error as { code?: string }
+  return libsql.code ?? null
+}
+
+export function summarizeResultSet(result: ResultSet): unknown {
+  return {
+    columns: result.columns,
+    rows: result.rows,
+    rowsAffected: result.rowsAffected,
+    lastInsertRowid: result.lastInsertRowid != null ? Number(result.lastInsertRowid) : null,
+  }
+}
+
+export function buildExecuteDiagnostic(
+  operation: string,
+  sql: string,
+  args: SqlLogArgs,
+  durationMs: number,
+  result?: ResultSet,
+  error?: unknown,
+): DbExecuteDiagnostic {
+  return {
+    event: error ? 'db_execute_failed' : 'db_execute_ok',
+    operation,
+    sql: sql.trim(),
+    args,
+    durationMs,
+    httpStatus: error ? extractHttpStatus(error) : null,
+    libsqlCode: error ? extractLibsqlCode(error) : null,
+    response: result ? summarizeResultSet(result) : null,
+    error: error
+      ? {
+          name: error instanceof Error ? error.name : 'Error',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : null,
+        }
+      : null,
+  }
+}
+
+export function logDbExecuteDiagnostic(diagnostic: DbExecuteDiagnostic) {
+  const payload = {
+    event: diagnostic.event,
+    operation: diagnostic.operation,
+    sql: diagnostic.sql,
+    args: serializeArgs(diagnostic.args),
+    duration: diagnostic.durationMs,
+    httpStatus: diagnostic.httpStatus,
+    libsqlCode: diagnostic.libsqlCode,
+    response: diagnostic.response,
+    error: diagnostic.error,
   }
 
-  return {
-    libsqlCode: error.code,
-    httpStatus: extractHttpStatus(error),
-    message: error.message,
-    stack: error.stack ?? null,
-    rawCode: error.rawCode ?? null,
+  if (diagnostic.error) {
+    logApiError(diagnostic.event, payload, diagnostic.error)
+  } else {
+    logApiInfo(diagnostic.event, payload)
   }
 }
 
@@ -56,22 +112,8 @@ export function logDbExecuteSuccess(operation: string, sql: string) {
 }
 
 export function logLibsqlError(operation: string, sql: string, args: SqlLogArgs, error: unknown) {
-  const libsql = buildLibsqlErrorPayload(error)
-
-  logApiError(
-    'db_libsql_error',
-    {
-      event: 'db_libsql_error',
-      operation,
-      sql: sql.trim(),
-      args: serializeArgs(args),
-      libsqlCode: libsql.libsqlCode,
-      httpStatus: libsql.httpStatus,
-      message: libsql.message,
-      stack: libsql.stack,
-      rawCode: 'rawCode' in libsql ? libsql.rawCode : null,
-    },
-    error,
+  logDbExecuteDiagnostic(
+    buildExecuteDiagnostic(operation, sql, args, 0, undefined, error),
   )
 }
 
@@ -90,19 +132,22 @@ export function logDbInitSuccess(context: Record<string, unknown>) {
 }
 
 export function logDbInitError(operation: string, error: unknown, context: Record<string, unknown> = {}) {
-  const libsql = buildLibsqlErrorPayload(error)
-
   logApiError(
     'db_init_error',
     {
       event: 'db_init_error',
       operation,
-      sql: null,
-      args: null,
-      libsqlCode: libsql.libsqlCode,
-      httpStatus: libsql.httpStatus,
-      message: libsql.message,
-      stack: libsql.stack,
+      sql: context.sql ?? null,
+      args: context.args ?? null,
+      duration: context.duration ?? null,
+      httpStatus: extractHttpStatus(error),
+      libsqlCode: extractLibsqlCode(error),
+      response: null,
+      error: {
+        name: error instanceof Error ? error.name : 'Error',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : null,
+      },
       ...context,
     },
     error,
@@ -110,8 +155,6 @@ export function logDbInitError(operation: string, error: unknown, context: Recor
 }
 
 export function logDbRouteError(event: string, error: unknown, context: Record<string, unknown> = {}) {
-  const libsql = buildLibsqlErrorPayload(error)
-
   logApiError(
     event,
     {
@@ -119,16 +162,32 @@ export function logDbRouteError(event: string, error: unknown, context: Record<s
       operation: context.operation ?? null,
       sql: context.sql ?? null,
       args: context.args ?? null,
-      libsqlCode: libsql.libsqlCode,
-      httpStatus: libsql.httpStatus,
-      message: libsql.message,
-      stack: libsql.stack,
+      duration: context.duration ?? null,
+      httpStatus: extractHttpStatus(error),
+      libsqlCode: extractLibsqlCode(error),
+      response: null,
+      error: {
+        name: error instanceof Error ? error.name : 'Error',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : null,
+      },
       ...context,
     },
     error,
   )
 }
 
-export function isLibsqlError(error: unknown): error is LibsqlError {
-  return error instanceof LibsqlError
+export function logPreflightRootCause(message: string, diagnostic: DbExecuteDiagnostic) {
+  logApiError('db_preflight_root_cause', {
+    event: 'db_preflight_root_cause',
+    message,
+    operation: diagnostic.operation,
+    sql: diagnostic.sql,
+    args: serializeArgs(diagnostic.args),
+    duration: diagnostic.durationMs,
+    httpStatus: diagnostic.httpStatus,
+    libsqlCode: diagnostic.libsqlCode,
+    response: diagnostic.response,
+    error: diagnostic.error,
+  })
 }

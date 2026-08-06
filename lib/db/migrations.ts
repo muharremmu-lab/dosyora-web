@@ -1,35 +1,20 @@
 import type { Client, ResultSet } from '@libsql/client'
 
-import { logApiInfo } from '@/lib/api-logger'
+import { logApiError, logApiInfo } from '@/lib/api-logger'
 
 import { executeWithClient, type SqlArgs } from './execute'
 import { logDbInitError, logDbInitStart, logDbInitSuccess } from './libsql-log'
+import { runMigrationPreflight } from './migration-preflight'
 
 const REQUIRED_TABLES = ['demo_leads', 'contact_messages', 'ip_demo_quota'] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
 const DEMO_LEADS_COLUMNS = ['document_limit', 'account_status', 'used_documents'] as const
 
-const SQLITE_MASTER_TABLES_SQL = "SELECT name FROM sqlite_master WHERE type='table'"
-
 function assertKnownTable(table: string) {
   if (!ALLOWED_MIGRATION_TABLES.has(table)) {
     throw new Error(`Unknown migration table: ${table}`)
   }
-}
-
-async function logExistingTables(client: Client, operation: string): Promise<string[]> {
-  const result = await executeWithClient(client, operation, SQLITE_MASTER_TABLES_SQL)
-  const tables = result.rows.map((row) => String(row.name))
-
-  logApiInfo('migration_sqlite_master', {
-    event: 'migration_sqlite_master',
-    operation,
-    sql: SQLITE_MASTER_TABLES_SQL,
-    tables,
-  })
-
-  return tables
 }
 
 async function tableExists(client: Client, table: string): Promise<boolean> {
@@ -67,7 +52,24 @@ async function runStatement(client: Client, operation: string, sql: string) {
     })
   }
 
-  await executeWithClient(client, operation, trimmedSql)
+  try {
+    await executeWithClient(client, operation, trimmedSql)
+  } catch (error) {
+    if (operation.startsWith('migration.create.')) {
+      logApiError('migration_create_table_failed', {
+        event: 'migration_create_table_failed',
+        operation,
+        sql: trimmedSql,
+        args: [],
+        error: {
+          name: error instanceof Error ? error.name : 'Error',
+          message: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : null,
+        },
+      })
+    }
+    throw error
+  }
 }
 
 async function addColumnIfMissing(
@@ -163,7 +165,7 @@ export async function runMigrations(client: Client) {
   ]
 
   try {
-    preflightTables = await logExistingTables(client, 'migration.preflight.sqlite_master')
+    preflightTables = await runMigrationPreflight(client)
 
     for (const statement of statements) {
       await runStatement(client, statement.operation, statement.sql)
@@ -182,19 +184,9 @@ export async function runMigrations(client: Client) {
     await verifySchema(client)
     logDbInitSuccess({ phase: 'migrations' })
   } catch (error) {
-    let failureTables = preflightTables
-
-    try {
-      failureTables = await logExistingTables(client, 'migration.failure.sqlite_master')
-    } catch {
-      // Keep preflight snapshot if sqlite_master cannot be queried after failure.
-    }
-
     logDbInitError('runMigrations', error, {
       phase: 'migrations',
-      sqliteMasterTables: failureTables,
-      incompatibilityNote:
-        'Turso/libSQL rejects DEFAULT (datetime(\'now\')) in CREATE TABLE; use DEFAULT CURRENT_TIMESTAMP for timestamp columns.',
+      sqliteMasterTables: preflightTables,
     })
     throw error
   }

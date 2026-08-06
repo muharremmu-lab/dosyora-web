@@ -1,6 +1,10 @@
 import type { Client, InArgs, ResultSet } from '@libsql/client'
 
-import { logDbExecuteStart, logDbExecuteSuccess, logLibsqlError } from './libsql-log'
+import {
+  buildExecuteDiagnostic,
+  logDbExecuteDiagnostic,
+  logDbExecuteStart,
+} from './libsql-log'
 
 export type SqlArgs = InArgs | undefined
 
@@ -26,15 +30,27 @@ export async function executeWithClient(
 ): Promise<ResultSet> {
   const trimmedSql = sql.trim()
   const normalizedArgs = normalizeSqlArgs(args)
+  const startedAt = Date.now()
 
   logDbExecuteStart(operation, trimmedSql, normalizedArgs)
 
   try {
     const result = await client.execute({ sql: trimmedSql, args: normalizedArgs })
-    logDbExecuteSuccess(operation, trimmedSql)
+    logDbExecuteDiagnostic(
+      buildExecuteDiagnostic(operation, trimmedSql, normalizedArgs, Date.now() - startedAt, result),
+    )
     return result
   } catch (error) {
-    logLibsqlError(operation, trimmedSql, normalizedArgs, error)
+    logDbExecuteDiagnostic(
+      buildExecuteDiagnostic(
+        operation,
+        trimmedSql,
+        normalizedArgs,
+        Date.now() - startedAt,
+        undefined,
+        error,
+      ),
+    )
     throw error
   }
 }
@@ -51,6 +67,7 @@ export async function batchWithClient(
     sql: statement.sql.trim(),
     args: normalizeSqlArgs(statement.args),
   }))
+  const startedAt = Date.now()
 
   logDbExecuteStart(
     operation,
@@ -60,11 +77,28 @@ export async function batchWithClient(
 
   try {
     const results = await client.batch(prepared)
-    logDbExecuteSuccess(operation, `[batch:${prepared.length}] completed`)
+    logDbExecuteDiagnostic(
+      buildExecuteDiagnostic(
+        operation,
+        `[batch:${prepared.length}] completed`,
+        prepared,
+        Date.now() - startedAt,
+        results[0],
+      ),
+    )
     return results
   } catch (error) {
     prepared.forEach((statement, index) => {
-      logLibsqlError(`${operation}[${index}]`, statement.sql, statement.args ?? [], error)
+      logDbExecuteDiagnostic(
+        buildExecuteDiagnostic(
+          `${operation}[${index}]`,
+          statement.sql,
+          statement.args ?? [],
+          Date.now() - startedAt,
+          undefined,
+          error,
+        ),
+      )
     })
     throw error
   }
