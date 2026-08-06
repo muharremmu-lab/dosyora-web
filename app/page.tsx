@@ -1,14 +1,23 @@
 import {
   AccountingProgramsSection,
+  AnimatedCtaBand,
   AudienceSection,
+  ComingSoonSection,
+  DocumentFlowSection,
   DocumentTypesSection,
   FaqSection,
-  FinalCtaSection,
   HeroSection,
+  HeroTrustBadges,
+  HowItWorksSection,
+  ModulesSection,
   PreviewCtaBand,
+  ProductScreensSection,
   RoadmapSection,
   SiteFooter,
   SiteHeader,
+  StatsSection,
+  TestimonialsSection,
+  TrustLogosSection,
   TrustSection,
   WhyDosyoraSection,
 } from '@/components/marketing'
@@ -27,15 +36,24 @@ export default function HomePage() {
       <SiteHeader />
       <main>
         <HeroSection />
+        <HeroTrustBadges />
         <PreviewCtaBand />
+        <ProductScreensSection />
+        <DocumentFlowSection />
+        <HowItWorksSection />
+        <ModulesSection />
+        <ComingSoonSection />
         <RoadmapSection />
         <AudienceSection />
         <DocumentTypesSection />
         <WhyDosyoraSection />
         <AccountingProgramsSection />
+        <StatsSection />
+        <TestimonialsSection />
+        <TrustLogosSection />
         <FaqSection />
         <TrustSection />
-        <FinalCtaSection />
+        <AnimatedCtaBand />
       </main>
       <SiteFooter />
     </>

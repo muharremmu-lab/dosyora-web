@@ -42,6 +42,46 @@ const faqItems = [
     answer:
       'Yol haritasında Akıllı Ofis, CRM, belge üretme ve sektörel çözümler planlanmaktadır. Güncel sürüm bilgisi ana sayfadaki yol haritasında yer alır.',
   },
+  {
+    question: 'Excel aktarım şablonları nasıl çalışır?',
+    answer:
+      'Okunan belge alanları, seçtiğiniz muhasebe programına uygun sütun yapısına eşlenir ve Excel dosyası olarak dışa aktarılır.',
+  },
+  {
+    question: 'Kaç belge yükleyebilirim?',
+    answer:
+      'Ön izleme programında onaylanan firmalara 100 belge okuma hakkı tanımlanır. Kurumsal planlar için demo başvurusu sonrası bilgi verilir.',
+  },
+  {
+    question: 'Ekip içinde kullanılabilir mi?',
+    answer:
+      'Evet. Web tabanlı yapı sayesinde ekip üyeleri belge yükleyebilir, arşive erişebilir ve aktarım süreçlerini birlikte yönetebilir.',
+  },
+  {
+    question: 'Mobil cihazlardan erişilebilir mi?',
+    answer:
+      'DOSYORA responsive web arayüzü ile tablet ve mobil tarayıcılardan erişilebilir. Kurulum gerekmez.',
+  },
+  {
+    question: 'Veriler nerede saklanır?',
+    answer:
+      'Belgeler bulut tabanlı güvenli arşiv altyapısında saklanır. SSL ile şifrelenmiş bağlantı üzerinden erişim sağlanır.',
+  },
+  {
+    question: 'KVKK uyumluluğu var mı?',
+    answer:
+      'Platform, kişisel verilerin korunması ve güvenli saklama prensiplerine uygun şekilde tasarlanmıştır. Detaylar KVKK sayfasında yayımlanacaktır.',
+  },
+  {
+    question: 'Hangi yapay zekâ teknolojileri kullanılıyor?',
+    answer:
+      'Belge okuma süreçlerinde Gemini AI ve OpenAI altyapılarından yararlanılır. Model seçimi belge türüne göre optimize edilir.',
+  },
+  {
+    question: 'Destek alabilir miyim?',
+    answer:
+      'Demo başvurusu sonrası onboarding ve kullanım desteği sunulur. İletişim sayfasından ekibimize ulaşabilirsiniz.',
+  },
 ]
 
 export function FaqSection() {

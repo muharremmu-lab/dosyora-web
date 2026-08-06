@@ -1,0 +1,17 @@
+import { redirect } from 'next/navigation'
+
+import { isAdminAuthenticated } from '@/lib/admin-auth'
+
+export default async function AdminPanelLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const authenticated = await isAdminAuthenticated()
+
+  if (!authenticated) {
+    redirect('/admin/login')
+  }
+
+  return children
+}

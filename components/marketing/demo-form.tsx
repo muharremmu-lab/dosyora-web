@@ -1,17 +1,21 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui'
+import { formInputClassName } from '@/lib/form-styles'
 
 type DemoFormData = {
   fullName: string
   company: string
   phone: string
   email: string
-  accountingProgram: string
+  employeeCount: string
   monthlyDocuments: string
-  note: string
+  accountingProgram: string
+  message: string
+  kvkkConsent: boolean
 }
 
 const initialFormData: DemoFormData = {
@@ -19,43 +23,75 @@ const initialFormData: DemoFormData = {
   company: '',
   phone: '',
   email: '',
-  accountingProgram: '',
+  employeeCount: '',
   monthlyDocuments: '',
-  note: '',
+  accountingProgram: '',
+  message: '',
+  kvkkConsent: false,
 }
-
-const inputClassName =
-  'w-full rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] px-3 py-2.5 text-sm text-[var(--ds-color-text)] outline-none transition-shadow focus-visible:shadow-[0_0_0_3px_color-mix(in_srgb,var(--ds-color-accent)_25%,transparent)]'
 
 export function DemoForm() {
   const [formData, setFormData] = useState<DemoFormData>(initialFormData)
   const [submitted, setSubmitted] = useState(false)
+  const [documentLimit, setDocumentLimit] = useState<number | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleChange = (field: keyof DemoFormData, value: string) => {
+  const handleChange = (field: keyof DemoFormData, value: string | boolean) => {
     setFormData((current) => ({ ...current, [field]: value }))
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
+    setError(null)
+
+    try {
+      const { submitDemoLead } = await import('@/services/leads-api')
+      const result = await submitDemoLead({
+        company: formData.company,
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        employeeCount: formData.employeeCount,
+        monthlyDocuments: formData.monthlyDocuments,
+        accountingProgram: formData.accountingProgram,
+        message: formData.message,
+        source: 'website',
+      })
+
+      setFormData(initialFormData)
+      setDocumentLimit(result.documentLimit)
+      setSubmitted(true)
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Gönderim başarısız.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (submitted) {
     return (
-      <div className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-alt)] p-8 text-center">
+      <div
+        role="status"
+        aria-live="polite"
+        className="rounded-[var(--ds-radius-lg)] border border-[color:color-mix(in_srgb,var(--ds-color-success)_35%,var(--ds-color-border))] bg-[color:color-mix(in_srgb,var(--ds-color-success)_6%,var(--ds-color-surface))] p-8 text-center"
+      >
         <h2 className="text-xl font-semibold text-[var(--ds-color-text)]">Teşekkür ederiz.</h2>
         <p className="mt-3 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-          Başvurunuz alınmıştır.
+          Demo hesabınız otomatik olarak oluşturuldu.
         </p>
-        <p className="mt-2 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-          Onaylanan kullanıcılara 100 belge okuma hakkı tanımlanacaktır.
-        </p>
+        {documentLimit ? (
+          <p className="mt-2 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
+            Hesabınıza {documentLimit} belge okuma hakkı tanımlandı.
+          </p>
+        ) : null}
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4" aria-label="Demo talep formu">
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block space-y-1.5">
           <span className="text-sm font-medium text-[var(--ds-color-text)]">Ad Soyad</span>
@@ -64,7 +100,8 @@ export function DemoForm() {
             name="fullName"
             required
             autoComplete="name"
-            className={inputClassName}
+            aria-required="true"
+            className={formInputClassName}
             value={formData.fullName}
             onChange={(event) => handleChange('fullName', event.target.value)}
           />
@@ -77,7 +114,8 @@ export function DemoForm() {
             name="company"
             required
             autoComplete="organization"
-            className={inputClassName}
+            aria-required="true"
+            className={formInputClassName}
             value={formData.company}
             onChange={(event) => handleChange('company', event.target.value)}
           />
@@ -92,20 +130,22 @@ export function DemoForm() {
             name="phone"
             required
             autoComplete="tel"
-            className={inputClassName}
+            aria-required="true"
+            className={formInputClassName}
             value={formData.phone}
             onChange={(event) => handleChange('phone', event.target.value)}
           />
         </label>
 
         <label className="block space-y-1.5">
-          <span className="text-sm font-medium text-[var(--ds-color-text)]">E-Posta</span>
+          <span className="text-sm font-medium text-[var(--ds-color-text)]">E-posta</span>
           <input
             type="email"
             name="email"
             required
             autoComplete="email"
-            className={inputClassName}
+            aria-required="true"
+            className={formInputClassName}
             value={formData.email}
             onChange={(event) => handleChange('email', event.target.value)}
           />
@@ -114,16 +154,15 @@ export function DemoForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block space-y-1.5">
-          <span className="text-sm font-medium text-[var(--ds-color-text)]">
-            Kullandığı Muhasebe Programı
-          </span>
+          <span className="text-sm font-medium text-[var(--ds-color-text)]">Çalışan Sayısı</span>
           <input
             type="text"
-            name="accountingProgram"
+            name="employeeCount"
             required
-            className={inputClassName}
-            value={formData.accountingProgram}
-            onChange={(event) => handleChange('accountingProgram', event.target.value)}
+            aria-required="true"
+            className={formInputClassName}
+            value={formData.employeeCount}
+            onChange={(event) => handleChange('employeeCount', event.target.value)}
           />
         </label>
 
@@ -133,7 +172,8 @@ export function DemoForm() {
             type="text"
             name="monthlyDocuments"
             required
-            className={inputClassName}
+            aria-required="true"
+            className={formInputClassName}
             value={formData.monthlyDocuments}
             onChange={(event) => handleChange('monthlyDocuments', event.target.value)}
           />
@@ -141,19 +181,64 @@ export function DemoForm() {
       </div>
 
       <label className="block space-y-1.5">
-        <span className="text-sm font-medium text-[var(--ds-color-text)]">Not</span>
-        <textarea
-          name="note"
-          rows={4}
-          className={inputClassName}
-          value={formData.note}
-          onChange={(event) => handleChange('note', event.target.value)}
+        <span className="text-sm font-medium text-[var(--ds-color-text)]">
+          Kullandığı Muhasebe Programı
+        </span>
+        <input
+          type="text"
+          name="accountingProgram"
+          required
+          aria-required="true"
+          className={formInputClassName}
+          value={formData.accountingProgram}
+          onChange={(event) => handleChange('accountingProgram', event.target.value)}
         />
       </label>
 
-      <Button type="submit" variant="primary" className="w-full px-5 py-2.5 sm:w-auto">
+      <label className="block space-y-1.5">
+        <span className="text-sm font-medium text-[var(--ds-color-text)]">Mesaj</span>
+        <textarea
+          name="message"
+          rows={4}
+          className={formInputClassName}
+          value={formData.message}
+          onChange={(event) => handleChange('message', event.target.value)}
+        />
+      </label>
+
+      <label className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          name="kvkkConsent"
+          required
+          aria-required="true"
+          checked={formData.kvkkConsent}
+          onChange={(event) => handleChange('kvkkConsent', event.target.checked)}
+          className="mt-1 size-4 rounded border-[var(--ds-color-border)]"
+        />
+        <span className="text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
+          <Link href="/kvkk" className="font-medium text-[var(--ds-color-primary)] hover:underline">
+            Kişisel Verilerin Korunması Aydınlatma Metni
+          </Link>
+          &apos;ni okudum ve onaylıyorum.
+        </span>
+      </label>
+
+      <Button
+        type="submit"
+        variant="primary"
+        loading={loading}
+        className="w-full px-5 py-2.5 sm:w-auto"
+        aria-label="Demo talebini gönder"
+      >
         Gönder
       </Button>
+
+      {error ? (
+        <p role="alert" className="whitespace-pre-line text-sm text-[var(--ds-color-danger)]">
+          {error}
+        </p>
+      ) : null}
     </form>
   )
 }

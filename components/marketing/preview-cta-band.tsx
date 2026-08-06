@@ -9,7 +9,7 @@ export function PreviewCtaBand() {
             100 Belge Ücretsiz Ön İzleme
           </p>
           <p className="mt-1 text-sm text-[var(--ds-color-text-muted)]">
-            Onaylanan firmalara 100 belge okuma hakkı tanımlanır.
+            Demo hesabınız otomatik oluşturulur; varsayılan 100 belge okuma hakkı tanımlanır.
           </p>
         </div>
         <ButtonLink href="/demo" variant="primary" className="shrink-0 px-5 py-2.5">

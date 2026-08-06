@@ -83,15 +83,15 @@ export const productVersions: ProductVersion[] = [
       {
         title: 'Belge Üretme',
         description:
-          'Teklif, sözleşme, mutabakat, tahsilat yazısı ve kurumsal belgeleri hızlıca oluşturmanızı sağlar.',
+          'Teklif, sözleşme, mutabakat ve kurumsal belgeleri hızlıca oluşturmanızı sağlar.',
       },
       {
         title: 'Teklif',
         description: 'Standart teklif şablonları ile tutarlı ve hızlı belge üretimi.',
       },
       {
-        title: 'Sözleşme',
-        description: 'Kurumsal sözleşme ve resmi yazıları dijital ortamda hazırlayın.',
+        title: 'İK Belgeleri',
+        description: 'İnsan kaynakları belgelerini dijital şablonlarla standartlaştırın.',
       },
     ],
   },
@@ -101,21 +101,15 @@ export const productVersions: ProductVersion[] = [
     status: 'planned',
     statusLabel: 'Planlanıyor',
     description:
-      'Mali müşavir, avukat, teknik servis, inşaat, sağlık ve oto kiralama gibi sektörlere özel iş akışları ve belge süreçleri sunar.',
+      'Teknik servis, oto kiralama, restoran, mali müşavir, avukat, inşaat ve sağlık gibi sektörlere özel iş akışları sunar.',
     features: [
-      {
-        title: 'Sektörel Çözümler',
-        description:
-          'Her sektörün belge ve operasyon ihtiyaçlarına göre özelleştirilmiş modüller içerir.',
-      },
-      {
-        title: 'Mali Müşavir',
-        description: 'Çok müşterili muhasebe ofisleri için ölçeklenebilir belge ve arşiv yönetimi.',
-      },
-      {
-        title: 'Avukat',
-        description: 'Hukuk büroları için evrak, dosya ve belge üretim süreçlerine uygun yapı.',
-      },
+      { title: 'Teknik Servis', description: 'Servis kayıtları, iş emirleri ve belge süreçleri için özelleştirilmiş akışlar.' },
+      { title: 'Oto Kiralama', description: 'Araç kiralama sözleşmeleri ve operasyon belgeleri yönetimi.' },
+      { title: 'Restaurant', description: 'Gider belgeleri, tedarik ve günlük operasyon evrakları.' },
+      { title: 'Mali Müşavir', description: 'Çok müşterili muhasebe ofisleri için ölçeklenebilir belge yönetimi.' },
+      { title: 'Avukat', description: 'Hukuk büroları için evrak, dosya ve belge üretim süreçleri.' },
+      { title: 'İnşaat', description: 'Proje bazlı belge, hakediş ve saha evrakı yönetimi.' },
+      { title: 'Sağlık', description: 'Klinik ve sağlık kuruluşları için uyumlu belge arşivi.' },
     ],
   },
 ]

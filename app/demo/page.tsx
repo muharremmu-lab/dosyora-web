@@ -3,9 +3,9 @@ import { SectionContainer } from '@/components/ui'
 import { createPageMetadata } from '@/lib/metadata'
 
 export const metadata = createPageMetadata({
-  title: 'DOSYORA Ön İzleme Programı',
+  title: 'Demo Talebi',
   description:
-    'DOSYORA ön izleme programına başvurun. Onaylanan firmalara 100 belge okuma hakkı tanımlanır.',
+    'DOSYORA demo hesabınızı otomatik oluşturun. Varsayılan 100 belge okuma hakkı tanımlanır.',
   path: '/demo',
 })
 
@@ -18,13 +18,15 @@ export default function DemoPage() {
           <div className="mx-auto max-w-2xl">
             <div className="mb-8 text-center sm:text-left">
               <h1 className="text-2xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-3xl">
-                DOSYORA Ön İzleme Programı
+                Demo Talebi
               </h1>
               <p className="mt-4 text-base leading-relaxed text-[var(--ds-color-text-muted)]">
                 İlk kullanıcılarımız arasına katılın.
               </p>
               <p className="mt-2 text-base leading-relaxed text-[var(--ds-color-text-muted)]">
-                Onaylanan firmalara <strong className="font-semibold text-[var(--ds-color-text)]">100 belge okuma hakkı</strong> tanımlanacaktır.
+                Demo hesabınız otomatik oluşturulur; varsayılan{' '}
+                <strong className="font-semibold text-[var(--ds-color-text)]">100 belge okuma hakkı</strong>{' '}
+                tanımlanır.
               </p>
             </div>
 

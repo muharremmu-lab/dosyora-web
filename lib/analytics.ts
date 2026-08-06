@@ -4,7 +4,7 @@ export const analyticsConfig = {
 } as const
 
 export function isGoogleAnalyticsEnabled(): boolean {
-  return Boolean(analyticsConfig.gaMeasurementId)
+  return process.env.NODE_ENV === 'production' && Boolean(analyticsConfig.gaMeasurementId)
 }
 
 export function isGoogleSearchConsoleEnabled(): boolean {

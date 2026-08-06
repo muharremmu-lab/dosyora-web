@@ -35,7 +35,7 @@ export default function UrunPage() {
 
         <FinalCtaSection
           title="100 Belge Ücretsiz Ön İzleme"
-          description="Onaylanan firmalara 100 belge okuma hakkı tanımlanacaktır."
+          description="Demo hesabınız otomatik oluşturulur; varsayılan 100 belge okuma hakkı tanımlanır."
           buttonLabel="Demo Talep Et"
         />
       </main>

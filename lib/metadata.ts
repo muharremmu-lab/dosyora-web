@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import { analyticsConfig } from '@/lib/analytics'
-import { siteConfig } from '@/lib/site'
+import { ogImagePath, siteConfig } from '@/lib/site'
 
 type PageMetadataOptions = {
   title: string
@@ -16,6 +16,35 @@ type BlogPostMetadataOptions = {
   publishedAt: string
 }
 
+const sharedMetadataFields = {
+  applicationName: siteConfig.applicationName,
+  authors: [{ name: siteConfig.name, url: siteConfig.url }],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  category: siteConfig.category,
+  keywords: [...siteConfig.keywords],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large' as const,
+      'max-snippet': -1,
+    },
+  },
+}
+
+const defaultOpenGraphImages = [
+  {
+    url: ogImagePath,
+    width: 1200,
+    height: 630,
+    alt: siteConfig.seoTitle,
+    type: 'image/jpeg',
+  },
+]
+
 function absoluteUrl(path: string): string {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`
   return `${siteConfig.url}${normalizedPath === '/' ? '' : normalizedPath}`
@@ -27,16 +56,10 @@ function buildPageTitle(title: string): string {
     : `${title} | ${siteConfig.title}`
 }
 
-export function createPageMetadata({
-  title,
-  description = siteConfig.description,
-  path,
-}: PageMetadataOptions): Metadata {
-  const pageTitle = buildPageTitle(title)
-  const canonical = absoluteUrl(path)
-
+function buildSharedMetadata(title: string, description: string, canonical: string): Metadata {
   return {
-    title: pageTitle,
+    ...sharedMetadataFields,
+    title,
     description,
     metadataBase: new URL(siteConfig.url),
     alternates: {
@@ -47,24 +70,28 @@ export function createPageMetadata({
       locale: siteConfig.locale,
       url: canonical,
       siteName: siteConfig.name,
-      title: pageTitle,
+      title,
       description,
-      images: [
-        {
-          url: '/opengraph-image',
-          width: 1200,
-          height: 630,
-          alt: siteConfig.name,
-        },
-      ],
+      images: defaultOpenGraphImages,
     },
     twitter: {
       card: 'summary_large_image',
-      title: pageTitle,
+      title,
       description,
-      images: ['/opengraph-image'],
+      images: [ogImagePath],
     },
   }
+}
+
+export function createPageMetadata({
+  title,
+  description = siteConfig.description,
+  path,
+}: PageMetadataOptions): Metadata {
+  const pageTitle = buildPageTitle(title)
+  const canonical = absoluteUrl(path)
+
+  return buildSharedMetadata(pageTitle, description, canonical)
 }
 
 export function createBlogPostMetadata({
@@ -77,12 +104,7 @@ export function createBlogPostMetadata({
   const canonical = absoluteUrl(`/blog/${slug}`)
 
   return {
-    title: pageTitle,
-    description,
-    metadataBase: new URL(siteConfig.url),
-    alternates: {
-      canonical,
-    },
+    ...buildSharedMetadata(pageTitle, description, canonical),
     openGraph: {
       type: 'article',
       locale: siteConfig.locale,
@@ -92,32 +114,18 @@ export function createBlogPostMetadata({
       description,
       publishedTime: publishedAt,
       authors: [siteConfig.name],
-      images: [
-        {
-          url: '/opengraph-image',
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: pageTitle,
-      description,
-      images: ['/opengraph-image'],
+      images: defaultOpenGraphImages,
     },
   }
 }
 
 export const rootMetadata: Metadata = {
-  ...createPageMetadata({
-    title: siteConfig.seoTitle,
-    description: siteConfig.description,
-    path: '/',
-  }),
+  ...buildSharedMetadata(siteConfig.seoTitle, siteConfig.description, absoluteUrl('/')),
   icons: {
-    icon: [{ url: '/icon', type: 'image/png', sizes: '32x32' }, { url: '/icons/icon.svg', type: 'image/svg+xml' }],
+    icon: [
+      { url: '/icon', type: 'image/png', sizes: '32x32' },
+      { url: '/icons/icon.svg', type: 'image/svg+xml' },
+    ],
     apple: [{ url: '/apple-icon', sizes: '180x180', type: 'image/png' }],
   },
   manifest: '/manifest.webmanifest',
