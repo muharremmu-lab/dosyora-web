@@ -10,10 +10,26 @@ const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
 const DEMO_LEADS_COLUMNS = ['document_limit', 'account_status', 'used_documents'] as const
 
+const SQLITE_MASTER_TABLES_SQL = "SELECT name FROM sqlite_master WHERE type='table'"
+
 function assertKnownTable(table: string) {
   if (!ALLOWED_MIGRATION_TABLES.has(table)) {
     throw new Error(`Unknown migration table: ${table}`)
   }
+}
+
+async function logExistingTables(client: Client, operation: string): Promise<string[]> {
+  const result = await executeWithClient(client, operation, SQLITE_MASTER_TABLES_SQL)
+  const tables = result.rows.map((row) => String(row.name))
+
+  logApiInfo('migration_sqlite_master', {
+    event: 'migration_sqlite_master',
+    operation,
+    sql: SQLITE_MASTER_TABLES_SQL,
+    tables,
+  })
+
+  return tables
 }
 
 async function tableExists(client: Client, table: string): Promise<boolean> {
@@ -41,7 +57,17 @@ async function columnExists(client: Client, table: string, column: string): Prom
 }
 
 async function runStatement(client: Client, operation: string, sql: string) {
-  await executeWithClient(client, operation, sql)
+  const trimmedSql = sql.trim()
+
+  if (operation.startsWith('migration.create.')) {
+    logApiInfo('migration_create_table_sql', {
+      event: 'migration_create_table_sql',
+      operation,
+      sql: trimmedSql,
+    })
+  }
+
+  await executeWithClient(client, operation, trimmedSql)
 }
 
 async function addColumnIfMissing(
@@ -64,53 +90,55 @@ async function addColumnIfMissing(
 export async function runMigrations(client: Client) {
   logDbInitStart({ phase: 'migrations' })
 
+  let preflightTables: string[] = []
+
   const statements: Array<{ operation: string; sql: string }> = [
     {
       operation: 'migration.create.demo_leads',
       sql: `CREATE TABLE IF NOT EXISTS demo_leads (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
-      company_name TEXT NOT NULL,
-      contact_name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      city TEXT,
-      employee_count TEXT,
-      monthly_document_count TEXT,
-      message TEXT,
-      status TEXT NOT NULL DEFAULT 'NEW',
-      assigned_to TEXT,
-      notes TEXT,
-      source TEXT,
-      ip_address TEXT,
-      user_agent TEXT
-    )`,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  company_name TEXT NOT NULL,
+  contact_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  city TEXT,
+  employee_count TEXT,
+  monthly_document_count TEXT,
+  message TEXT,
+  status TEXT NOT NULL DEFAULT 'NEW',
+  assigned_to TEXT,
+  notes TEXT,
+  source TEXT,
+  ip_address TEXT,
+  user_agent TEXT
+)`,
     },
     {
       operation: 'migration.create.contact_messages',
       sql: `CREATE TABLE IF NOT EXISTS contact_messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now')),
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT,
-      subject TEXT NOT NULL,
-      message TEXT NOT NULL,
-      status TEXT NOT NULL DEFAULT 'NEW',
-      notes TEXT,
-      ip_address TEXT,
-      user_agent TEXT
-    )`,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'NEW',
+  notes TEXT,
+  ip_address TEXT,
+  user_agent TEXT
+)`,
     },
     {
       operation: 'migration.create.ip_demo_quota',
       sql: `CREATE TABLE IF NOT EXISTS ip_demo_quota (
-      ip_address TEXT PRIMARY KEY,
-      demo_count INTEGER NOT NULL DEFAULT 0,
-      window_started_at TEXT NOT NULL,
-      window_expires_at TEXT NOT NULL
-    )`,
+  ip_address TEXT PRIMARY KEY,
+  demo_count INTEGER NOT NULL DEFAULT 0,
+  window_started_at TEXT NOT NULL,
+  window_expires_at TEXT NOT NULL
+)`,
     },
     {
       operation: 'migration.index.demo_leads_status',
@@ -135,6 +163,8 @@ export async function runMigrations(client: Client) {
   ]
 
   try {
+    preflightTables = await logExistingTables(client, 'migration.preflight.sqlite_master')
+
     for (const statement of statements) {
       await runStatement(client, statement.operation, statement.sql)
     }
@@ -152,7 +182,20 @@ export async function runMigrations(client: Client) {
     await verifySchema(client)
     logDbInitSuccess({ phase: 'migrations' })
   } catch (error) {
-    logDbInitError('runMigrations', error, { phase: 'migrations' })
+    let failureTables = preflightTables
+
+    try {
+      failureTables = await logExistingTables(client, 'migration.failure.sqlite_master')
+    } catch {
+      // Keep preflight snapshot if sqlite_master cannot be queried after failure.
+    }
+
+    logDbInitError('runMigrations', error, {
+      phase: 'migrations',
+      sqliteMasterTables: failureTables,
+      incompatibilityNote:
+        'Turso/libSQL rejects DEFAULT (datetime(\'now\')) in CREATE TABLE; use DEFAULT CURRENT_TIMESTAMP for timestamp columns.',
+    })
     throw error
   }
 }
