@@ -2,20 +2,17 @@ export const runtime = 'nodejs'
 
 import { db } from '@/lib/db/client'
 
-function maskUrl(url: string | undefined): string | null {
-  if (!url) return null
-  if (url.length <= 40) {
-    return `${url.slice(0, 10)}...${url.slice(-10)}`
-  }
-  return `${url.slice(0, 20)}...${url.slice(-20)}`
-}
-
 function envDiagnostics() {
+  const url = process.env.TURSO_DATABASE_URL
+  const token = process.env.TURSO_AUTH_TOKEN
+
   return {
-    url: maskUrl(process.env.TURSO_DATABASE_URL),
-    urlLength: process.env.TURSO_DATABASE_URL?.length ?? null,
-    tokenExists: Boolean(process.env.TURSO_AUTH_TOKEN),
-    tokenLength: process.env.TURSO_AUTH_TOKEN?.length ?? null,
+    urlPrefix: url ? url.slice(0, 20) : null,
+    urlSuffix: url ? url.slice(-20) : null,
+    urlLength: url?.length ?? null,
+    tokenPrefix: token ? token.slice(0, 12) : null,
+    tokenSuffix: token ? token.slice(-12) : null,
+    tokenLength: token?.length ?? null,
     nodeEnv: process.env.NODE_ENV ?? null,
     runtime: process.version,
   }
