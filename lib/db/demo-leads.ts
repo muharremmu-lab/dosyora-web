@@ -1,4 +1,4 @@
-import { dbInsert, dbRun, dbQueryAll, dbQueryOne } from './query'
+import { dbInsertReturningId, dbQueryAll, dbQueryOne, dbRun } from './query'
 import type {
   AccountStatus,
   CreateDemoAccountInput,
@@ -27,21 +27,23 @@ function mapRow(row: DemoLeadRow): DemoLead {
 
 export async function findDemoAccountByEmail(email: string): Promise<DemoLead | null> {
   const row = await dbQueryOne<DemoLeadRow>(
+    'findDemoAccountByEmail',
     `
       SELECT * FROM demo_leads
-      WHERE lower(email) = lower(:email)
+      WHERE lower(email) = lower(?)
         AND account_status IN ('ACTIVE', 'DISABLED')
       ORDER BY created_at ASC
       LIMIT 1
     `,
-    { email },
+    [email],
   )
 
   return row ? mapRow(row) : null
 }
 
 export async function createDemoAccount(input: CreateDemoAccountInput): Promise<DemoLead> {
-  const id = await dbInsert(
+  const id = await dbInsertReturningId(
+    'createDemoAccount',
     `
     INSERT INTO demo_leads (
       company_name,
@@ -59,38 +61,23 @@ export async function createDemoAccount(input: CreateDemoAccountInput): Promise<
       account_status,
       status,
       used_documents
-    ) VALUES (
-      :company_name,
-      :contact_name,
-      :email,
-      :phone,
-      :city,
-      :employee_count,
-      :monthly_document_count,
-      :message,
-      :source,
-      :ip_address,
-      :user_agent,
-      :document_limit,
-      'ACTIVE',
-      'NEW',
-      0
-    )
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 'NEW', 0)
+    RETURNING id
   `,
-    {
-      company_name: input.company_name,
-      contact_name: input.contact_name,
-      email: input.email,
-      phone: input.phone,
-      city: input.city ?? null,
-      employee_count: input.employee_count ?? null,
-      monthly_document_count: input.monthly_document_count ?? null,
-      message: input.message ?? null,
-      source: input.source ?? 'website',
-      ip_address: input.ip_address ?? null,
-      user_agent: input.user_agent ?? null,
-      document_limit: input.document_limit,
-    },
+    [
+      input.company_name,
+      input.contact_name,
+      input.email,
+      input.phone,
+      input.city ?? null,
+      input.employee_count ?? null,
+      input.monthly_document_count ?? null,
+      input.message ?? null,
+      input.source ?? 'website',
+      input.ip_address ?? null,
+      input.user_agent ?? null,
+      input.document_limit,
+    ],
   )
 
   return (await getDemoLeadById(id))!
@@ -105,7 +92,9 @@ export async function createDemoLead(input: CreateDemoLeadInput): Promise<DemoLe
 }
 
 export async function getDemoLeadById(id: number): Promise<DemoLead | null> {
-  const row = await dbQueryOne<DemoLeadRow>('SELECT * FROM demo_leads WHERE id = :id', { id })
+  const row = await dbQueryOne<DemoLeadRow>('getDemoLeadById', 'SELECT * FROM demo_leads WHERE id = ?', [
+    id,
+  ])
   return row ? mapRow(row) : null
 }
 
@@ -117,35 +106,36 @@ export async function listDemoLeads(
   const offset = (page - 1) * limit
 
   const conditions: string[] = ["account_status IN ('ACTIVE', 'DISABLED')"]
-  const params: Record<string, string | number> = {}
+  const params: Array<string | number> = []
 
   if (options.search) {
-    conditions.push(
-      `(company_name LIKE :search OR contact_name LIKE :search OR email LIKE :search OR phone LIKE :search)`,
-    )
-    params.search = `%${options.search}%`
+    conditions.push('(company_name LIKE ? OR contact_name LIKE ? OR email LIKE ? OR phone LIKE ?)')
+    const search = `%${options.search}%`
+    params.push(search, search, search, search)
   }
 
   if (options.accountStatus) {
-    conditions.push('account_status = :account_status')
-    params.account_status = options.accountStatus
+    conditions.push('account_status = ?')
+    params.push(options.accountStatus)
   }
 
   if (options.source) {
-    conditions.push('source = :source')
-    params.source = options.source
+    conditions.push('source = ?')
+    params.push(options.source)
   }
 
   const whereClause = `WHERE ${conditions.join(' AND ')}`
 
   const totalRow = await dbQueryOne<{ count: number }>(
+    'listDemoLeads.count',
     `SELECT COUNT(*) as count FROM demo_leads ${whereClause}`,
     params,
   )
 
   const rows = await dbQueryAll<DemoLeadRow>(
-    `SELECT * FROM demo_leads ${whereClause} ORDER BY created_at DESC LIMIT :limit OFFSET :offset`,
-    { ...params, limit, offset },
+    'listDemoLeads.items',
+    `SELECT * FROM demo_leads ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+    [...params, limit, offset],
   )
 
   const total = Number(totalRow?.count ?? 0)
@@ -167,21 +157,20 @@ export async function updateDemoLead(
   if (!existing) return null
 
   await dbRun(
+    'updateDemoLead',
     `
     UPDATE demo_leads
     SET
-      document_limit = :document_limit,
-      account_status = :account_status,
+      document_limit = ?,
+      account_status = ?,
       updated_at = datetime('now')
-    WHERE id = :id
+    WHERE id = ?
   `,
-    {
+    [
+      input.document_limit !== undefined ? input.document_limit : existing.document_limit,
+      input.account_status !== undefined ? input.account_status : existing.account_status,
       id,
-      document_limit:
-        input.document_limit !== undefined ? input.document_limit : existing.document_limit,
-      account_status:
-        input.account_status !== undefined ? input.account_status : existing.account_status,
-    },
+    ],
   )
 
   return getDemoLeadById(id)
@@ -195,12 +184,13 @@ export async function incrementUsedDocuments(id: number, count = 1): Promise<Dem
   const nextCount = Math.max(0, (existing.used_documents ?? 0) + count)
 
   await dbRun(
+    'incrementUsedDocuments',
     `
     UPDATE demo_leads
-    SET used_documents = :used_documents, updated_at = datetime('now')
-    WHERE id = :id
+    SET used_documents = ?, updated_at = datetime('now')
+    WHERE id = ?
   `,
-    { id, used_documents: nextCount },
+    [nextCount, id],
   )
 
   return getDemoLeadById(id)
@@ -208,14 +198,16 @@ export async function incrementUsedDocuments(id: number, count = 1): Promise<Dem
 
 export async function countDemoAccountsByStatus(status: AccountStatus): Promise<number> {
   const row = await dbQueryOne<{ count: number }>(
-    'SELECT COUNT(*) as count FROM demo_leads WHERE account_status = :status',
-    { status },
+    'countDemoAccountsByStatus',
+    'SELECT COUNT(*) as count FROM demo_leads WHERE account_status = ?',
+    [status],
   )
   return Number(row?.count ?? 0)
 }
 
 export async function countDemoAccountsToday(): Promise<number> {
   const row = await dbQueryOne<{ count: number }>(
+    'countDemoAccountsToday',
     `
       SELECT COUNT(*) as count FROM demo_leads
       WHERE account_status IN ('ACTIVE', 'DISABLED')
@@ -227,6 +219,7 @@ export async function countDemoAccountsToday(): Promise<number> {
 
 export async function countAllDemoAccounts(): Promise<number> {
   const row = await dbQueryOne<{ count: number }>(
+    'countAllDemoAccounts',
     `SELECT COUNT(*) as count FROM demo_leads WHERE account_status IN ('ACTIVE', 'DISABLED')`,
   )
   return Number(row?.count ?? 0)

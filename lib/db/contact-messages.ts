@@ -1,4 +1,4 @@
-import { dbInsert, dbRun, dbQueryAll, dbQueryOne } from './query'
+import { dbInsertReturningId, dbQueryAll, dbQueryOne, dbRun } from './query'
 import type {
   ContactMessage,
   ContactMessageStatus,
@@ -23,7 +23,8 @@ function mapRow(row: ContactMessageRow): ContactMessage {
 export async function createContactMessage(
   input: CreateContactMessageInput,
 ): Promise<ContactMessage> {
-  const id = await dbInsert(
+  const id = await dbInsertReturningId(
+    'createContactMessage',
     `
     INSERT INTO contact_messages (
       name,
@@ -33,25 +34,18 @@ export async function createContactMessage(
       message,
       ip_address,
       user_agent
-    ) VALUES (
-      :name,
-      :email,
-      :phone,
-      :subject,
-      :message,
-      :ip_address,
-      :user_agent
-    )
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    RETURNING id
   `,
-    {
-      name: input.name,
-      email: input.email,
-      phone: input.phone ?? null,
-      subject: input.subject,
-      message: input.message,
-      ip_address: input.ip_address ?? null,
-      user_agent: input.user_agent ?? null,
-    },
+    [
+      input.name,
+      input.email,
+      input.phone ?? null,
+      input.subject,
+      input.message,
+      input.ip_address ?? null,
+      input.user_agent ?? null,
+    ],
   )
 
   return (await getContactMessageById(id))!
@@ -59,8 +53,9 @@ export async function createContactMessage(
 
 export async function getContactMessageById(id: number): Promise<ContactMessage | null> {
   const row = await dbQueryOne<ContactMessageRow>(
-    'SELECT * FROM contact_messages WHERE id = :id',
-    { id },
+    'getContactMessageById',
+    'SELECT * FROM contact_messages WHERE id = ?',
+    [id],
   )
   return row ? mapRow(row) : null
 }
@@ -73,30 +68,31 @@ export async function listContactMessages(
   const offset = (page - 1) * limit
 
   const conditions: string[] = []
-  const params: Record<string, string | number> = {}
+  const params: Array<string | number> = []
 
   if (options.search) {
-    conditions.push(
-      `(name LIKE :search OR email LIKE :search OR phone LIKE :search OR subject LIKE :search)`,
-    )
-    params.search = `%${options.search}%`
+    conditions.push('(name LIKE ? OR email LIKE ? OR phone LIKE ? OR subject LIKE ?)')
+    const search = `%${options.search}%`
+    params.push(search, search, search, search)
   }
 
   if (options.status) {
-    conditions.push('status = :status')
-    params.status = options.status
+    conditions.push('status = ?')
+    params.push(options.status)
   }
 
   const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
   const totalRow = await dbQueryOne<{ count: number }>(
+    'listContactMessages.count',
     `SELECT COUNT(*) as count FROM contact_messages ${whereClause}`,
     params,
   )
 
   const rows = await dbQueryAll<ContactMessageRow>(
-    `SELECT * FROM contact_messages ${whereClause} ORDER BY created_at DESC LIMIT :limit OFFSET :offset`,
-    { ...params, limit, offset },
+    'listContactMessages.items',
+    `SELECT * FROM contact_messages ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+    [...params, limit, offset],
   )
 
   const total = Number(totalRow?.count ?? 0)
@@ -118,18 +114,15 @@ export async function updateContactMessage(
   if (!existing) return null
 
   await dbRun(
+    'updateContactMessage',
     `
     UPDATE contact_messages
     SET
-      status = :status,
-      notes = :notes
-    WHERE id = :id
+      status = ?,
+      notes = ?
+    WHERE id = ?
   `,
-    {
-      id,
-      status: input.status ?? existing.status,
-      notes: input.notes !== undefined ? input.notes : existing.notes,
-    },
+    [input.status ?? existing.status, input.notes !== undefined ? input.notes : existing.notes, id],
   )
 
   return getContactMessageById(id)
@@ -137,6 +130,7 @@ export async function updateContactMessage(
 
 export async function countAllContactMessages(): Promise<number> {
   const row = await dbQueryOne<{ count: number }>(
+    'countAllContactMessages',
     'SELECT COUNT(*) as count FROM contact_messages',
   )
   return Number(row?.count ?? 0)
@@ -144,8 +138,9 @@ export async function countAllContactMessages(): Promise<number> {
 
 export async function countContactMessagesByStatus(status: ContactMessageStatus): Promise<number> {
   const row = await dbQueryOne<{ count: number }>(
-    'SELECT COUNT(*) as count FROM contact_messages WHERE status = :status',
-    { status },
+    'countContactMessagesByStatus',
+    'SELECT COUNT(*) as count FROM contact_messages WHERE status = ?',
+    [status],
   )
   return Number(row?.count ?? 0)
 }

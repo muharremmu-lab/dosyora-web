@@ -1,4 +1,4 @@
-import { dbInsert, dbQueryOne } from './query'
+import { dbQueryOne, dbRun } from './query'
 import type { IpDemoQuota } from './types'
 
 const WINDOW_DAYS = 30
@@ -14,12 +14,13 @@ function isExpired(expiresAt: string): boolean {
 }
 
 export async function getIpDemoQuota(ipAddress: string): Promise<IpDemoQuota> {
-  const existing = await dbQueryOne<IpDemoQuota>(
-    'SELECT * FROM ip_demo_quota WHERE ip_address = :ip_address',
-    { ip_address: ipAddress },
+  const row = await dbQueryOne<IpDemoQuota>(
+    'getIpDemoQuota.select',
+    'SELECT * FROM ip_demo_quota WHERE ip_address = ?',
+    [ipAddress],
   )
 
-  if (!existing || isExpired(existing.window_expires_at)) {
+  if (!row || isExpired(row.window_expires_at)) {
     const now = new Date().toISOString()
     const quota: IpDemoQuota = {
       ip_address: ipAddress,
@@ -28,37 +29,36 @@ export async function getIpDemoQuota(ipAddress: string): Promise<IpDemoQuota> {
       window_expires_at: addDaysIso(WINDOW_DAYS),
     }
 
-    await dbInsert(
+    await dbRun(
+      'getIpDemoQuota.upsert',
       `
       INSERT INTO ip_demo_quota (ip_address, demo_count, window_started_at, window_expires_at)
-      VALUES (:ip_address, :demo_count, :window_started_at, :window_expires_at)
+      VALUES (?, ?, ?, ?)
       ON CONFLICT(ip_address) DO UPDATE SET
         demo_count = excluded.demo_count,
         window_started_at = excluded.window_started_at,
         window_expires_at = excluded.window_expires_at
     `,
-      quota,
+      [quota.ip_address, quota.demo_count, quota.window_started_at, quota.window_expires_at],
     )
 
     return quota
   }
 
-  return existing
+  return row
 }
 
 export async function incrementIpDemoQuota(ipAddress: string): Promise<IpDemoQuota> {
   const quota = await getIpDemoQuota(ipAddress)
 
-  await dbInsert(
+  await dbRun(
+    'incrementIpDemoQuota',
     `
     UPDATE ip_demo_quota
-    SET demo_count = :demo_count
-    WHERE ip_address = :ip_address
+    SET demo_count = ?
+    WHERE ip_address = ?
   `,
-    {
-      ip_address: ipAddress,
-      demo_count: quota.demo_count + 1,
-    },
+    [quota.demo_count + 1, ipAddress],
   )
 
   return {
