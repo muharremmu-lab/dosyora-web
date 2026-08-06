@@ -165,6 +165,7 @@ export async function runMigrations(client: Client) {
   ]
 
   try {
+    console.log('BEFORE_PREFLIGHT')
     preflightTables = await runMigrationPreflight(client)
 
     for (const statement of statements) {

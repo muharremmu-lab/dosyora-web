@@ -100,6 +100,7 @@ export function getDbClient(): Client {
 }
 
 export async function ensureDbReady(): Promise<void> {
+  console.log('PRELIGHT_ENTER')
   if (!migrationPromise) {
     migrationPromise = (async () => {
       logDbInitStart({ phase: 'ensureDbReady' })

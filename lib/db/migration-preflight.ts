@@ -21,12 +21,16 @@ const PREFLIGHT_QUERIES = [
 ] as const
 
 export async function runMigrationPreflight(client: Client): Promise<string[]> {
+  console.log('INSIDE_PREFLIGHT')
   logDbExecuteStart('preflight.begin', 'migration preflight sequence', [])
 
   const completed = new Set<string>()
 
   for (const query of PREFLIGHT_QUERIES) {
     try {
+      if (query.key === 'select1') {
+        console.log('RUN_SELECT_1')
+      }
       const result = await executeWithClient(client, query.operation, query.sql)
       completed.add(query.key)
 
