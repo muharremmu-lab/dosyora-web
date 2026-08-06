@@ -3,7 +3,8 @@ export const runtime = 'nodejs'
 import type { NextRequest } from 'next/server'
 
 import { parseAccountStatus, parsePositiveInt } from '@/lib/admin/query'
-import { logApiError, logApiInfo, logApiWarning } from '@/lib/api-logger'
+import { logApiInfo, logApiWarning } from '@/lib/api-logger'
+import { logDbRouteError } from '@/lib/db/libsql-log'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { buildDemoRequestContext } from '@/lib/demo-policy/context'
 import { processDemoRequest } from '@/lib/demo-policy/service'
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       { status: 201 },
     )
   } catch (error) {
-    logApiError('demo_failed_server', {}, error)
+    logDbRouteError('demo_failed_server', error, { route: 'POST /api/demo-leads' })
     return jsonError('Sunucu hatası.', 500)
   }
 }
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest) {
     const result = await listDemoLeads({ page, limit, search, accountStatus, source })
     return jsonOk(result)
   } catch (error) {
-    logApiError('demo_leads_list_failed', {}, error)
+    logDbRouteError('demo_leads_list_failed', error, { route: 'GET /api/demo-leads' })
     return jsonError('Sunucu hatası.', 500)
   }
 }

@@ -4,11 +4,23 @@ import path from 'node:path'
 import { createClient, type Client } from '@libsql/client'
 
 import { runMigrations } from './migrations'
+import { logDbInitError, logDbInitStart, logDbInitSuccess } from './libsql-log'
 
 let client: Client | null = null
 let migrationPromise: Promise<void> | null = null
 
 const REMOTE_DATABASE_URL_PATTERN = /^(libsql:|https?:)/
+
+function maskDatabaseUrl(url: string): string {
+  if (url.startsWith('file:')) return url
+
+  try {
+    const parsed = new URL(url.replace(/^libsql:/, 'https:'))
+    return `${parsed.protocol}//${parsed.host}${parsed.pathname}`
+  } catch {
+    return '[invalid-url]'
+  }
+}
 
 function validateDatabaseUrl(url: string): void {
   if (!url) {
@@ -62,10 +74,26 @@ function getAuthToken(url: string): string | undefined {
 export function getDbClient(): Client {
   if (!client) {
     const url = getDatabaseUrl()
-    client = createClient({
-      url,
-      authToken: getAuthToken(url),
+
+    logDbInitStart({
+      phase: 'createClient',
+      databaseUrl: maskDatabaseUrl(url),
+      remote: !url.startsWith('file:'),
     })
+
+    try {
+      client = createClient({
+        url,
+        authToken: getAuthToken(url),
+      })
+      logDbInitSuccess({ phase: 'createClient', databaseUrl: maskDatabaseUrl(url) })
+    } catch (error) {
+      logDbInitError('createClient', error, {
+        phase: 'createClient',
+        databaseUrl: maskDatabaseUrl(url),
+      })
+      throw error
+    }
   }
 
   return client
@@ -73,7 +101,17 @@ export function getDbClient(): Client {
 
 export async function ensureDbReady(): Promise<void> {
   if (!migrationPromise) {
-    migrationPromise = runMigrations(getDbClient())
+    migrationPromise = (async () => {
+      logDbInitStart({ phase: 'ensureDbReady' })
+      try {
+        await runMigrations(getDbClient())
+        logDbInitSuccess({ phase: 'ensureDbReady' })
+      } catch (error) {
+        logDbInitError('ensureDbReady', error, { phase: 'ensureDbReady' })
+        migrationPromise = null
+        throw error
+      }
+    })()
   }
 
   await migrationPromise

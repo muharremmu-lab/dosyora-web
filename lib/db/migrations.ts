@@ -1,30 +1,47 @@
-import type { Client } from '@libsql/client'
+import type { Client, ResultSet } from '@libsql/client'
 
-import { logApiError, logApiInfo } from '@/lib/api-logger'
+import { logApiInfo } from '@/lib/api-logger'
+
+import { executeWithClient, type SqlArgs } from './execute'
+import { logDbInitError, logDbInitStart, logDbInitSuccess } from './libsql-log'
 
 const REQUIRED_TABLES = ['demo_leads', 'contact_messages', 'ip_demo_quota'] as const
+const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
-const DEMO_LEADS_COLUMNS = [
-  'document_limit',
-  'account_status',
-  'used_documents',
-] as const
+const DEMO_LEADS_COLUMNS = ['document_limit', 'account_status', 'used_documents'] as const
+
+function assertKnownTable(table: string) {
+  if (!ALLOWED_MIGRATION_TABLES.has(table)) {
+    throw new Error(`Unknown migration table: ${table}`)
+  }
+}
 
 async function tableExists(client: Client, table: string): Promise<boolean> {
-  const result = await client.execute({
-    sql: "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
-    args: [table],
-  })
+  const result = await executeWithClient(
+    client,
+    `migration.tableExists.${table}`,
+    "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+    [table],
+  )
 
   return result.rows.length > 0
 }
 
 async function columnExists(client: Client, table: string, column: string): Promise<boolean> {
-  const result = await client.execute({
-    sql: `PRAGMA table_info(${table})`,
-  })
+  assertKnownTable(table)
 
-  return result.rows.some((row) => String(row.name) === column)
+  const result = await executeWithClient(
+    client,
+    `migration.columnExists.${table}.${column}`,
+    `SELECT name FROM pragma_table_info('${table}') WHERE name = ?`,
+    [column],
+  )
+
+  return result.rows.length > 0
+}
+
+async function runStatement(client: Client, operation: string, sql: string) {
+  await executeWithClient(client, operation, sql)
 }
 
 async function addColumnIfMissing(
@@ -33,20 +50,24 @@ async function addColumnIfMissing(
   column: string,
   definition: string,
 ) {
+  assertKnownTable(table)
+
   if (!(await columnExists(client, table, column))) {
-    await client.execute({
-      sql: `ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`,
-    })
+    await executeWithClient(
+      client,
+      `migration.addColumn.${table}.${column}`,
+      `ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`,
+    )
   }
 }
 
-async function runStatement(client: Client, sql: string) {
-  await client.execute({ sql: sql.trim() })
-}
-
 export async function runMigrations(client: Client) {
-  const statements = [
-    `CREATE TABLE IF NOT EXISTS demo_leads (
+  logDbInitStart({ phase: 'migrations' })
+
+  const statements: Array<{ operation: string; sql: string }> = [
+    {
+      operation: 'migration.create.demo_leads',
+      sql: `CREATE TABLE IF NOT EXISTS demo_leads (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -65,7 +86,10 @@ export async function runMigrations(client: Client) {
       ip_address TEXT,
       user_agent TEXT
     )`,
-    `CREATE TABLE IF NOT EXISTS contact_messages (
+    },
+    {
+      operation: 'migration.create.contact_messages',
+      sql: `CREATE TABLE IF NOT EXISTS contact_messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       name TEXT NOT NULL,
@@ -78,33 +102,59 @@ export async function runMigrations(client: Client) {
       ip_address TEXT,
       user_agent TEXT
     )`,
-    `CREATE TABLE IF NOT EXISTS ip_demo_quota (
+    },
+    {
+      operation: 'migration.create.ip_demo_quota',
+      sql: `CREATE TABLE IF NOT EXISTS ip_demo_quota (
       ip_address TEXT PRIMARY KEY,
       demo_count INTEGER NOT NULL DEFAULT 0,
       window_started_at TEXT NOT NULL,
       window_expires_at TEXT NOT NULL
     )`,
-    `CREATE INDEX IF NOT EXISTS idx_demo_leads_status ON demo_leads(status)`,
-    `CREATE INDEX IF NOT EXISTS idx_demo_leads_created_at ON demo_leads(created_at)`,
-    `CREATE INDEX IF NOT EXISTS idx_demo_leads_email ON demo_leads(email)`,
-    `CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status)`,
-    `CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at)`,
+    },
+    {
+      operation: 'migration.index.demo_leads_status',
+      sql: `CREATE INDEX IF NOT EXISTS idx_demo_leads_status ON demo_leads(status)`,
+    },
+    {
+      operation: 'migration.index.demo_leads_created_at',
+      sql: `CREATE INDEX IF NOT EXISTS idx_demo_leads_created_at ON demo_leads(created_at)`,
+    },
+    {
+      operation: 'migration.index.demo_leads_email',
+      sql: `CREATE INDEX IF NOT EXISTS idx_demo_leads_email ON demo_leads(email)`,
+    },
+    {
+      operation: 'migration.index.contact_messages_status',
+      sql: `CREATE INDEX IF NOT EXISTS idx_contact_messages_status ON contact_messages(status)`,
+    },
+    {
+      operation: 'migration.index.contact_messages_created_at',
+      sql: `CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at)`,
+    },
   ]
 
-  for (const statement of statements) {
-    await runStatement(client, statement)
+  try {
+    for (const statement of statements) {
+      await runStatement(client, statement.operation, statement.sql)
+    }
+
+    await addColumnIfMissing(client, 'demo_leads', 'document_limit', 'INTEGER')
+    await addColumnIfMissing(client, 'demo_leads', 'account_status', 'TEXT')
+    await addColumnIfMissing(client, 'demo_leads', 'used_documents', 'INTEGER NOT NULL DEFAULT 0')
+
+    await runStatement(
+      client,
+      'migration.index.demo_leads_account_status',
+      `CREATE INDEX IF NOT EXISTS idx_demo_leads_account_status ON demo_leads(account_status)`,
+    )
+
+    await verifySchema(client)
+    logDbInitSuccess({ phase: 'migrations' })
+  } catch (error) {
+    logDbInitError('runMigrations', error, { phase: 'migrations' })
+    throw error
   }
-
-  await addColumnIfMissing(client, 'demo_leads', 'document_limit', 'INTEGER')
-  await addColumnIfMissing(client, 'demo_leads', 'account_status', 'TEXT')
-  await addColumnIfMissing(client, 'demo_leads', 'used_documents', 'INTEGER NOT NULL DEFAULT 0')
-
-  await runStatement(
-    client,
-    `CREATE INDEX IF NOT EXISTS idx_demo_leads_account_status ON demo_leads(account_status)`,
-  )
-
-  await verifySchema(client)
 }
 
 export async function verifySchema(client: Client) {
@@ -117,7 +167,13 @@ export async function verifySchema(client: Client) {
   }
 
   if (missingTables.length > 0) {
-    logApiError('db_schema_missing_tables', { missingTables })
+    logApiInfo('db_schema_missing_tables', {
+      event: 'db_schema_missing_tables',
+      operation: 'verifySchema',
+      sql: null,
+      args: null,
+      missingTables,
+    })
     throw new Error(`Missing database tables: ${missingTables.join(', ')}`)
   }
 
@@ -130,17 +186,26 @@ export async function verifySchema(client: Client) {
   }
 
   if (missingColumns.length > 0) {
-    logApiError('db_schema_missing_columns', { missingColumns })
+    logApiInfo('db_schema_missing_columns', {
+      event: 'db_schema_missing_columns',
+      operation: 'verifySchema',
+      sql: null,
+      args: null,
+      missingColumns,
+    })
     throw new Error(`Missing database columns: ${missingColumns.join(', ')}`)
   }
 
   logApiInfo('db_schema_verified', {
+    event: 'db_schema_verified',
+    operation: 'verifySchema',
     tables: REQUIRED_TABLES,
     demoLeadColumns: DEMO_LEADS_COLUMNS,
   })
 }
 
-export async function verifySchemaWithLogging() {
-  const { getDbClient } = await import('./client')
-  await verifySchema(getDbClient())
+export async function verifySchemaWithLogging(client: Client) {
+  await verifySchema(client)
 }
+
+export type { SqlArgs, ResultSet }
