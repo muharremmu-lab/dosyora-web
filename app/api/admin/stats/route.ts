@@ -9,10 +9,16 @@ import {
   countDemoAccountsByStatus,
   countDemoAccountsToday,
 } from '@/lib/db/demo-leads'
+import { requireAdminApiAuth } from '@/lib/admin-api-auth'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { logApiError } from '@/lib/api-logger'
 
 export async function GET() {
+  const authError = await requireAdminApiAuth()
+  if (authError) {
+    return authError
+  }
+
   try {
     const [
       totalDemoLeads,

@@ -2,6 +2,7 @@ export const runtime = 'nodejs'
 
 import type { NextRequest } from 'next/server'
 
+import { requireAdminApiAuth } from '@/lib/admin-api-auth'
 import { parseAccountStatus, parsePositiveInt } from '@/lib/admin/query'
 import { logApiInfo, logApiWarning } from '@/lib/api-logger'
 import { logDbRouteError } from '@/lib/db/libsql-log'
@@ -79,6 +80,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const authError = await requireAdminApiAuth()
+  if (authError) {
+    return authError
+  }
+
   try {
     const { searchParams } = request.nextUrl
     const page = parsePositiveInt(searchParams.get('page'), 1)

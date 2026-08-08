@@ -2,6 +2,7 @@ export const runtime = 'nodejs'
 
 import type { NextRequest } from 'next/server'
 
+import { requireAdminApiAuth } from '@/lib/admin-api-auth'
 import { logApiError, logApiInfo, logApiWarning } from '@/lib/api-logger'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { createContactMessage, listContactMessages } from '@/lib/db/contact-messages'
@@ -65,6 +66,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const authError = await requireAdminApiAuth()
+  if (authError) {
+    return authError
+  }
+
   try {
     const { searchParams } = request.nextUrl
     const page = parsePositiveInt(searchParams.get('page'), 1)

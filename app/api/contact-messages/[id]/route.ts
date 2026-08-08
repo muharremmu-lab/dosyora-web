@@ -2,6 +2,7 @@ export const runtime = 'nodejs'
 
 import type { NextRequest } from 'next/server'
 
+import { requireAdminApiAuth, requireAdminMutationAuth } from '@/lib/admin-api-auth'
 import { logApiError, logApiWarning } from '@/lib/api-logger'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { getContactMessageById, updateContactMessage } from '@/lib/db/contact-messages'
@@ -17,6 +18,11 @@ function parseId(rawId: string): number | null {
 }
 
 export async function GET(_request: NextRequest, context: RouteContext) {
+  const authError = await requireAdminApiAuth()
+  if (authError) {
+    return authError
+  }
+
   try {
     const { id: rawId } = await context.params
     const id = parseId(rawId)
@@ -38,6 +44,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 }
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
+  const authError = await requireAdminMutationAuth(request)
+  if (authError) {
+    return authError
+  }
+
   try {
     const { id: rawId } = await context.params
     const id = parseId(rawId)
