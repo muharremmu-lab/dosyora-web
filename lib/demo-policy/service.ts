@@ -93,7 +93,19 @@ export async function processDemoRequest(
 
     await incrementIpDemoQuota(context.ipAddress)
 
-    await notificationService.notifyDemoLeadCreated(lead)
+    try {
+      await notificationService.notifyDemoLeadCreated(lead)
+    } catch (error) {
+      logApiError(
+        'demo_notification_failed',
+        {
+          leadId: lead.id,
+          email: normalizedEmail,
+          ip: context.ipAddress,
+        },
+        error,
+      )
+    }
 
     return {
       outcome: 'created',

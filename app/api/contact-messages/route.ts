@@ -37,7 +37,19 @@ export async function POST(request: NextRequest) {
       ...meta,
     })
 
-    await notificationService.notifyContactMessageCreated(message)
+    try {
+      await notificationService.notifyContactMessageCreated(message)
+    } catch (error) {
+      logApiError(
+        'contact_notification_failed',
+        {
+          messageId: message.id,
+          email: message.email,
+          ip: meta.ip_address,
+        },
+        error,
+      )
+    }
 
     logApiInfo('contact_success', {
       ip: meta.ip_address,

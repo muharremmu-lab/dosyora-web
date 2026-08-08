@@ -1,28 +1,31 @@
 import type { ContactMessage, DemoLead } from '@/lib/db/types'
 
-export type NotificationChannel = 'smtp' | 'microsoft_graph' | 'webhook'
-
-export type NotificationPayload =
-  | { type: 'demo_lead_created'; lead: DemoLead }
-  | { type: 'contact_message_created'; message: ContactMessage }
-
-export interface NotificationProvider {
-  readonly channel: NotificationChannel
-  send(payload: NotificationPayload): Promise<void>
-}
+import { getNotificationEnvConfig, isResendSendConfigured } from './env'
+import { createResendNotificationProvider } from './resend-provider'
+import type { NotificationPayload, NotificationProvider } from './types'
 
 class NoopNotificationProvider implements NotificationProvider {
-  readonly channel: NotificationChannel = 'webhook'
+  readonly channel = 'noop' as const
 
   async send(): Promise<void> {
-    // Future integration point — no outbound mail in Sprint 11.
+    // Used when Resend is not configured.
   }
+}
+
+export function createNotificationProviders(): NotificationProvider[] {
+  const config = getNotificationEnvConfig()
+
+  if (isResendSendConfigured(config)) {
+    return [createResendNotificationProvider(config)]
+  }
+
+  return [new NoopNotificationProvider()]
 }
 
 export class NotificationService {
   private readonly providers: NotificationProvider[]
 
-  constructor(providers: NotificationProvider[] = [new NoopNotificationProvider()]) {
+  constructor(providers: NotificationProvider[] = createNotificationProviders()) {
     this.providers = providers
   }
 
@@ -40,3 +43,9 @@ export class NotificationService {
 }
 
 export const notificationService = new NotificationService()
+
+export function createNotificationService(providers?: NotificationProvider[]): NotificationService {
+  return new NotificationService(providers)
+}
+
+export type { NotificationChannel, NotificationPayload, NotificationProvider } from './types'
