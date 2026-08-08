@@ -1,4 +1,5 @@
 export type ProvisionDemoAccountInput = {
+  externalAccountId: string
   email: string
   companyName: string
   contactName: string

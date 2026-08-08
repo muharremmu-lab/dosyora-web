@@ -10,6 +10,7 @@ import { ACTIVATION_TOKEN_TTL_MS } from '@/lib/entitlements/constants'
 import { resolveDemoDocumentLimit } from '@/lib/entitlements/policy'
 import { notificationService } from '@/lib/notifications/service'
 import { provisionDemoAccountSafely } from '@/lib/provisioning/client'
+import { isProductionRuntime } from '@/lib/security/production-env'
 
 import type { DemoRequestContext } from './context'
 import { DEMO_DUPLICATE_EMAIL_MESSAGE } from './messages'
@@ -85,6 +86,7 @@ export async function processDemoRequest(
   }
 
   const provision = await provisionDemoAccountSafely({
+    externalAccountId: String(lead.id),
     email: normalizedEmail,
     companyName: input.company_name,
     contactName: input.contact_name,
@@ -93,6 +95,15 @@ export async function processDemoRequest(
   })
 
   if (provision.provisionStatus === 'FAILED') {
+    return {
+      outcome: 'provision_failed',
+      message: 'Demo hesabı oluşturulamadı. Lütfen daha sonra tekrar deneyin.',
+      status: 500,
+    }
+  }
+
+  if (provision.provisionStatus === 'LOCAL_ONLY' && isProductionRuntime()) {
+    logApiWarning('demo_provision_local_only_blocked', { leadId: lead.id, email: normalizedEmail })
     return {
       outcome: 'provision_failed',
       message: 'Demo hesabı oluşturulamadı. Lütfen daha sonra tekrar deneyin.',

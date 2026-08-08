@@ -77,6 +77,32 @@ describe('processDemoRequest S1 policy', () => {
     )
   })
 
+  it('passes external account id to provisioning client', async () => {
+    const { provisionDemoAccountSafely } = await import('@/lib/provisioning/client')
+
+    await processDemoRequest(
+      {
+        company_name: 'Atlas',
+        contact_name: 'Ayşe',
+        email: 'external@example.com',
+        phone: '+905551112233',
+      },
+      {
+        email: 'external@example.com',
+        ipAddress: '127.0.0.1',
+        userAgent: 'vitest',
+        phone: '+905551112233',
+      },
+    )
+
+    expect(provisionDemoAccountSafely).toHaveBeenCalledWith(
+      expect.objectContaining({
+        externalAccountId: '1',
+        documentLimit: 50,
+      }),
+    )
+  })
+
   it('does not send ready email when provisioning fails', async () => {
     const { provisionDemoAccountSafely } = await import('@/lib/provisioning/client')
     const { notificationService } = await import('@/lib/notifications/service')

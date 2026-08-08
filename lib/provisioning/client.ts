@@ -1,4 +1,5 @@
 import { logApiError, logApiWarning } from '@/lib/api-logger'
+import { isProductionRuntime } from '@/lib/security/production-env'
 
 import type {
   DemoProvisioningClient,
@@ -23,6 +24,7 @@ export class HttpBelgeOkumaProvisioningClient implements DemoProvisioningClient 
         Authorization: `Bearer ${secret}`,
       },
       body: JSON.stringify({
+        external_account_id: input.externalAccountId,
         email: input.email,
         company_name: input.companyName,
         contact_name: input.contactName,
@@ -127,6 +129,10 @@ export class LocalOnlyProvisioningClient implements DemoProvisioningClient {
 export function createDemoProvisioningClient(): DemoProvisioningClient {
   if (isBelgeOkumaProvisioningConfigured()) {
     return new HttpBelgeOkumaProvisioningClient()
+  }
+
+  if (isProductionRuntime()) {
+    throw new Error('BelgeOkuma provisioning is required in production.')
   }
 
   return new LocalOnlyProvisioningClient()
