@@ -1,3 +1,10 @@
+import type {
+  AccountType,
+  ActivationStatus,
+  LifecycleStatus,
+  ProvisionStatus,
+} from '@/lib/entitlements/constants'
+
 export const ACCOUNT_STATUSES = ['ACTIVE', 'DISABLED'] as const
 
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number]
@@ -39,9 +46,23 @@ export type DemoLead = {
   document_limit: number | null
   account_status: AccountStatus | null
   used_documents: number
+  account_type: AccountType | null
+  activation_status: ActivationStatus | null
+  provision_status: ProvisionStatus | null
+  lifecycle_status: LifecycleStatus | null
+  customer_user_id: string | null
+  customer_company_id: string | null
+  activation_token_hash: string | null
+  activation_expires_at: string | null
+  activation_used_at: string | null
+  provisioned_at: string | null
 }
 
-export function getRemainingDocuments(lead: Pick<DemoLead, 'document_limit' | 'used_documents'>): number | null {
+export function getRemainingDocuments(lead: Pick<DemoLead, 'document_limit' | 'used_documents' | 'account_type'>): number | null {
+  if (lead.account_type === 'OWNER' || lead.account_type === 'INTERNAL') {
+    return null
+  }
+
   if (lead.document_limit == null) return null
   return Math.max(0, lead.document_limit - (lead.used_documents ?? 0))
 }
@@ -75,12 +96,21 @@ export type CreateDemoLeadInput = {
 }
 
 export type CreateDemoAccountInput = CreateDemoLeadInput & {
-  document_limit: number
+  document_limit: number | null
+  account_type?: AccountType
+  activation_status?: ActivationStatus
+  activation_token_hash?: string | null
+  activation_expires_at?: string | null
+  provision_status?: ProvisionStatus
+  customer_user_id?: string | null
+  customer_company_id?: string | null
+  provisioned_at?: string | null
 }
 
 export type UpdateDemoLeadInput = {
   document_limit?: number
   account_status?: AccountStatus
+  lifecycle_status?: LifecycleStatus
 }
 
 export type CreateContactMessageInput = {
@@ -111,4 +141,8 @@ export type IpDemoQuota = {
   demo_count: number
   window_started_at: string
   window_expires_at: string
+}
+
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
 }

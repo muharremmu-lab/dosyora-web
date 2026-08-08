@@ -28,9 +28,19 @@ const sampleLead: DemoLead = {
   source: 'website',
   ip_address: '127.0.0.1',
   user_agent: 'vitest',
-  document_limit: 100,
+  document_limit: 50,
   account_status: 'ACTIVE',
   used_documents: 0,
+  account_type: 'DEMO',
+  activation_status: 'PENDING',
+  provision_status: 'LOCAL_ONLY',
+  lifecycle_status: 'ACTIVE',
+  customer_user_id: 'user-1',
+  customer_company_id: 'company-1',
+  activation_token_hash: 'hash',
+  activation_expires_at: '2099-01-01T00:00:00.000Z',
+  activation_used_at: null,
+  provisioned_at: '2026-08-07T12:00:00.000Z',
 }
 
 function createMockClient(behavior: {

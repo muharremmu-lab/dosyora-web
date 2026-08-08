@@ -6,10 +6,24 @@ import { executeWithClient, type SqlArgs } from './execute'
 import { logDbInitError, logDbInitStart, logDbInitSuccess } from './libsql-log'
 import { runMigrationPreflight } from './migration-preflight'
 
-const REQUIRED_TABLES = ['demo_leads', 'contact_messages', 'ip_demo_quota'] as const
+const REQUIRED_TABLES = ['demo_leads', 'contact_messages', 'ip_demo_quota', 'document_consumption_events'] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
-const DEMO_LEADS_COLUMNS = ['document_limit', 'account_status', 'used_documents'] as const
+const DEMO_LEADS_COLUMNS = [
+  'document_limit',
+  'account_status',
+  'used_documents',
+  'account_type',
+  'activation_status',
+  'provision_status',
+  'lifecycle_status',
+  'customer_user_id',
+  'customer_company_id',
+  'activation_token_hash',
+  'activation_expires_at',
+  'activation_used_at',
+  'provisioned_at',
+] as const
 
 function assertKnownTable(table: string) {
   if (!ALLOWED_MIGRATION_TABLES.has(table)) {
@@ -143,6 +157,16 @@ export async function runMigrations(client: Client) {
 )`,
     },
     {
+      operation: 'migration.create.document_consumption_events',
+      sql: `CREATE TABLE IF NOT EXISTS document_consumption_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  demo_lead_id INTEGER NOT NULL,
+  document_ref TEXT NOT NULL UNIQUE,
+  consumed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  status TEXT NOT NULL DEFAULT 'CONSUMED'
+)`,
+    },
+    {
       operation: 'migration.index.demo_leads_status',
       sql: `CREATE INDEX IF NOT EXISTS idx_demo_leads_status ON demo_leads(status)`,
     },
@@ -175,6 +199,22 @@ export async function runMigrations(client: Client) {
     await addColumnIfMissing(client, 'demo_leads', 'document_limit', 'INTEGER')
     await addColumnIfMissing(client, 'demo_leads', 'account_status', 'TEXT')
     await addColumnIfMissing(client, 'demo_leads', 'used_documents', 'INTEGER NOT NULL DEFAULT 0')
+    await addColumnIfMissing(client, 'demo_leads', 'account_type', "TEXT NOT NULL DEFAULT 'DEMO'")
+    await addColumnIfMissing(client, 'demo_leads', 'activation_status', "TEXT NOT NULL DEFAULT 'PENDING'")
+    await addColumnIfMissing(client, 'demo_leads', 'provision_status', "TEXT NOT NULL DEFAULT 'PENDING'")
+    await addColumnIfMissing(client, 'demo_leads', 'lifecycle_status', "TEXT NOT NULL DEFAULT 'ACTIVE'")
+    await addColumnIfMissing(client, 'demo_leads', 'customer_user_id', 'TEXT')
+    await addColumnIfMissing(client, 'demo_leads', 'customer_company_id', 'TEXT')
+    await addColumnIfMissing(client, 'demo_leads', 'activation_token_hash', 'TEXT')
+    await addColumnIfMissing(client, 'demo_leads', 'activation_expires_at', 'TEXT')
+    await addColumnIfMissing(client, 'demo_leads', 'activation_used_at', 'TEXT')
+    await addColumnIfMissing(client, 'demo_leads', 'provisioned_at', 'TEXT')
+
+    await runStatement(
+      client,
+      'migration.index.document_consumption_events_demo_lead_id',
+      `CREATE INDEX IF NOT EXISTS idx_document_consumption_events_demo_lead_id ON document_consumption_events(demo_lead_id)`,
+    )
 
     await runStatement(
       client,

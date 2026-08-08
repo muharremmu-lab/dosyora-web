@@ -4,8 +4,13 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { Button, Card } from '@/components/ui'
-import { ACCOUNT_STATUSES, getRemainingDocuments, type AccountStatus, type DemoLead } from '@/lib/db/types'
-import { ACCOUNT_STATUS_LABELS } from '@/lib/admin/labels'
+import { ACCOUNT_STATUSES, type AccountStatus, type DemoLead } from '@/lib/db/types'
+import {
+  ACCOUNT_STATUS_LABELS,
+  ACCOUNT_TYPE_LABELS,
+  ACTIVATION_STATUS_LABELS,
+  formatDocumentQuotaLabel,
+} from '@/lib/admin/labels'
 import { formInputClassName } from '@/lib/form-styles'
 
 const DOCUMENT_LIMIT_PRESETS = [100, 250, 500, 1000]
@@ -21,9 +26,10 @@ export function DemoLeadDetailForm({ lead }: DemoLeadDetailFormProps) {
   )
   const [documentLimit, setDocumentLimit] = useState(String(lead.document_limit ?? 100))
   const [loading, setLoading] = useState(false)
+  const [archiveLoading, setArchiveLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-
+  const quota = formatDocumentQuotaLabel(lead)
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setLoading(true)
@@ -62,8 +68,38 @@ export function DemoLeadDetailForm({ lead }: DemoLeadDetailFormProps) {
     }
   }
 
-  return (
-    <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+  const handleArchive = async () => {
+    if (!window.confirm('Bu demo kaydını arşivlemek istediğinize emin misiniz?')) {
+      return
+    }
+
+    setArchiveLoading(true)
+    setError(null)
+    setMessage(null)
+
+    try {
+      const response = await fetch(`/api/admin/demo-leads/${lead.id}/archive`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: true }),
+      })
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string }
+        setError(payload.error ?? 'Arşivleme başarısız.')
+        return
+      }
+
+      setMessage('Kayıt arşivlendi.')
+      router.refresh()
+    } catch {
+      setError('Bağlantı hatası.')
+    } finally {
+      setArchiveLoading(false)
+    }
+  }
+
+  return (    <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <Card>
         <h2 className="text-lg font-semibold text-[var(--ds-color-text)]">Demo Hesap Bilgileri</h2>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
@@ -84,8 +120,20 @@ export function DemoLeadDetailForm({ lead }: DemoLeadDetailFormProps) {
             <dd className="font-medium text-[var(--ds-color-text)]">{lead.phone}</dd>
           </div>
           <div>
+            <dt className="text-[var(--ds-color-text-muted)]">Hesap Türü</dt>
+            <dd className="font-medium text-[var(--ds-color-text)]">
+              {lead.account_type ? ACCOUNT_TYPE_LABELS[lead.account_type] : '—'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[var(--ds-color-text-muted)]">Aktivasyon Durumu</dt>
+            <dd className="font-medium text-[var(--ds-color-text)]">
+              {lead.activation_status ? ACTIVATION_STATUS_LABELS[lead.activation_status] : '—'}
+            </dd>
+          </div>
+          <div>
             <dt className="text-[var(--ds-color-text-muted)]">Belge Limiti</dt>
-            <dd className="font-medium text-[var(--ds-color-text)]">{lead.document_limit ?? '—'}</dd>
+            <dd className="font-medium text-[var(--ds-color-text)]">{quota.limit}</dd>
           </div>
           <div>
             <dt className="text-[var(--ds-color-text-muted)]">Kullanılan Belge</dt>
@@ -93,9 +141,7 @@ export function DemoLeadDetailForm({ lead }: DemoLeadDetailFormProps) {
           </div>
           <div>
             <dt className="text-[var(--ds-color-text-muted)]">Kalan Belge</dt>
-            <dd className="font-medium text-[var(--ds-color-text)]">
-              {getRemainingDocuments(lead) ?? '—'}
-            </dd>
+            <dd className="font-medium text-[var(--ds-color-text)]">{quota.remaining}</dd>
           </div>
           <div>
             <dt className="text-[var(--ds-color-text-muted)]">IP</dt>
@@ -169,8 +215,13 @@ export function DemoLeadDetailForm({ lead }: DemoLeadDetailFormProps) {
           <Button type="submit" variant="primary" loading={loading}>
             Kaydet
           </Button>
-        </form>
-      </Card>
+
+          {lead.account_type === 'DEMO' ? (
+            <Button type="button" variant="secondary" loading={archiveLoading} onClick={handleArchive}>
+              Arşivle
+            </Button>
+          ) : null}
+        </form>      </Card>
     </div>
   )
 }

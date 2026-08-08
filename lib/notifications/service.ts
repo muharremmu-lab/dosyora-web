@@ -29,8 +29,8 @@ export class NotificationService {
     this.providers = providers
   }
 
-  async notifyDemoLeadCreated(lead: DemoLead): Promise<void> {
-    await this.dispatch({ type: 'demo_lead_created', lead })
+  async notifyDemoLeadCreated(lead: DemoLead, activationToken?: string): Promise<void> {
+    await this.dispatch({ type: 'demo_lead_created', lead, activationToken })
   }
 
   async notifyContactMessageCreated(message: ContactMessage): Promise<void> {

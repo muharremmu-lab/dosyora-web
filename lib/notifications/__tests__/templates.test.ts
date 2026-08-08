@@ -23,19 +23,30 @@ const sampleLead: DemoLead = {
   source: 'website',
   ip_address: '127.0.0.1',
   user_agent: 'vitest',
-  document_limit: 100,
+  document_limit: 50,
   account_status: 'ACTIVE',
   used_documents: 0,
+  account_type: 'DEMO',
+  activation_status: 'PENDING',
+  provision_status: 'LOCAL_ONLY',
+  lifecycle_status: 'ACTIVE',
+  customer_user_id: null,
+  customer_company_id: null,
+  activation_token_hash: 'hash',
+  activation_expires_at: '2099-01-01T00:00:00.000Z',
+  activation_used_at: null,
+  provisioned_at: null,
 }
 
 describe('notification templates', () => {
-  it('builds applicant email without login credentials', () => {
-    const email = buildDemoApplicantEmail(sampleLead)
+  it('builds ready demo email with activation link and no plaintext password', () => {
+    const email = buildDemoApplicantEmail(sampleLead, 'activation-token-value')
 
-    expect(email.subject).toBe('DOSYORA Demo Talebiniz Alındı')
-    expect(email.text).toContain('Merhaba Ayşe Kaya')
-    expect(email.text).toContain('Firma: Atlas A.Ş.')
-    expect(email.text).not.toMatch(/şifre|kullanıcı adı|müşteri girişi/i)
+    expect(email.subject).toBe('DOSYORA Demo Hesabınız Hazır')
+    expect(email.text).toContain('demo hesabınız hazır')
+    expect(email.text).toContain('50')
+    expect(email.text).toContain('/activate?token=')
+    expect(email.text).not.toMatch(/şifre:|password:/i)
     expect(email.html).not.toContain('<script')
   })
 

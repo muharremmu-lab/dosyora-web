@@ -20,18 +20,26 @@ const sampleLead: DemoLead = {
   source: 'website',
   ip_address: '127.0.0.1',
   user_agent: 'vitest',
-  document_limit: 100,
+  document_limit: 50,
   account_status: 'ACTIVE',
   used_documents: 0,
+  account_type: 'DEMO',
+  activation_status: 'PENDING',
+  provision_status: 'LOCAL_ONLY',
+  lifecycle_status: 'ACTIVE',
+  customer_user_id: 'user-1',
+  customer_company_id: 'company-1',
+  activation_token_hash: 'hash',
+  activation_expires_at: '2099-01-01T00:00:00.000Z',
+  activation_used_at: null,
+  provisioned_at: '2026-08-07T12:00:00.000Z',
 }
 
 const notifyDemoLeadCreated = vi.fn()
 const findDemoAccountByEmail = vi.fn()
 const createDemoAccount = vi.fn()
-const incrementIpDemoQuota = vi.fn()
-const getIpDemoQuota = vi.fn()
-const isIpQuotaExceeded = vi.fn()
-const getDocumentLimitForIpCount = vi.fn()
+const updateDemoLeadProvision = vi.fn()
+const provisionDemoAccountSafely = vi.fn()
 
 vi.mock('@/lib/notifications/service', () => ({
   notificationService: {
@@ -42,28 +50,22 @@ vi.mock('@/lib/notifications/service', () => ({
 vi.mock('@/lib/db/demo-leads', () => ({
   createDemoAccount,
   findDemoAccountByEmail,
+  updateDemoLeadProvision,
 }))
 
-vi.mock('@/lib/db/ip-demo-quota', () => ({
-  getIpDemoQuota,
-  incrementIpDemoQuota,
-  isIpQuotaExceeded,
-  getDocumentLimitForIpCount,
+vi.mock('@/lib/provisioning/client', () => ({
+  provisionDemoAccountSafely,
 }))
 
 describe('processDemoRequest notification isolation', () => {
   beforeEach(() => {
     findDemoAccountByEmail.mockResolvedValue(null)
-    getIpDemoQuota.mockResolvedValue({
-      ip_address: '127.0.0.1',
-      demo_count: 0,
-      window_started_at: '2026-08-07T12:00:00.000Z',
-      window_expires_at: '2026-08-08T12:00:00.000Z',
-    })
-    isIpQuotaExceeded.mockReturnValue(false)
-    getDocumentLimitForIpCount.mockReturnValue(100)
     createDemoAccount.mockResolvedValue(sampleLead)
-    incrementIpDemoQuota.mockResolvedValue(undefined)
+    updateDemoLeadProvision.mockResolvedValue(sampleLead)
+    provisionDemoAccountSafely.mockResolvedValue({
+      result: { userId: 'user-1', companyId: 'company-1' },
+      provisionStatus: 'LOCAL_ONLY',
+    })
     notifyDemoLeadCreated.mockResolvedValue(undefined)
   })
 

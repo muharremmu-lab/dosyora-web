@@ -1,5 +1,10 @@
 import type { ContactMessage, DemoLead } from '@/lib/db/types'
 
+import { buildActivationUrl } from '@/lib/activation/tokens'
+import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
+import { getCustomerLoginUrl } from '@/lib/customer-portal'
+import { siteConfig } from '@/lib/site'
+
 import { escapeHtml, escapeHtmlOrDash } from './escape'
 import { buildDemoLeadAdminFields } from './lead-fields'
 
@@ -55,33 +60,50 @@ function renderFieldListText(fields: Array<{ label: string; value: string | null
   return fields.map((field) => `${field.label}: ${field.value?.trim() || '—'}`).join('\n')
 }
 
-export function buildDemoApplicantEmail(lead: DemoLead): EmailTemplate {
+export function buildDemoApplicantEmail(lead: DemoLead, activationToken?: string): EmailTemplate {
   const contactName = lead.contact_name.trim()
   const companyName = lead.company_name.trim()
+  const loginUrl = getCustomerLoginUrl()
+  const activationUrl = activationToken ? buildActivationUrl(activationToken, siteConfig.url) : null
 
-  const text = [
+  const textLines = [
     `Merhaba ${contactName},`,
     '',
-    'DOSYORA demo talebiniz başarıyla alınmıştır.',
-    '',
-    'Başvurunuzu inceleyerek en kısa sürede sizinle iletişime geçeceğiz.',
+    'DOSYORA demo hesabınız hazır.',
     '',
     `Firma: ${companyName}`,
+    `Ücretsiz belge hakkınız: ${DEMO_DOCUMENT_LIMIT}`,
     '',
-    'DOSYORA\'yı tercih ettiğiniz için teşekkür ederiz.',
-    '',
-    'DOSYORA',
-    'Akıllı Belge ve İş Süreçleri Platformu',
-  ].join('\n')
+  ]
+
+  if (activationUrl) {
+    textLines.push('Hesabınızı kullanmaya başlamak için aşağıdaki bağlantıdan şifrenizi oluşturun:')
+    textLines.push(activationUrl)
+    textLines.push('')
+  }
+
+  textLines.push(`Giriş adresi: ${loginUrl}`)
+  textLines.push('')
+  textLines.push('Sorularınız için info@dosyora.com adresinden bize ulaşabilirsiniz.')
+  textLines.push('')
+  textLines.push('DOSYORA')
+  textLines.push('Akıllı Belge ve İş Süreçleri Platformu')
+
+  const activationHtml = activationUrl
+    ? `<p style="margin:0 0 16px;font-size:15px;line-height:1.6;">Hesabınızı kullanmaya başlamak için aşağıdaki bağlantıdan şifrenizi oluşturun:</p>
+       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;"><a href="${escapeHtml(activationUrl)}" style="color:#0f766e;">Şifremi oluştur</a></p>`
+    : ''
 
   const html = wrapEmailHtml(
-    'DOSYORA Demo Talebiniz Alındı',
+    'DOSYORA Demo Hesabınız Hazır',
     `
       <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Merhaba ${escapeHtml(contactName)},</p>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">DOSYORA demo talebiniz başarıyla alınmıştır.</p>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">Başvurunuzu inceleyerek en kısa sürede sizinle iletişime geçeceğiz.</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">DOSYORA demo hesabınız hazır.</p>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;"><strong>Firma:</strong> ${escapeHtml(companyName)}</p>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">DOSYORA'yı tercih ettiğiniz için teşekkür ederiz.</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;"><strong>Ücretsiz belge hakkınız:</strong> ${DEMO_DOCUMENT_LIMIT}</p>
+      ${activationHtml}
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;"><strong>Giriş adresi:</strong> ${escapeHtml(loginUrl)}</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">Sorularınız için <a href="mailto:info@dosyora.com">info@dosyora.com</a> adresinden bize ulaşabilirsiniz.</p>
       <p style="margin:24px 0 0;font-size:14px;line-height:1.5;color:#374151;">
         <strong>DOSYORA</strong><br />
         Akıllı Belge ve İş Süreçleri Platformu
@@ -90,9 +112,9 @@ export function buildDemoApplicantEmail(lead: DemoLead): EmailTemplate {
   )
 
   return {
-    subject: 'DOSYORA Demo Talebiniz Alındı',
+    subject: 'DOSYORA Demo Hesabınız Hazır',
     html,
-    text,
+    text: textLines.join('\n'),
   }
 }
 

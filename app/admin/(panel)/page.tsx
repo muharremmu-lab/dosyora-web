@@ -6,6 +6,9 @@ import {
 import {
   countAllDemoAccounts,
   countDemoAccountsByStatus,
+  countDemoAccountsLast7Days,
+  countDemoAccountsPendingActivation,
+  countDemoAccountsQuotaExhausted,
   countDemoAccountsToday,
 } from '@/lib/db/demo-leads'
 
@@ -15,6 +18,9 @@ export default async function AdminDashboardPage() {
     activeDemoAccounts,
     todayDemoAccounts,
     disabledDemoAccounts,
+    pendingActivation,
+    quotaExhausted,
+    last7Days,
     totalContactMessages,
     newContactMessages,
   ] = await Promise.all([
@@ -22,6 +28,9 @@ export default async function AdminDashboardPage() {
     countDemoAccountsByStatus('ACTIVE'),
     countDemoAccountsToday(),
     countDemoAccountsByStatus('DISABLED'),
+    countDemoAccountsPendingActivation(),
+    countDemoAccountsQuotaExhausted(),
+    countDemoAccountsLast7Days(),
     countAllContactMessages(),
     countContactMessagesByStatus('NEW'),
   ])
@@ -32,6 +41,11 @@ export default async function AdminDashboardPage() {
         <StatCard label="Toplam Demo Hesabı" value={totalDemoAccounts} />
         <StatCard label="Aktif Hesaplar" value={activeDemoAccounts} />
         <StatCard label="Bugünkü Demo Hesapları" value={todayDemoAccounts} />
+        <StatCard label="Son 7 Gün Yeni Demo" value={last7Days} />
+      </div>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Aktivasyon Bekleyen" value={pendingActivation} />
+        <StatCard label="Kotası Biten Demo" value={quotaExhausted} />
         <StatCard label="Devre Dışı Hesaplar" value={disabledDemoAccounts} />
       </div>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">

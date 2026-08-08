@@ -83,20 +83,20 @@ export class ResendNotificationProvider implements NotificationProvider {
     }
 
     if (payload.type === 'demo_lead_created') {
-      await this.sendDemoLeadCreated(payload.lead)
+      await this.sendDemoLeadCreated(payload.lead, payload.activationToken)
       return
     }
 
     await this.sendContactMessageCreated(payload.message)
   }
 
-  private async sendDemoLeadCreated(lead: DemoLead): Promise<void> {
-    await this.sendApplicantDemoEmail(lead)
+  private async sendDemoLeadCreated(lead: DemoLead, activationToken?: string): Promise<void> {
+    await this.sendApplicantDemoEmail(lead, activationToken)
     await this.sendAdminDemoEmail(lead)
   }
 
-  private async sendApplicantDemoEmail(lead: DemoLead): Promise<void> {
-    const template = buildDemoApplicantEmail(lead)
+  private async sendApplicantDemoEmail(lead: DemoLead, activationToken?: string): Promise<void> {
+    const template = buildDemoApplicantEmail(lead, activationToken)
 
     try {
       await sendResendEmail(this.client!, this.config.emailFrom!, {

@@ -78,16 +78,15 @@ export function DemoForm() {
         className="rounded-[var(--ds-radius-lg)] border border-[color:color-mix(in_srgb,var(--ds-color-success)_35%,var(--ds-color-border))] bg-[color:color-mix(in_srgb,var(--ds-color-success)_6%,var(--ds-color-surface))] p-8 text-center"
       >
         <h2 className="text-xl font-semibold text-[var(--ds-color-text)]">
-          Demo talebiniz başarıyla alındı.
+          DOSYORA demo hesabınız hazır.
         </h2>
         <p className="mt-4 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-          Bilgileriniz bize ulaştı. Ekibimiz en kısa sürede sizinle iletişime geçecektir.
+          {documentLimit
+            ? `${documentLimit} ücretsiz belge hakkınız tanımlandı.`
+            : 'Demo hesabınız oluşturuldu.'}{' '}
+          Aktivasyon bağlantısı e-posta adresinize gönderildi; bağlantıya tıklayarak şifrenizi
+          belirleyip giriş yapabilirsiniz.
         </p>
-        {documentLimit ? (
-          <p className="mt-3 text-sm text-[var(--ds-color-text-muted)]">
-            Demo kotanız: {documentLimit} belge
-          </p>
-        ) : null}
       </div>
     )
   }

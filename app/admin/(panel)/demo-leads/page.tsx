@@ -2,9 +2,15 @@ import Link from 'next/link'
 
 import { AdminShell, Pagination, StatusBadge } from '@/components/admin'
 import { Card } from '@/components/ui'
-import { ACCOUNT_STATUSES, getRemainingDocuments } from '@/lib/db/types'
+import { ACCOUNT_STATUSES } from '@/lib/db/types'
 import { listDemoLeads } from '@/lib/db/demo-leads'
-import { ACCOUNT_STATUS_LABELS, formatDateTime } from '@/lib/admin/labels'
+import {
+  ACCOUNT_STATUS_LABELS,
+  ACCOUNT_TYPE_LABELS,
+  ACTIVATION_STATUS_LABELS,
+  formatDateTime,
+  formatDocumentQuotaLabel,
+} from '@/lib/admin/labels'
 import { parseAccountStatus, parsePositiveInt } from '@/lib/admin/query'
 import { formInputClassName } from '@/lib/form-styles'
 
@@ -81,22 +87,24 @@ export default async function DemoLeadsPage({ searchParams }: DemoLeadsPageProps
               <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">Yetkili</th>
               <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">E-posta</th>
               <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">Telefon</th>
+              <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">Hesap Türü</th>
               <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">Belge Limiti</th>
               <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">Kullanılan Belge</th>
               <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">Kalan Belge</th>
               <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">Hesap Durumu</th>
+              <th className="px-4 py-3 font-semibold text-[var(--ds-color-text)]">Aktivasyon</th>
             </tr>
           </thead>
           <tbody>
             {result.items.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-4 py-8 text-center text-[var(--ds-color-text-muted)]">
+                <td colSpan={11} className="px-4 py-8 text-center text-[var(--ds-color-text-muted)]">
                   Kayıt bulunamadı.
                 </td>
               </tr>
             ) : (
               result.items.map((lead) => {
-                const remaining = getRemainingDocuments(lead)
+                const quota = formatDocumentQuotaLabel(lead)
 
                 return (
                   <tr key={lead.id} className="border-b border-[var(--ds-color-border)] last:border-b-0">
@@ -114,17 +122,23 @@ export default async function DemoLeadsPage({ searchParams }: DemoLeadsPageProps
                     <td className="px-4 py-3 text-[var(--ds-color-text)]">{lead.contact_name}</td>
                     <td className="px-4 py-3 text-[var(--ds-color-text-muted)]">{lead.email}</td>
                     <td className="px-4 py-3 text-[var(--ds-color-text-muted)]">{lead.phone}</td>
-                    <td className="px-4 py-3 text-[var(--ds-color-text)]">{lead.document_limit ?? '—'}</td>
-                    <td className="px-4 py-3 text-[var(--ds-color-text)]">{lead.used_documents}</td>
                     <td className="px-4 py-3 text-[var(--ds-color-text)]">
-                      {remaining ?? '—'}
+                      {lead.account_type ? ACCOUNT_TYPE_LABELS[lead.account_type] : '—'}
                     </td>
+                    <td className="px-4 py-3 text-[var(--ds-color-text)]">{quota.limit}</td>
+                    <td className="px-4 py-3 text-[var(--ds-color-text)]">{lead.used_documents}</td>
+                    <td className="px-4 py-3 text-[var(--ds-color-text)]">{quota.remaining}</td>
                     <td className="px-4 py-3">
                       {lead.account_status ? (
                         <StatusBadge kind="account" status={lead.account_status} />
                       ) : (
                         '—'
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-[var(--ds-color-text-muted)]">
+                      {lead.activation_status
+                        ? ACTIVATION_STATUS_LABELS[lead.activation_status]
+                        : '—'}
                     </td>
                   </tr>
                 )

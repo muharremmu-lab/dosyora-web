@@ -5,7 +5,7 @@ import { createPageMetadata } from '@/lib/metadata'
 export const metadata = createPageMetadata({
   title: 'Demo Talebi',
   description:
-    'DOSYORA demo hesabınızı otomatik oluşturun. Varsayılan 100 belge okuma hakkı tanımlanır.',
+    'DOSYORA demo hesabınızı otomatik oluşturun. 50 ücretsiz belge okuma hakkı tanımlanır.',
   path: '/demo',
 })
 
@@ -24,9 +24,9 @@ export default function DemoPage() {
                 İlk kullanıcılarımız arasına katılın.
               </p>
               <p className="mt-2 text-base leading-relaxed text-[var(--ds-color-text-muted)]">
-                Demo hesabınız otomatik oluşturulur; varsayılan{' '}
-                <strong className="font-semibold text-[var(--ds-color-text)]">100 belge okuma hakkı</strong>{' '}
-                tanımlanır.
+                Demo hesabınız otomatik oluşturulur;{' '}
+                <strong className="font-semibold text-[var(--ds-color-text)]">50 ücretsiz belge okuma hakkı</strong>{' '}
+                tanımlanır. Aktivasyon bağlantısı e-posta adresinize gönderilir.
               </p>
             </div>
 
