@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { Button } from '@/components/ui'
 import { formInputClassName } from '@/lib/form-styles'
-import { getCustomerLoginUrl } from '@/lib/customer-portal'
+import { getCustomerLoginUrl, getCustomerLoginUnavailableMessage } from '@/lib/customer-portal'
 
 type ActivateFormProps = {
   token: string
@@ -58,19 +58,24 @@ export function ActivateForm({ token, email, companyName }: ActivateFormProps) {
 
   if (completed) {
     const loginUrl = getCustomerLoginUrl()
+    const loginUnavailable = loginUrl === '/login-unavailable'
 
     return (
       <div className="mx-auto max-w-lg rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] p-8">
         <h1 className="text-2xl font-semibold text-[var(--ds-color-text)]">Hesabınız aktive edildi</h1>
         <p className="mt-3 text-sm text-[var(--ds-color-text-muted)]">
-          Artık DOSYORA demo hesabınıza giriş yapabilirsiniz.
+          {loginUnavailable
+            ? getCustomerLoginUnavailableMessage()
+            : 'Artık DOSYORA demo hesabınıza giriş yapabilirsiniz.'}
         </p>
-        <Link
-          href={loginUrl}
-          className="mt-6 inline-flex rounded-[var(--ds-radius-md)] bg-[var(--ds-color-primary)] px-4 py-2 text-sm font-medium text-[var(--ds-color-secondary)]"
-        >
-          Giriş yap
-        </Link>
+        {!loginUnavailable ? (
+          <Link
+            href={loginUrl}
+            className="mt-6 inline-flex rounded-[var(--ds-radius-md)] bg-[var(--ds-color-primary)] px-4 py-2 text-sm font-medium text-[var(--ds-color-secondary)]"
+          >
+            Giriş yap
+          </Link>
+        ) : null}
       </div>
     )
   }

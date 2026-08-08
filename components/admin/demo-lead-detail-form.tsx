@@ -9,6 +9,7 @@ import {
   ACCOUNT_STATUS_LABELS,
   ACCOUNT_TYPE_LABELS,
   ACTIVATION_STATUS_LABELS,
+  PROVISION_STATUS_LABELS,
   formatDocumentQuotaLabel,
 } from '@/lib/admin/labels'
 import { formInputClassName } from '@/lib/form-styles'
@@ -142,6 +143,24 @@ export function DemoLeadDetailForm({ lead }: DemoLeadDetailFormProps) {
           <div>
             <dt className="text-[var(--ds-color-text-muted)]">Kalan Belge</dt>
             <dd className="font-medium text-[var(--ds-color-text)]">{quota.remaining}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--ds-color-text-muted)]">Provisioning Durumu</dt>
+            <dd className="font-medium text-[var(--ds-color-text)]">
+              {lead.provision_status ? PROVISION_STATUS_LABELS[lead.provision_status] ?? lead.provision_status : '—'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[var(--ds-color-text-muted)]">BelgeOkumaWeb User ID</dt>
+            <dd className="break-all font-medium text-[var(--ds-color-text)]">{lead.customer_user_id ?? '—'}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--ds-color-text-muted)]">BelgeOkumaWeb Company ID</dt>
+            <dd className="break-all font-medium text-[var(--ds-color-text)]">{lead.customer_company_id ?? '—'}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--ds-color-text-muted)]">Provisioned At</dt>
+            <dd className="font-medium text-[var(--ds-color-text)]">{lead.provisioned_at ?? '—'}</dd>
           </div>
           <div>
             <dt className="text-[var(--ds-color-text-muted)]">IP</dt>

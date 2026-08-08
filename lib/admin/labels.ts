@@ -19,6 +19,13 @@ export const ACTIVATION_STATUS_LABELS: Record<ActivationStatus, string> = {
   EXPIRED: 'Süresi Doldu',
 }
 
+export const PROVISION_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Provisioning Bekliyor',
+  PROVISIONED: 'BelgeOkumaWeb Provisioned',
+  LOCAL_ONLY: 'Yalnızca Yerel',
+  FAILED: 'Provisioning Başarısız',
+}
+
 export function formatDocumentQuotaLabel(lead: {
   account_type: AccountType | null
   document_limit: number | null
