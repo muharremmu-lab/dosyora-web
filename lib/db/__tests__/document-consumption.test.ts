@@ -19,11 +19,22 @@ describe('document consumption idempotency', () => {
   })
 
   it('consumes quota once for a new document ref', async () => {
-    const { consumeDocumentQuota } = await import('@/lib/db/document-consumption')
-    const result = await consumeDocumentQuota({ demoLeadId: 1, documentRef: 'doc-123' })
+    dbQueryOne
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ used_documents: 1 })
 
-    expect(result).toEqual({ consumed: true, duplicate: false })
-    expect(dbRun).toHaveBeenCalledOnce()
+    const { consumeDocumentQuota } = await import('@/lib/db/document-consumption')
+    const result = await consumeDocumentQuota({
+      account: {
+        id: 1,
+        account_type: 'DEMO',
+        document_limit: 50,
+        used_documents: 0,
+      },
+      documentRef: 'doc-123',
+    })
+
+    expect(result).toEqual({ consumed: true, duplicate: false, blocked: false })
   })
 
   it('does not double-consume the same document ref', async () => {
@@ -36,10 +47,17 @@ describe('document consumption idempotency', () => {
     })
 
     const { consumeDocumentQuota } = await import('@/lib/db/document-consumption')
-    const result = await consumeDocumentQuota({ demoLeadId: 1, documentRef: 'doc-123' })
+    const result = await consumeDocumentQuota({
+      account: {
+        id: 1,
+        account_type: 'DEMO',
+        document_limit: 50,
+        used_documents: 1,
+      },
+      documentRef: 'doc-123',
+    })
 
-    expect(result).toEqual({ consumed: false, duplicate: true })
+    expect(result).toEqual({ consumed: false, duplicate: true, blocked: false })
     expect(dbInsertReturningId).not.toHaveBeenCalled()
-    expect(dbRun).not.toHaveBeenCalled()
   })
 })
