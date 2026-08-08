@@ -40,6 +40,10 @@ export function checkRateLimit(key: string, config: RateLimitConfig): RateLimitR
   }
 }
 
+export function clearRateLimit(key: string): void {
+  store.delete(key)
+}
+
 export const FORM_RATE_LIMIT: RateLimitConfig = {
   limit: 5,
   windowMs: 15 * 60 * 1000,

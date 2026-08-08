@@ -1,29 +1,80 @@
+import { timingSafeEqual } from 'node:crypto'
+
 import { cookies } from 'next/headers'
 
+import {
+  createSignedSessionToken,
+  verifySignedSessionToken,
+} from '@/lib/security/signed-session'
+import {
+  getAdminCredentials,
+  getAdminSessionSecret,
+  isAdminProductionConfigValid,
+} from '@/lib/security/production-env'
+
 export const ADMIN_SESSION_COOKIE = 'dosyora_admin_session'
+export const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
 
-function getSessionSecret(): string {
-  return process.env.ADMIN_SESSION_SECRET || 'dosyora-dev-session-secret'
-}
+function safeEqual(left: string, right: string): boolean {
+  const leftBuffer = Buffer.from(left)
+  const rightBuffer = Buffer.from(right)
 
-export function getAdminCredentials() {
-  return {
-    username: process.env.ADMIN_USERNAME || 'admin',
-    password: process.env.ADMIN_PASSWORD || 'dosyora-admin',
+  if (leftBuffer.length !== rightBuffer.length) {
+    return false
   }
+
+  return timingSafeEqual(leftBuffer, rightBuffer)
 }
 
-export function createAdminSessionToken(): string {
-  return getSessionSecret()
+export function createAdminSessionToken(): string | null {
+  const secret = getAdminSessionSecret()
+  if (!secret) {
+    return null
+  }
+
+  return createSignedSessionToken(secret)
+}
+
+export function verifyAdminSessionToken(token: string | undefined | null): boolean {
+  if (!token) {
+    return false
+  }
+
+  const secret = getAdminSessionSecret()
+  if (!secret) {
+    return false
+  }
+
+  if (token === secret) {
+    return false
+  }
+
+  return verifySignedSessionToken(token, secret)
 }
 
 export async function isAdminAuthenticated(): Promise<boolean> {
+  if (!isAdminProductionConfigValid()) {
+    return false
+  }
+
   const cookieStore = await cookies()
   const session = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  return session === createAdminSessionToken()
+  return verifyAdminSessionToken(session)
 }
 
 export function validateAdminCredentials(username: string, password: string): boolean {
+  if (!isAdminProductionConfigValid()) {
+    return false
+  }
+
   const credentials = getAdminCredentials()
-  return username === credentials.username && password === credentials.password
+  if (!credentials) {
+    return false
+  }
+
+  return safeEqual(username, credentials.username) && safeEqual(password, credentials.password)
+}
+
+export function isAdminAuthConfigured(): boolean {
+  return isAdminProductionConfigValid() && Boolean(getAdminSessionSecret())
 }
