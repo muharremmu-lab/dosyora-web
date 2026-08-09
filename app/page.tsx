@@ -1,24 +1,13 @@
 import {
-  AccountingProgramsSection,
   AnimatedCtaBand,
   AudienceSection,
-  ComingSoonSection,
-  DocumentFlowSection,
-  DocumentTypesSection,
   FaqSection,
   HeroSection,
-  HeroTrustBadges,
+  HomeFeaturesSection,
+  HomeV123Section,
   HowItWorksSection,
-  ModulesSection,
-  PreviewCtaBand,
-  ProductScreensSection,
-  RoadmapSection,
   SiteFooter,
   SiteHeader,
-  StatsSection,
-  TestimonialsSection,
-  TrustLogosSection,
-  TrustSection,
   WhyDosyoraSection,
 } from '@/components/marketing'
 import { createPageMetadata } from '@/lib/metadata'
@@ -36,23 +25,12 @@ export default function HomePage() {
       <SiteHeader />
       <main>
         <HeroSection />
-        <HeroTrustBadges />
-        <PreviewCtaBand />
-        <ProductScreensSection />
-        <DocumentFlowSection />
         <HowItWorksSection />
-        <ModulesSection />
-        <ComingSoonSection />
-        <RoadmapSection />
-        <AudienceSection />
-        <DocumentTypesSection />
+        <HomeFeaturesSection />
+        <HomeV123Section />
         <WhyDosyoraSection />
-        <AccountingProgramsSection />
-        <StatsSection />
-        <TestimonialsSection />
-        <TrustLogosSection />
+        <AudienceSection />
         <FaqSection />
-        <TrustSection />
         <AnimatedCtaBand />
       </main>
       <SiteFooter />

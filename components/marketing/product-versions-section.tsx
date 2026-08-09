@@ -1,4 +1,4 @@
-import { Badge, Card, SectionContainer } from '@/components/ui'
+import { Badge, SectionContainer } from '@/components/ui'
 import { cn } from '@/lib/design-system/cn'
 import {
   productVersionStatusVariant,
@@ -25,7 +25,7 @@ function ProductVersionBlock({
       <div>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <h2 className="text-xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-2xl">
-            {version.title}
+            {version.title} — {version.subtitle}
           </h2>
           <Badge variant={productVersionStatusVariant[version.status]} className="text-[10px] uppercase">
             {version.statusLabel}
@@ -34,16 +34,14 @@ function ProductVersionBlock({
 
         <p className="text-base leading-relaxed text-[var(--ds-color-text-muted)]">{version.description}</p>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <ul className="mt-6 space-y-2">
           {version.features.map((feature) => (
-            <Card key={feature.title} className="py-4">
-              <h3 className="text-sm font-semibold text-[var(--ds-color-text)]">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-                {feature.description}
-              </p>
-            </Card>
+            <li key={feature} className="flex items-start gap-2 text-sm text-[var(--ds-color-text)]">
+              <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[var(--ds-color-highlight)]" />
+              {feature}
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
       <ProductVersionMockup version={version.id} className="w-full" />

@@ -3,7 +3,7 @@ export const siteConfig = {
   title: 'Dosyora',
   seoTitle: 'Dosyora | Yapay Zeka Destekli Belge Okuma ve Dijital Arşiv',
   description:
-    'Muhasebe belgelerinizi, faturalarınızı, fişlerinizi ve ticari evraklarınızı yapay zeka ile okuyun, arşivleyin ve yönetin.',
+    'Fiş, fatura, poliçe ve diğer belgelerinizi yapay zekâ ile okuyun; kontrol edin ve muhasebede kullanılabilir veriye dönüştürün.',
   keywords: [
     'belge okuma',
     'yapay zeka',
@@ -41,11 +41,10 @@ export const siteRoutes = [
 
 export const mainNavItems = [
   { path: '/urun', label: 'Ürün' },
-  { path: '/ozellikler', label: 'Özellikler' },
+  { path: '/#nasil-calisir', label: 'Nasıl Çalışır?' },
   { path: '/cozumler', label: 'Çözümler' },
-  { path: '/blog', label: 'Blog' },
+  { path: '/#platform-v123', label: 'V1 / V2 / V3' },
   { path: '/hakkimizda', label: 'Hakkımızda' },
-  { path: '/iletisim', label: 'İletişim' },
 ] as const
 
 export const footerNavItems = [

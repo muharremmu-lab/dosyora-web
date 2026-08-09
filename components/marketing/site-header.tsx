@@ -65,7 +65,7 @@ export function SiteHeader() {
             variant="outline"
             {...(customerLoginExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           >
-            Müşteri Girişi
+            Giriş
           </ButtonLink>
           <ButtonLink href="/demo" variant="primary">
             Demo Talep Et
@@ -106,7 +106,7 @@ export function SiteHeader() {
               className="mt-3 w-full"
               {...(customerLoginExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
-              Müşteri Girişi
+              Giriş
             </ButtonLink>
             <ButtonLink href="/demo" variant="primary" className="mt-3 w-full">
               Demo Talep Et

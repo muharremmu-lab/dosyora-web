@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { ButtonLink, SectionContainer } from '@/components/ui'
+import { footerProductFamily, homepageDemoLimitLabel } from '@/lib/homepage-content'
 import { footerNavItems, siteConfig, socialLinks } from '@/lib/site'
 
 function SocialIcon({ label, className }: { label: string; className?: string }) {
@@ -38,30 +39,33 @@ export function SiteFooter() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-[var(--ds-color-border)] bg-[var(--ds-color-surface)]">
+    <footer className="border-t border-[var(--ds-color-border)] bg-[var(--ds-color-primary-deep)] text-[var(--ds-color-secondary)]">
       <SectionContainer className="py-[var(--ds-space-12)] sm:py-[var(--ds-space-16)]">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr]">
           <div className="max-w-md">
             <Link
               href="/"
-              className="text-lg font-bold tracking-tight text-[var(--ds-color-primary)] ds-transition-hover hover:opacity-80"
+              className="text-lg font-bold tracking-tight text-[var(--ds-color-secondary)] ds-transition-hover hover:opacity-80"
               aria-label={`${siteConfig.name} ana sayfa`}
             >
               {siteConfig.name.toUpperCase()}
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
+            <p className="mt-3 text-sm leading-relaxed text-[color:color-mix(in_srgb,var(--ds-color-secondary)_75%,transparent)]">
+              Belgeden veriye. Veriden iş sürecine.
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-[color:color-mix(in_srgb,var(--ds-color-secondary)_65%,transparent)]">
               {siteConfig.description}
             </p>
           </div>
 
-          <nav aria-label="Footer bağlantıları">
-            <p className="text-sm font-semibold text-[var(--ds-color-text)]">Dosyora</p>
+          <nav aria-label="Ürün ailesi">
+            <p className="text-sm font-semibold text-[var(--ds-color-secondary)]">Ürün Ailesi</p>
             <ul className="mt-4 space-y-2">
-              {footerNavItems.map((item) => (
-                <li key={item.path}>
+              {footerProductFamily.map((item) => (
+                <li key={item.label}>
                   <Link
                     href={item.path}
-                    className="text-sm text-[var(--ds-color-text-muted)] ds-transition-hover hover:text-[var(--ds-color-text)]"
+                    className="text-sm text-[color:color-mix(in_srgb,var(--ds-color-secondary)_75%,transparent)] ds-transition-hover hover:text-[var(--ds-color-secondary)]"
                   >
                     {item.label}
                   </Link>
@@ -71,8 +75,23 @@ export function SiteFooter() {
           </nav>
 
           <div>
-            <p className="text-sm font-semibold text-[var(--ds-color-text)]">Sosyal Medya</p>
-            <ul className="mt-4 flex flex-wrap gap-3" aria-label="Sosyal medya bağlantıları">
+            <nav aria-label="Footer bağlantıları">
+              <p className="text-sm font-semibold text-[var(--ds-color-secondary)]">Kurumsal</p>
+              <ul className="mt-4 space-y-2">
+                {footerNavItems.map((item) => (
+                  <li key={item.path}>
+                    <Link
+                      href={item.path}
+                      className="text-sm text-[color:color-mix(in_srgb,var(--ds-color-secondary)_75%,transparent)] ds-transition-hover hover:text-[var(--ds-color-secondary)]"
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <ul className="mt-6 flex flex-wrap gap-3" aria-label="Sosyal medya bağlantıları">
               {socialLinks.map((item) => (
                 <li key={item.label}>
                   <a
@@ -80,7 +99,7 @@ export function SiteFooter() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`${item.label} profili`}
-                    className="inline-flex size-10 items-center justify-center rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] text-[var(--ds-color-text-muted)] ds-transition-hover hover:border-[var(--ds-color-primary)] hover:text-[var(--ds-color-primary)]"
+                    className="inline-flex size-10 items-center justify-center rounded-[var(--ds-radius-md)] border border-[color:color-mix(in_srgb,var(--ds-color-secondary)_25%,transparent)] text-[color:color-mix(in_srgb,var(--ds-color-secondary)_75%,transparent)] ds-transition-hover hover:border-[var(--ds-color-secondary)] hover:text-[var(--ds-color-secondary)]"
                   >
                     <SocialIcon label={item.label} className="size-4" />
                   </a>
@@ -90,18 +109,20 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-10 rounded-[var(--ds-radius-xl)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-alt)] px-6 py-8 text-center sm:px-10">
-          <p className="text-lg font-semibold text-[var(--ds-color-text)]">Hemen Demo Talep Edin</p>
-          <p className="mt-2 text-sm text-[var(--ds-color-text-muted)]">
-            Demo hesabınız otomatik oluşturulur; varsayılan 100 belge okuma hakkı tanımlanır.
+        <div className="mt-10 rounded-[var(--ds-radius-xl)] border border-[color:color-mix(in_srgb,var(--ds-color-secondary)_18%,transparent)] bg-[color:color-mix(in_srgb,var(--ds-color-secondary)_6%,transparent)] px-6 py-8 text-center sm:px-10">
+          <p className="text-lg font-semibold text-[var(--ds-color-secondary)]">
+            {homepageDemoLimitLabel} ile Ücretsiz Deneyin
           </p>
-          <ButtonLink href="/demo" variant="primary" className="mt-5 px-6 py-2.5">
+          <p className="mt-2 text-sm text-[color:color-mix(in_srgb,var(--ds-color-secondary)_75%,transparent)]">
+            Demo başvurunuz incelenir; onaylanan firmalara {homepageDemoLimitLabel.toLowerCase()} okuma hakkı tanımlanır.
+          </p>
+          <ButtonLink href="/demo" variant="secondary" className="mt-5 px-6 py-2.5">
             Demo Talep Et
           </ButtonLink>
         </div>
 
-        <div className="mt-10 border-t border-[var(--ds-color-border)] pt-6">
-          <p className="text-xs text-[var(--ds-color-text-muted)]">
+        <div className="mt-10 border-t border-[color:color-mix(in_srgb,var(--ds-color-secondary)_18%,transparent)] pt-6">
+          <p className="text-xs text-[color:color-mix(in_srgb,var(--ds-color-secondary)_65%,transparent)]">
             © {year} {siteConfig.name}. Tüm hakları saklıdır.
           </p>
         </div>

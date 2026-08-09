@@ -1,62 +1,54 @@
 import { Badge, ButtonLink, SectionContainer } from '@/components/ui'
+import { documentTypeChips, homepageDemoLimitLabel } from '@/lib/homepage-content'
 
 import { HeroAiDemo } from './hero-ai-demo'
-
-const floatingBadges = [
-  { label: 'AI Okuma', className: 'left-2 top-6 ds-animate-float' },
-  { label: 'Excel Aktarım', className: 'right-2 top-16 ds-animate-float-delayed' },
-  { label: 'Güvenli Arşiv', className: 'bottom-10 left-6 ds-animate-float-delayed' },
-]
 
 export function HeroSection() {
   return (
     <SectionContainer
-      className="pb-[var(--ds-space-16)] pt-[var(--ds-space-12)] sm:pb-[var(--ds-space-24)] sm:pt-[var(--ds-space-16)]"
+      className="pb-[var(--ds-space-12)] pt-[var(--ds-space-12)] sm:pb-[var(--ds-space-16)] sm:pt-[var(--ds-space-16)]"
       aria-labelledby="hero-heading"
     >
       <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12 xl:gap-16">
-        <div className="ds-animate-slide-up max-w-xl">
-          <Badge variant="primary" className="mb-5 px-3 py-1 text-xs">
-            Yapay Zekâ Destekli
-          </Badge>
+        <div className="max-w-xl">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-[var(--ds-color-text-muted)]">
+            Belge Okuma &amp; Muhasebe Çözümleri
+          </p>
 
           <h1
             id="hero-heading"
-            className="text-[2rem] font-bold leading-[1.12] tracking-tight text-[var(--ds-color-text)] sm:text-[2.5rem] lg:text-[2.75rem]"
+            className="text-[2rem] font-bold leading-[1.08] tracking-tight text-[var(--ds-color-text)] sm:text-[2.65rem] lg:text-[3rem]"
           >
-            Muhasebe belgelerinizi yapay zekâ ile okuyun, arşivleyin ve muhasebe programınıza
-            aktarın.
+            BELGELERİNİZİ YÜKLEYİN.
+            <br />
+            <span className="text-[var(--ds-color-highlight)]">VERİNİZ HAZIR OLSUN.</span>
           </h1>
 
-          <div className="mt-5 max-w-lg space-y-3 text-base leading-relaxed text-[var(--ds-color-text-muted)] sm:text-lg">
-            <p>
-              DOSYORA; fatura, fiş, serbest meslek makbuzu, ekstre, gider pusulası ve diğer ticari
-              belgeleri otomatik okur.
-            </p>
-            <p>Belgeleri güvenli şekilde arşivler.</p>
-            <p>Muhasebe programlarına uygun Excel aktarım şablonları üretir.</p>
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-[var(--ds-color-text-muted)] sm:text-lg">
+            Fiş, fatura, poliçe, uçak bileti, noter belgesi ve diğer masraf belgelerinizi tek tek
+            okumakla uğraşmayın. DOSYORA belgelerinizi yapay zekâ ile okur, kontrol etmenizi sağlar
+            ve kullanılabilir veriye dönüştürür.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-2" aria-label="Desteklenen belge türleri">
+            {documentTypeChips.map((chip) => (
+              <Badge key={chip} variant="primary" className="px-3 py-1 text-xs font-medium">
+                {chip}
+              </Badge>
+            ))}
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <ButtonLink href="/demo" variant="primary" className="px-5 py-2.5" aria-label="Demo talep et">
-              Demo Talep Et
+            <ButtonLink href="/demo" variant="primary" className="px-6 py-3 text-base font-semibold">
+              {homepageDemoLimitLabel} Ücretsiz Deneyin
             </ButtonLink>
-            <ButtonLink href="/urun" variant="outline" className="px-5 py-2.5" aria-label="Ürünü incele">
-              Ürünü İncele
+            <ButtonLink href="/#nasil-calisir" variant="outline" className="px-6 py-3 text-base">
+              Nasıl Çalışır?
             </ButtonLink>
           </div>
         </div>
 
-        <div className="relative ds-animate-fade lg:justify-self-end" style={{ animationDelay: '120ms' }}>
-          {floatingBadges.map((badge) => (
-            <Badge
-              key={badge.label}
-              variant="primary"
-              className={`absolute hidden px-2.5 py-1 text-[10px] shadow-[var(--ds-shadow-sm)] sm:inline-flex ${badge.className}`}
-            >
-              {badge.label}
-            </Badge>
-          ))}
+        <div className="relative lg:justify-self-end">
           <HeroAiDemo className="w-full max-w-xl lg:max-w-none" />
         </div>
       </div>
