@@ -8,6 +8,8 @@
 
   /* Colors */
   --ds-color-primary: #0b1f3b;
+  --ds-color-primary-deep: #071428;
+  --ds-color-highlight: #1a6fd4;
   --ds-color-secondary: #ffffff;
   --ds-color-accent: #1ecad3;
   --ds-color-success: #16a34a;

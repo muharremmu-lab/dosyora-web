@@ -50,7 +50,7 @@ export function HeroAiDemo({ className }: { className?: string }) {
         <span className="ml-2 text-xs text-[var(--ds-color-text-muted)]">Belge Okuma · AI</span>
       </div>
 
-      <div className="grid min-h-[340px] grid-cols-[4.5rem_1fr] sm:min-h-[380px]">
+      <div className="grid min-h-[300px] grid-cols-[4.5rem_1fr] sm:min-h-[320px]">
         <aside className="border-r border-[var(--ds-color-border)] bg-[var(--ds-color-surface-alt)] p-3">
           <div className="flex size-9 items-center justify-center rounded-[var(--ds-radius-md)] bg-[var(--ds-color-primary)] text-[var(--ds-color-secondary)]">
             <Icon icon={Cpu} size="sm" />
@@ -59,7 +59,7 @@ export function HeroAiDemo({ className }: { className?: string }) {
 
         <div className="flex flex-col p-4 sm:p-5">
           <div className="mb-4 flex items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-[var(--ds-color-text)]">Fatura · OCR</p>
+            <p className="text-sm font-semibold text-[var(--ds-color-text)]">Fatura · Yapay Zekâ ile Okuma</p>
             <span
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-medium',

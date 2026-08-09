@@ -7,10 +7,9 @@ type ProductVersionMockupProps = {
 }
 
 const mockupLabels: Record<ProductVersion['id'], { title: string; subtitle: string }> = {
-  v1: { title: 'Belge Okuma', subtitle: 'OCR · Arşiv · Excel Aktarım' },
-  v2: { title: 'Akıllı Ofis', subtitle: 'CRM · Görevler · Takvim' },
-  v3: { title: 'Belge Üretme', subtitle: 'Teklif · Sözleşme · Mutabakat' },
-  v4: { title: 'Sektörel Çözümler', subtitle: 'Mali Müşavir · Avukat · Sağlık' },
+  v1: { title: 'Belge Okuma & Muhasebe', subtitle: 'Okuma · Kontrol · Excel' },
+  v2: { title: 'Akıllı Ofis', subtitle: 'Arşiv · Üretim · İlişkilendirme' },
+  v3: { title: 'Sektörel Çözümler', subtitle: 'KDV İade · Filo · Hakediş' },
 }
 
 export function ProductVersionMockup({ version, className }: ProductVersionMockupProps) {

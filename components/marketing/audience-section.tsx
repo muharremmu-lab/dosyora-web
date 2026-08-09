@@ -1,50 +1,32 @@
-import { Briefcase, Building2, Calculator, UserRound } from 'lucide-react'
+import { Briefcase, Building2, Calculator, Landmark } from 'lucide-react'
 
 import { Card, Icon, SectionContainer } from '@/components/ui'
 import type { LucideIcon } from '@/components/ui/icon'
+import { audienceCards, homepageSectionHeadMb, homepageSectionY } from '@/lib/homepage-content'
 
-const audienceItems: { title: string; description: string; icon: LucideIcon }[] = [
-  {
-    title: 'Mali Müşavirler',
-    description: 'Çok sayıda müşteri belgesini hızlı okuyun, arşivleyin ve aktarım süreçlerini yönetin.',
-    icon: Calculator,
-  },
-  {
-    title: "KOBİ'ler",
-    description: 'Günlük fatura ve fiş yükünü azaltın; belgeleri düzenli ve erişilebilir tutun.',
-    icon: Building2,
-  },
-  {
-    title: 'Finans Departmanları',
-    description: 'Ekip genelinde belge akışını standartlaştırın ve muhasebe aktarımını hızlandırın.',
-    icon: Briefcase,
-  },
-  {
-    title: 'Serbest Meslek Erbabı',
-    description: 'Makbuz, gider ve ekstreleri tek yerden yönetin; Excel şablonlarına kolayca aktarın.',
-    icon: UserRound,
-  },
-]
+const audienceIcons: LucideIcon[] = [Calculator, Building2, Landmark, Briefcase]
 
 export function AudienceSection() {
   return (
-    <SectionContainer className="border-t border-[var(--ds-color-border)] py-[var(--ds-space-12)] sm:py-[var(--ds-space-16)]">
-      <div className="mb-8 max-w-2xl">
+    <SectionContainer className={`border-t border-[var(--ds-color-border)] ${homepageSectionY}`}>
+      <div className={`${homepageSectionHeadMb} max-w-2xl`}>
         <h2 className="text-2xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-3xl">
-          DOSYORA Kimler İçin?
+          Kimler İçin?
         </h2>
+        <p className="mt-3 text-base leading-relaxed text-[var(--ds-color-text-muted)]">
+          Mali müşavirlikten finans departmanlarına kadar belge yoğun ekipler için tasarlandı.
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {audienceItems.map((item, index) => (
+        {audienceCards.map((item, index) => (
           <Card
             key={item.title}
             interactive
-            className="ds-animate-slide-up flex flex-col gap-4"
-            style={{ animationDelay: `${index * 50}ms` }}
+            className="flex flex-col gap-4 py-6"
           >
             <div className="flex size-11 items-center justify-center rounded-[var(--ds-radius-md)] bg-[color:color-mix(in_srgb,var(--ds-color-primary)_8%,white)] text-[var(--ds-color-primary)]">
-              <Icon icon={item.icon} size="md" />
+              <Icon icon={audienceIcons[index] ?? Building2} size="md" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-[var(--ds-color-text)]">{item.title}</h3>

@@ -1,5 +1,8 @@
+import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
+
 import { SectionContainer } from '@/components/ui'
 import { cn } from '@/lib/design-system/cn'
+import { homepageSectionHeadMb, homepageSectionY } from '@/lib/homepage-content'
 
 const faqItems = [
   {
@@ -15,7 +18,7 @@ const faqItems = [
   {
     question: 'Ön izleme programı nasıl çalışır?',
     answer:
-      'Demo başvurunuz incelenir; onaylanan firmalara 100 belge okuma hakkı tanımlanır. Başvuru için /demo sayfasındaki formu doldurmanız yeterlidir.',
+      `Demo başvurunuz incelenir; onaylanan firmalara ${DEMO_DOCUMENT_LIMIT} belge okuma hakkı tanımlanır. Başvuru için /demo sayfasındaki formu doldurmanız yeterlidir.`,
   },
   {
     question: 'Hangi muhasebe programlarıyla uyumludur?',
@@ -40,7 +43,7 @@ const faqItems = [
   {
     question: 'DOSYORA V2 ve sonrasında neler gelecek?',
     answer:
-      'Yol haritasında Akıllı Ofis, CRM, belge üretme ve sektörel çözümler planlanmaktadır. Güncel sürüm bilgisi ana sayfadaki yol haritasında yer alır.',
+      'V1 belgeden veriye odaklanır. V2 akıllı ofis ve belge yönetimi yeteneklerini geliştirir. V3 sektörel iş süreçleri platform vizyonudur. Güncel durum ana sayfadaki V1 / V2 / V3 bölümünde yer alır.',
   },
   {
     question: 'Excel aktarım şablonları nasıl çalışır?',
@@ -50,7 +53,7 @@ const faqItems = [
   {
     question: 'Kaç belge yükleyebilirim?',
     answer:
-      'Ön izleme programında onaylanan firmalara 100 belge okuma hakkı tanımlanır. Kurumsal planlar için demo başvurusu sonrası bilgi verilir.',
+      `Ön izleme programında onaylanan firmalara ${DEMO_DOCUMENT_LIMIT} belge okuma hakkı tanımlanır. Kurumsal planlar için demo başvurusu sonrası bilgi verilir.`,
   },
   {
     question: 'Ekip içinde kullanılabilir mi?',
@@ -86,8 +89,8 @@ const faqItems = [
 
 export function FaqSection() {
   return (
-    <SectionContainer className="py-[var(--ds-space-12)] sm:py-[var(--ds-space-16)]">
-      <div className="mb-8 max-w-2xl">
+    <SectionContainer className={homepageSectionY}>
+      <div className={`${homepageSectionHeadMb} max-w-2xl`}>
         <h2 className="text-2xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-3xl">
           Sık Sorulan Sorular
         </h2>
