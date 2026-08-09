@@ -36,8 +36,7 @@ export const productVersions: ProductVersion[] = [
     features: [
       'Belge yükleme',
       'Yapay zekâ ile veri çıkarımı',
-      'İnsan kontrolü',
-      'Matrah / KDV kontrolü',
+      'Kontrol',
       'Excel / muhasebe çıktısı',
       'Dijital arşiv',
     ],

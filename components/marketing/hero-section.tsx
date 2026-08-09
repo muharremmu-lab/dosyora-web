@@ -29,9 +29,9 @@ export function HeroSection() {
           </h1>
 
           <p className="mt-5 max-w-lg text-base leading-relaxed text-[var(--ds-color-text-muted)]">
-            Fiş, fatura, poliçe, uçak bileti, noter belgesi ve diğer masraf belgelerinizi tek tek
-            okumakla uğraşmayın. DOSYORA belgelerinizi yapay zekâ ile okur, kontrol etmenizi sağlar
-            ve kullanılabilir veriye dönüştürür.
+            Belgelerinizi yükleyin; DOSYORA yapay zekâ ile okusun, siz kontrol edin. Muhasebe
+            programınıza tek tek manuel veri girmek yerine uygun çıktılarla toplu aktarım yapın.
+            Belgelerinizi aynı zamanda düzenli ve güvenli dijital arşivinizde saklayın.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2" aria-label="Desteklenen belge türleri">
