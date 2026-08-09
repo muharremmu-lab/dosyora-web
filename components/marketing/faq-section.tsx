@@ -2,6 +2,7 @@ import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
 
 import { SectionContainer } from '@/components/ui'
 import { cn } from '@/lib/design-system/cn'
+import { homepageSectionHeadMb, homepageSectionY } from '@/lib/homepage-content'
 
 const faqItems = [
   {
@@ -88,8 +89,8 @@ const faqItems = [
 
 export function FaqSection() {
   return (
-    <SectionContainer className="py-[var(--ds-space-12)] sm:py-[var(--ds-space-16)]">
-      <div className="mb-8 max-w-2xl">
+    <SectionContainer className={homepageSectionY}>
+      <div className={`${homepageSectionHeadMb} max-w-2xl`}>
         <h2 className="text-2xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-3xl">
           Sık Sorulan Sorular
         </h2>

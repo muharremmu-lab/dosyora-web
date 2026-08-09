@@ -2,6 +2,11 @@ import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
 
 export const homepageDemoLimitLabel = `${DEMO_DOCUMENT_LIMIT} Belge`
 
+/** Compact vertical rhythm for homepage marketing sections */
+export const homepageSectionY = 'py-8 sm:py-10'
+export const homepageSectionHeadMb = 'mb-5 sm:mb-6'
+export const homepageScrollMt = 'scroll-mt-[4.75rem]'
+
 export const documentTypeChips = [
   'Fiş',
   'Fatura',
@@ -13,24 +18,24 @@ export const documentTypeChips = [
 
 export const howItWorksSteps = [
   {
-    title: 'YÜKLE',
-    description: 'Belgelerinizi tek tek veya toplu yükleyin.',
+    title: 'Belgelerinizi Yükleyin',
+    description: 'Tek tek veya toplu yükleme ile süreci başlatın.',
   },
   {
-    title: 'AI OKUSUN',
-    description: 'DOSYORA belge üzerindeki gerekli alanları çıkarsın.',
+    title: 'Yapay Zekâ Okusun',
+    description: 'Gerekli alanlar belgeden otomatik çıkarılır.',
   },
   {
-    title: 'KONTROL ET',
-    description: 'Çıkarılan bilgileri belge ile birlikte kontrol edin.',
+    title: 'Kontrol Edin',
+    description: 'Çıkarılan bilgileri belgeyle birlikte doğrulayın.',
   },
   {
-    title: 'DÜZELT / ONAYLA',
-    description: 'Gerekirse düzeltin ve son veriyi onaylayın.',
+    title: 'Verinizi Oluşturun',
+    description: 'Gerekirse düzeltin ve onaylayın.',
   },
   {
-    title: 'VERİYİ KULLAN',
-    description: 'Muhasebe çıktınızı oluşturun ve belge/veri sürecine devam edin.',
+    title: 'Aktarın / Arşivleyin',
+    description: 'Muhasebe çıktısı alın ve belgeyi arşivleyin.',
   },
 ] as const
 

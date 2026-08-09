@@ -1,45 +1,68 @@
-import { SectionContainer } from '@/components/ui'
-import { howItWorksSteps } from '@/lib/homepage-content'
+import {
+  Archive,
+  CloudUpload,
+  FileOutput,
+  ScanLine,
+  ShieldCheck,
+} from 'lucide-react'
 
-import { ScrollReveal } from './scroll-reveal'
+import { Icon, SectionContainer } from '@/components/ui'
+import type { LucideIcon } from '@/components/ui/icon'
+import {
+  homepageScrollMt,
+  homepageSectionHeadMb,
+  homepageSectionY,
+  howItWorksSteps,
+} from '@/lib/homepage-content'
 
-const revealVariants = ['fade-up', 'fade-left', 'fade-right'] as const
+const stepIcons: LucideIcon[] = [CloudUpload, ScanLine, ShieldCheck, FileOutput, Archive]
 
 export function HowItWorksSection() {
   return (
     <SectionContainer
       id="nasil-calisir"
-      className="scroll-mt-24 border-t border-[var(--ds-color-border)] py-[var(--ds-space-12)] sm:py-[var(--ds-space-16)]"
+      className={`${homepageScrollMt} border-t border-[var(--ds-color-border)] ${homepageSectionY}`}
       aria-labelledby="how-it-works-heading"
     >
-      <div className="mb-10 max-w-2xl">
+      <div className={`${homepageSectionHeadMb} max-w-2xl`}>
         <h2 id="how-it-works-heading" className="text-2xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-3xl">
           Nasıl Çalışır?
         </h2>
-        <p className="mt-3 text-base leading-relaxed text-[var(--ds-color-text-muted)]">
+        <p className="mt-2 text-sm leading-relaxed text-[var(--ds-color-text-muted)] sm:text-base">
           Yapay zekâ destekli okuma ile birlikte insan kontrolü sürecin merkezindedir.
         </p>
       </div>
 
-      <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {howItWorksSteps.map((step, index) => (
-          <li key={step.title}>
-            <ScrollReveal
-              delayMs={index * 70}
-              variant={revealVariants[index % revealVariants.length]}
-              className="h-full"
+      <div className="relative">
+        <div
+          className="pointer-events-none absolute left-[10%] right-[10%] top-9 hidden h-px bg-[color:color-mix(in_srgb,var(--ds-color-primary)_12%,var(--ds-color-border))] lg:block"
+          aria-hidden="true"
+        />
+
+        <ol className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5">
+          {howItWorksSteps.map((step, index) => (
+            <li
+              key={step.title}
+              className={index === howItWorksSteps.length - 1 ? 'col-span-2 lg:col-span-1' : undefined}
             >
-              <div className="flex h-full flex-col rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] p-5 shadow-[var(--ds-shadow-sm)]">
-                <span className="mb-3 inline-flex size-9 items-center justify-center rounded-full bg-[var(--ds-color-primary)] text-sm font-bold text-[var(--ds-color-secondary)]">
-                  {index + 1}
-                </span>
-                <h3 className="text-sm font-bold tracking-wide text-[var(--ds-color-text)]">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">{step.description}</p>
+              <div className="flex h-full flex-col rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] p-4 shadow-[var(--ds-shadow-sm)]">
+                <div className="mb-3 flex items-center gap-2.5">
+                  <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--ds-color-primary)] text-xs font-bold text-[var(--ds-color-secondary)]">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <div className="flex size-8 items-center justify-center rounded-[var(--ds-radius-md)] bg-[color:color-mix(in_srgb,var(--ds-color-highlight)_10%,white)] text-[var(--ds-color-highlight)]">
+                    <Icon icon={stepIcons[index] ?? CloudUpload} size="sm" />
+                  </div>
+                </div>
+                <h3 className="text-sm font-semibold leading-snug text-[var(--ds-color-text)]">{step.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-[var(--ds-color-text-muted)] sm:text-sm">
+                  {step.description}
+                </p>
               </div>
-            </ScrollReveal>
-          </li>
-        ))}
-      </ol>
+            </li>
+          ))}
+        </ol>
+      </div>
     </SectionContainer>
   )
 }

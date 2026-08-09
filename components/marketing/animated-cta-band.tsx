@@ -1,7 +1,7 @@
 import { Headphones, Rocket, Shield } from 'lucide-react'
 
 import { ButtonLink, Icon, SectionContainer } from '@/components/ui'
-import { homepageDemoLimitLabel } from '@/lib/homepage-content'
+import { homepageDemoLimitLabel, homepageSectionY } from '@/lib/homepage-content'
 
 const ctaPoints = [
   { icon: Rocket, text: 'Ücretsiz deneyin, farkı görün.' },
@@ -12,10 +12,10 @@ const ctaPoints = [
 export function AnimatedCtaBand() {
   return (
     <SectionContainer
-      className="pb-[var(--ds-space-16)] pt-[var(--ds-space-8)] sm:pb-[var(--ds-space-24)]"
+      className={`${homepageSectionY} pt-6 sm:pt-8`}
       aria-labelledby="animated-cta-heading"
     >
-      <div className="relative overflow-hidden rounded-[var(--ds-radius-xl)] bg-[var(--ds-color-primary-deep)] px-6 py-12 shadow-[var(--ds-shadow-lg)] sm:px-12 sm:py-16">
+      <div className="relative overflow-hidden rounded-[var(--ds-radius-xl)] bg-[var(--ds-color-primary-deep)] px-6 py-10 shadow-[var(--ds-shadow-lg)] sm:px-10 sm:py-12">
         <span className="absolute right-0 top-0 rounded-bl-[var(--ds-radius-lg)] bg-[var(--ds-color-success)] px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white">
           Ücretsiz Deneyin
         </span>
