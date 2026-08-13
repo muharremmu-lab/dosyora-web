@@ -45,7 +45,7 @@ describe('document consumption reservations', () => {
   it('blocks reservation when quota is exhausted', async () => {
     const { reserveDocumentQuota } = await import('@/lib/db/document-consumption')
     const result = await reserveDocumentQuota({
-      account: { ...demoAccount, used_documents: 50 },
+      account: { ...demoAccount, used_documents: DEMO_DOCUMENT_LIMIT },
       documentRef: 'proc-2',
     })
 

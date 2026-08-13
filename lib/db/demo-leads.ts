@@ -10,9 +10,11 @@ import type {
   CreateDemoAccountInput,
   CreateDemoLeadInput,
   DemoLead,
+  LeadStatus,
   PaginatedResult,
   UpdateDemoLeadInput,
 } from './types'
+import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
 import { normalizeEmail } from './types'
 
 type DemoLeadRow = DemoLead
@@ -139,8 +141,106 @@ export async function createOwnerAccount(input: {
 export async function createDemoLead(input: CreateDemoLeadInput): Promise<DemoLead> {
   return createDemoAccount({
     ...input,
-    document_limit: 50,
+    document_limit: DEMO_DOCUMENT_LIMIT,
   })
+}
+
+export async function createDemoInquiry(input: CreateDemoLeadInput): Promise<DemoLead> {
+  const id = await dbInsertReturningId(
+    'createDemoInquiry',
+    `
+    INSERT INTO demo_leads (
+      company_name,
+      contact_name,
+      email,
+      phone,
+      city,
+      employee_count,
+      monthly_document_count,
+      message,
+      source,
+      ip_address,
+      user_agent,
+      document_limit,
+      account_status,
+      status,
+      used_documents,
+      account_type,
+      activation_status,
+      provision_status,
+      lifecycle_status
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL, 'NEW', 0, NULL, NULL, 'INQUIRY', 'ACTIVE')
+    RETURNING id
+  `,
+    [
+      input.company_name,
+      input.contact_name,
+      normalizeEmail(input.email),
+      input.phone,
+      input.city ?? null,
+      input.employee_count ?? null,
+      input.monthly_document_count ?? null,
+      input.message ?? null,
+      input.source ?? 'website',
+      input.ip_address ?? null,
+      input.user_agent ?? null,
+    ],
+  )
+
+  return (await getDemoLeadById(id))!
+}
+
+type ListDemoLeadsForContactAdminOptions = {
+  page?: number
+  limit?: number
+  search?: string
+  status?: string
+}
+
+export async function listDemoLeadsForContactAdmin(
+  options: ListDemoLeadsForContactAdminOptions = {},
+): Promise<PaginatedResult<DemoLead>> {
+  const page = Math.max(1, options.page ?? 1)
+  const limit = Math.min(500, Math.max(1, options.limit ?? 20))
+  const offset = (page - 1) * limit
+
+  const conditions: string[] = ["COALESCE(lifecycle_status, 'ACTIVE') = 'ACTIVE'"]
+  const params: Array<string | number> = []
+
+  if (options.search) {
+    conditions.push('(company_name LIKE ? OR contact_name LIKE ? OR email LIKE ? OR phone LIKE ?)')
+    const search = `%${options.search}%`
+    params.push(search, search, search, search)
+  }
+
+  if (options.status) {
+    conditions.push('status = ?')
+    params.push(options.status)
+  }
+
+  const whereClause = `WHERE ${conditions.join(' AND ')}`
+
+  const totalRow = await dbQueryOne<{ count: number }>(
+    'listDemoLeadsForContactAdmin.count',
+    `SELECT COUNT(*) as count FROM demo_leads ${whereClause}`,
+    params,
+  )
+
+  const rows = await dbQueryAll<DemoLeadRow>(
+    'listDemoLeadsForContactAdmin.items',
+    `SELECT * FROM demo_leads ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+    [...params, limit, offset],
+  )
+
+  const total = Number(totalRow?.count ?? 0)
+
+  return {
+    items: rows.map(mapRow),
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+  }
 }
 
 export async function getDemoLeadById(id: number): Promise<DemoLead | null> {
@@ -237,6 +337,8 @@ export async function updateDemoLead(
       document_limit = ?,
       account_status = ?,
       lifecycle_status = ?,
+      status = ?,
+      notes = ?,
       updated_at = datetime('now')
     WHERE id = ?
   `,
@@ -244,6 +346,8 @@ export async function updateDemoLead(
       input.document_limit !== undefined ? input.document_limit : existing.document_limit,
       input.account_status !== undefined ? input.account_status : existing.account_status,
       input.lifecycle_status !== undefined ? input.lifecycle_status : existing.lifecycle_status,
+      input.status !== undefined ? input.status : existing.status,
+      input.notes !== undefined ? input.notes : existing.notes,
       id,
     ],
   )

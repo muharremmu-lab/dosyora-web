@@ -24,6 +24,7 @@ export const PROVISION_STATUS_LABELS: Record<string, string> = {
   PROVISIONED: 'BelgeOkumaWeb Provisioned',
   LOCAL_ONLY: 'Yalnızca Yerel',
   FAILED: 'Provisioning Başarısız',
+  INQUIRY: 'Demo Talebi (İnceleme)',
 }
 
 export function formatDocumentQuotaLabel(lead: {
@@ -45,9 +46,31 @@ export function formatDocumentQuotaLabel(lead: {
 }
 export const CONTACT_STATUS_LABELS: Record<ContactMessageStatus, string> = {
   NEW: 'Yeni',
-  READ: 'Okundu',
-  REPLIED: 'Yanıtlandı',
-  ARCHIVED: 'Arşivlendi',
+  READ: 'İncelendi',
+  REPLIED: 'Dönüş Yapıldı',
+  ARCHIVED: 'Kapandı',
+}
+
+export const LEAD_STATUS_LABELS: Record<string, string> = {
+  NEW: 'Yeni',
+  CONTACT_PENDING: 'İncelendi',
+  CONTACTED: 'İncelendi',
+  DEMO_SCHEDULED: 'Dönüş Yapıldı',
+  PROPOSAL_SENT: 'Dönüş Yapıldı',
+  CUSTOMER: 'Kapandı',
+  LOST: 'Kapandı',
+}
+
+export const CONTACT_REQUEST_TYPE_LABELS = {
+  DEMO: 'Demo Talebi',
+  REQUEST_SUGGESTION: 'İstek / Öneri',
+} as const
+
+export function formatContactRequestStatus(type: 'DEMO' | 'REQUEST_SUGGESTION', status: string): string {
+  if (type === 'REQUEST_SUGGESTION') {
+    return CONTACT_STATUS_LABELS[status as ContactMessageStatus] ?? status
+  }
+  return LEAD_STATUS_LABELS[status] ?? status
 }
 
 export function formatDateTime(value: string): string {

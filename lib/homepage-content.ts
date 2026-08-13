@@ -2,6 +2,8 @@ import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
 
 export const homepageDemoLimitLabel = `${DEMO_DOCUMENT_LIMIT} Belge`
 
+export const homepageDemoMarketingDescription = `Demo hesabınızla ${DEMO_DOCUMENT_LIMIT} belgeye kadar ücretsiz deneyebilirsiniz.`
+
 /** Compact vertical rhythm for homepage marketing sections */
 export const homepageSectionY = 'py-8 sm:py-10'
 export const homepageSectionHeadMb = 'mb-5 sm:mb-6'

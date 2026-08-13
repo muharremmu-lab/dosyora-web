@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { ButtonLink, SectionContainer } from '@/components/ui'
+import { contactFormHref } from '@/lib/contact-routes'
 import { footerProductFamily, homepageDemoLimitLabel } from '@/lib/homepage-content'
 import { footerNavItems, siteConfig, socialLinks } from '@/lib/site'
 
@@ -116,7 +117,7 @@ export function SiteFooter() {
           <p className="mt-2 text-sm text-[color:color-mix(in_srgb,var(--ds-color-secondary)_75%,transparent)]">
             Demo başvurunuz incelenir; onaylanan firmalara {homepageDemoLimitLabel.toLowerCase()} okuma hakkı tanımlanır.
           </p>
-          <ButtonLink href="/demo" variant="secondary" className="mt-5 px-6 py-2.5">
+          <ButtonLink href={contactFormHref('demo')} variant="secondary" className="mt-5 px-6 py-2.5">
             Demo Talep Et
           </ButtonLink>
         </div>

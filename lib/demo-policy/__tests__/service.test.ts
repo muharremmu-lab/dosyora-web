@@ -2,6 +2,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { DemoLead } from '@/lib/db/types'
 
+import { createDemoQuotaReservationMock } from './demo-quota-reservation.mock'
+
+const quotaReservationMock = createDemoQuotaReservationMock()
+
+vi.mock('@/lib/db/demo-quota-reservation', () => ({
+  reserveDemoAttemptQuota: (...args: Parameters<typeof quotaReservationMock.reserveDemoAttemptQuota>) =>
+    quotaReservationMock.reserveDemoAttemptQuota(...args),
+  releaseDemoAttemptQuota: (...args: Parameters<typeof quotaReservationMock.releaseDemoAttemptQuota>) =>
+    quotaReservationMock.releaseDemoAttemptQuota(...args),
+}))
+
 const sampleLead: DemoLead = {
   id: 99,
   created_at: '2026-08-07T12:00:00.000Z',
@@ -20,7 +31,7 @@ const sampleLead: DemoLead = {
   source: 'website',
   ip_address: '127.0.0.1',
   user_agent: 'vitest',
-  document_limit: 50,
+  document_limit: 20,
   account_status: 'ACTIVE',
   used_documents: 0,
   account_type: 'DEMO',
@@ -59,6 +70,7 @@ vi.mock('@/lib/provisioning/client', () => ({
 
 describe('processDemoRequest notification isolation', () => {
   beforeEach(() => {
+    quotaReservationMock.reset()
     findDemoAccountByEmail.mockResolvedValue(null)
     createDemoAccount.mockResolvedValue(sampleLead)
     updateDemoLeadProvision.mockResolvedValue(sampleLead)

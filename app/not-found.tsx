@@ -1,7 +1,6 @@
-import Link from 'next/link'
-
 import { SiteFooter, SiteHeader } from '@/components/marketing'
 import { ButtonLink, SectionContainer } from '@/components/ui'
+import { contactFormHref } from '@/lib/contact-routes'
 
 export default function NotFound() {
   return (
@@ -28,12 +27,9 @@ export default function NotFound() {
             <ButtonLink href="/" variant="primary" className="px-5 py-2.5" aria-label="Ana sayfaya dön">
               Ana Sayfaya Dön
             </ButtonLink>
-            <Link
-              href="/demo"
-              className="text-sm font-medium text-[var(--ds-color-primary)] ds-transition-hover hover:opacity-80"
-            >
+            <ButtonLink href={contactFormHref('demo')} variant="outline" className="px-5 py-2.5">
               Demo talep et
-            </Link>
+            </ButtonLink>
           </div>
         </SectionContainer>
       </main>

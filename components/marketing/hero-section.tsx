@@ -1,4 +1,5 @@
 import { Badge, ButtonLink, SectionContainer } from '@/components/ui'
+import { contactFormHref } from '@/lib/contact-routes'
 import {
   documentTypeChips,
   homepageDemoLimitLabel,
@@ -43,7 +44,7 @@ export function HeroSection() {
           </div>
 
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <ButtonLink href="/demo" variant="primary" className="px-6 py-3 text-base font-semibold">
+            <ButtonLink href={contactFormHref('demo')} variant="primary" className="px-6 py-3 text-base font-semibold">
               {homepageDemoLimitLabel} Ücretsiz Deneyin
             </ButtonLink>
             <ButtonLink href="/#nasil-calisir" variant="outline" className="px-6 py-3 text-base">

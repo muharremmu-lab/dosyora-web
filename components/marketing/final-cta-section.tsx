@@ -1,4 +1,6 @@
 import { ButtonLink, SectionContainer } from '@/components/ui'
+import { contactFormHref } from '@/lib/contact-routes'
+import { homepageDemoMarketingDescription } from '@/lib/homepage-content'
 
 type FinalCtaSectionProps = {
   title?: string
@@ -12,10 +14,10 @@ type FinalCtaSectionProps = {
 
 export function FinalCtaSection({
   title = "DOSYORA'yı Ücretsiz Deneyin",
-  description = 'Demo hesabınız otomatik oluşturulur; varsayılan 100 belge okuma hakkı tanımlanır.',
+  description = homepageDemoMarketingDescription,
   buttonLabel,
   primaryButtonLabel,
-  primaryButtonHref = '/demo',
+  primaryButtonHref = contactFormHref('demo'),
   secondaryButtonLabel,
   secondaryButtonHref = '/urun',
 }: FinalCtaSectionProps) {

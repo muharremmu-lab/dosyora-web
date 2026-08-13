@@ -10,7 +10,7 @@ vi.mock('@/lib/db/demo-leads', () => ({
     id: 1,
     email: 'demo@example.com',
     account_type: 'DEMO',
-    document_limit: 50,
+    document_limit: 20,
     used_documents: 13,
     lifecycle_status: 'ACTIVE',
   })),
@@ -36,6 +36,6 @@ describe('internal document entitlement route', () => {
     )
     expect(response.status).toBe(200)
     const payload = await response.json()
-    expect(payload.entitlement.remaining).toBe(37)
+    expect(payload.entitlement.remaining).toBe(7)
   })
 })

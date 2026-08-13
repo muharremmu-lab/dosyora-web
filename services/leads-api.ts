@@ -33,6 +33,7 @@ export async function submitDemoLead(payload: {
   accountingProgram: string
   message: string
   source?: string
+  inquiryOnly?: boolean
 }): Promise<DemoLeadSubmissionResult> {
   const response = await fetch('/api/demo-leads', {
     method: 'POST',
@@ -47,6 +48,7 @@ export async function submitDemoLead(payload: {
       accounting_program: payload.accountingProgram,
       message: payload.message,
       source: payload.source ?? 'website',
+      inquiry_only: payload.inquiryOnly ?? false,
     }),
   })
 
@@ -54,10 +56,15 @@ export async function submitDemoLead(payload: {
     throw new Error(await parseError(response))
   }
 
-  const data = (await response.json()) as { lead: DemoLead; document_limit: number }
+  const data = (await response.json()) as {
+    lead: DemoLead
+    document_limit?: number
+    inquiry?: boolean
+  }
+
   return {
     lead: data.lead,
-    documentLimit: data.document_limit,
+    documentLimit: data.document_limit ?? 0,
   }
 }
 

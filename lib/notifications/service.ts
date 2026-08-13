@@ -33,6 +33,10 @@ export class NotificationService {
     await this.dispatch({ type: 'demo_lead_created', lead, activationToken })
   }
 
+  async notifyDemoInquiryCreated(lead: DemoLead): Promise<void> {
+    await this.dispatch({ type: 'demo_inquiry_created', lead })
+  }
+
   async notifyContactMessageCreated(message: ContactMessage): Promise<void> {
     await this.dispatch({ type: 'contact_message_created', message })
   }
