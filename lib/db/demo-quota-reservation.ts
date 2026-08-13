@@ -1,4 +1,4 @@
-import type { Client } from '@libsql/client/web'
+import type { Client, Transaction } from '@libsql/client/web'
 
 import {
   getDocumentLimitForAttemptCount,
@@ -16,6 +16,8 @@ type QuotaCountRow = {
   demo_count: number | bigint | null
   window_expires_at: string | null
 }
+
+type ReservationDbExecutor = Client | Transaction
 
 export type DemoQuotaReservationResult =
   | { reserved: true; documentLimit: number }
@@ -40,10 +42,10 @@ function readDemoCount(row: QuotaCountRow | undefined): number {
   return Number(row.demo_count ?? 0)
 }
 
-async function ensureEmailQuotaRow(client: Client, email: string): Promise<void> {
+async function ensureEmailQuotaRow(client: ReservationDbExecutor, email: string): Promise<void> {
   const now = new Date().toISOString()
   await executeWithClient(
-    client,
+    client as unknown as Client,
     'reserveDemoQuota.ensureEmail',
     `
       INSERT INTO email_demo_quota (email, demo_count, window_started_at, window_expires_at)
@@ -54,10 +56,10 @@ async function ensureEmailQuotaRow(client: Client, email: string): Promise<void>
   )
 }
 
-async function ensureIpQuotaRow(client: Client, ipAddress: string): Promise<void> {
+async function ensureIpQuotaRow(client: ReservationDbExecutor, ipAddress: string): Promise<void> {
   const now = new Date().toISOString()
   await executeWithClient(
-    client,
+    client as unknown as Client,
     'reserveDemoQuota.ensureIp',
     `
       INSERT INTO ip_demo_quota (ip_address, demo_count, window_started_at, window_expires_at)
@@ -68,9 +70,9 @@ async function ensureIpQuotaRow(client: Client, ipAddress: string): Promise<void
   )
 }
 
-async function resetExpiredEmailWindow(client: Client, email: string): Promise<void> {
+async function resetExpiredEmailWindow(client: ReservationDbExecutor, email: string): Promise<void> {
   const row = await executeWithClient(
-    client,
+    client as unknown as Client,
     'reserveDemoQuota.readEmailWindow',
     'SELECT window_expires_at FROM email_demo_quota WHERE email = ?',
     [email],
@@ -82,7 +84,7 @@ async function resetExpiredEmailWindow(client: Client, email: string): Promise<v
 
   const now = new Date().toISOString()
   await executeWithClient(
-    client,
+    client as unknown as Client,
     'reserveDemoQuota.resetEmailWindow',
     `
       UPDATE email_demo_quota
@@ -95,9 +97,9 @@ async function resetExpiredEmailWindow(client: Client, email: string): Promise<v
   )
 }
 
-async function resetExpiredIpWindow(client: Client, ipAddress: string): Promise<void> {
+async function resetExpiredIpWindow(client: ReservationDbExecutor, ipAddress: string): Promise<void> {
   const row = await executeWithClient(
-    client,
+    client as unknown as Client,
     'reserveDemoQuota.readIpWindow',
     'SELECT window_expires_at FROM ip_demo_quota WHERE ip_address = ?',
     [ipAddress],
@@ -109,7 +111,7 @@ async function resetExpiredIpWindow(client: Client, ipAddress: string): Promise<
 
   const now = new Date().toISOString()
   await executeWithClient(
-    client,
+    client as unknown as Client,
     'reserveDemoQuota.resetIpWindow',
     `
       UPDATE ip_demo_quota
@@ -122,26 +124,26 @@ async function resetExpiredIpWindow(client: Client, ipAddress: string): Promise<
   )
 }
 
-async function readEmailDemoCount(client: Client, email: string): Promise<number> {
+async function readEmailDemoCount(client: ReservationDbExecutor, email: string): Promise<number> {
   const result = await executeWithClient(
-    client,
+    client as unknown as Client,
     'reserveDemoQuota.readEmailCount',
     'SELECT demo_count, window_expires_at FROM email_demo_quota WHERE email = ?',
     [email],
   )
 
-  return readDemoCount(result.rows[0] as QuotaCountRow | undefined)
+  return readDemoCount(result.rows[0] as unknown as QuotaCountRow | undefined)
 }
 
-async function readIpDemoCount(client: Client, ipAddress: string): Promise<number> {
+async function readIpDemoCount(client: ReservationDbExecutor, ipAddress: string): Promise<number> {
   const result = await executeWithClient(
-    client,
+    client as unknown as Client,
     'reserveDemoQuota.readIpCount',
     'SELECT demo_count, window_expires_at FROM ip_demo_quota WHERE ip_address = ?',
     [ipAddress],
   )
 
-  return readDemoCount(result.rows[0] as QuotaCountRow | undefined)
+  return readDemoCount(result.rows[0] as unknown as QuotaCountRow | undefined)
 }
 
 export async function reserveDemoAttemptQuota(
@@ -176,7 +178,7 @@ export async function reserveDemoAttemptQuota(
     }
 
     await executeWithClient(
-      txn,
+      txn as unknown as Client,
       'reserveDemoQuota.incrementEmail',
       `
         UPDATE email_demo_quota
@@ -186,7 +188,7 @@ export async function reserveDemoAttemptQuota(
       [normalizedEmail],
     )
     await executeWithClient(
-      txn,
+      txn as unknown as Client,
       'reserveDemoQuota.incrementIp',
       `
         UPDATE ip_demo_quota
@@ -212,7 +214,7 @@ export async function releaseDemoAttemptQuota(email: string, ipAddress: string):
 
   try {
     await executeWithClient(
-      txn,
+      txn as unknown as Client,
       'releaseDemoQuota.decrementEmail',
       `
         UPDATE email_demo_quota
@@ -222,7 +224,7 @@ export async function releaseDemoAttemptQuota(email: string, ipAddress: string):
       [normalizedEmail],
     )
     await executeWithClient(
-      txn,
+      txn as unknown as Client,
       'releaseDemoQuota.decrementIp',
       `
         UPDATE ip_demo_quota
