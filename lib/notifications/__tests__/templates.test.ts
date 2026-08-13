@@ -23,7 +23,7 @@ const sampleLead: DemoLead = {
   source: 'website',
   ip_address: '127.0.0.1',
   user_agent: 'vitest',
-  document_limit: 50,
+  document_limit: 20,
   account_status: 'ACTIVE',
   used_documents: 0,
   account_type: 'DEMO',
@@ -44,7 +44,7 @@ describe('notification templates', () => {
 
     expect(email.subject).toBe('DOSYORA Demo Hesabınız Hazır')
     expect(email.text).toContain('demo hesabınız hazır')
-    expect(email.text).toContain('50')
+    expect(email.text).toContain('20')
     expect(email.text).toContain('/activate?token=')
     expect(email.text).not.toMatch(/şifre:|password:/i)
     expect(email.html).not.toContain('<script')

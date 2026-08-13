@@ -20,7 +20,7 @@ const sampleLead: DemoLead = {
   source: 'website',
   ip_address: '127.0.0.1',
   user_agent: 'vitest',
-  document_limit: 50,
+  document_limit: 20,
   account_status: 'ACTIVE',
   used_documents: 0,
   account_type: 'DEMO',

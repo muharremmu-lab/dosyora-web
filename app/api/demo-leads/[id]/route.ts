@@ -6,7 +6,7 @@ import { requireAdminApiAuth, requireAdminMutationAuth } from '@/lib/admin-api-a
 import { logApiError, logApiWarning } from '@/lib/api-logger'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { getDemoLeadById, updateDemoLead } from '@/lib/db/demo-leads'
-import { ACCOUNT_STATUSES, type AccountStatus } from '@/lib/db/types'
+import { ACCOUNT_STATUSES, LEAD_STATUSES, type AccountStatus, type LeadStatus } from '@/lib/db/types'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -59,9 +59,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const body = (await request.json()) as Record<string, unknown>
     const accountStatus = body.account_status ? String(body.account_status) : undefined
+    const leadStatus = body.status ? String(body.status) : undefined
 
     if (accountStatus && !ACCOUNT_STATUSES.includes(accountStatus as AccountStatus)) {
       logApiWarning('demo_lead_patch_invalid_status', { id, accountStatus })
+      return jsonError('Geçersiz durum.', 400)
+    }
+
+    if (leadStatus && !LEAD_STATUSES.includes(leadStatus as LeadStatus)) {
+      logApiWarning('demo_lead_patch_invalid_lead_status', { id, leadStatus })
       return jsonError('Geçersiz durum.', 400)
     }
 
@@ -77,6 +83,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const lead = await updateDemoLead(id, {
       account_status: accountStatus as AccountStatus | undefined,
       document_limit: documentLimit,
+      status: leadStatus as LeadStatus | undefined,
+      notes: body.notes !== undefined ? String(body.notes) : undefined,
     })
 
     if (!lead) {

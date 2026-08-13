@@ -105,7 +105,7 @@ export function ScreenBelgeUretme() {
 
 export function ScreenDemoPaneli() {
   return (
-    <AppScreenFrame title="Demo Paneli" subtitle="100 belge">
+    <AppScreenFrame title="Demo Paneli" subtitle="20 belge">
       <div className="grid flex-1 grid-cols-3 gap-2">
         {[
           { label: 'Kalan', value: '87' },

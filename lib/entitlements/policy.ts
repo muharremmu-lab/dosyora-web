@@ -1,4 +1,4 @@
-import { DEMO_DOCUMENT_LIMIT, type AccountType } from './constants'
+import { DEMO_DOCUMENT_LIMIT, DEMO_RUNTIME_LIMITS, type AccountType } from './constants'
 
 export type EntitlementAccount = {
   account_type: AccountType | null
@@ -68,6 +68,14 @@ export function getRemainingDocumentQuota(account: EntitlementAccount): number |
 
 export function canProcessDocument(account: EntitlementAccount): boolean {
   return getDocumentEntitlement(account).canProcess
+}
+
+export function resolveDemoDocumentLimitForAttempt(demoCount: number): number | null {
+  if (demoCount >= DEMO_RUNTIME_LIMITS.length) {
+    return null
+  }
+
+  return DEMO_RUNTIME_LIMITS[demoCount] ?? null
 }
 
 export function resolveDemoDocumentLimit(): number {

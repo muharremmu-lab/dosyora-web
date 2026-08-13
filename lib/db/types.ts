@@ -111,6 +111,8 @@ export type UpdateDemoLeadInput = {
   document_limit?: number
   account_status?: AccountStatus
   lifecycle_status?: LifecycleStatus
+  status?: LeadStatus
+  notes?: string | null
 }
 
 export type CreateContactMessageInput = {

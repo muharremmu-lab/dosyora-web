@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
+
 const dbQueryOne = vi.fn()
 const dbInsertReturningId = vi.fn()
 const dbRun = vi.fn()
@@ -28,7 +30,7 @@ describe('document consumption idempotency', () => {
       account: {
         id: 1,
         account_type: 'DEMO',
-        document_limit: 50,
+        document_limit: DEMO_DOCUMENT_LIMIT,
         used_documents: 0,
       },
       documentRef: 'doc-123',
@@ -51,7 +53,7 @@ describe('document consumption idempotency', () => {
       account: {
         id: 1,
         account_type: 'DEMO',
-        document_limit: 50,
+        document_limit: DEMO_DOCUMENT_LIMIT,
         used_documents: 1,
       },
       documentRef: 'doc-123',

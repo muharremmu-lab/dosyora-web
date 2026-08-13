@@ -8,7 +8,7 @@ import { logApiInfo, logApiWarning } from '@/lib/api-logger'
 import { logDbRouteError } from '@/lib/db/libsql-log'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { buildDemoRequestContext } from '@/lib/demo-policy/context'
-import { processDemoRequest } from '@/lib/demo-policy/service'
+import { processDemoInquiry, processDemoRequest } from '@/lib/demo-policy/service'
 import { listDemoLeads } from '@/lib/db/demo-leads'
 import { FORM_RATE_LIMIT, checkRateLimit } from '@/lib/rate-limit'
 import { getRequestMeta } from '@/lib/request-meta'
@@ -41,6 +41,36 @@ export async function POST(request: NextRequest) {
       userAgent: meta.user_agent,
       phone: validation.data.phone,
     })
+
+    const inquiryOnly =
+      body && typeof body === 'object' && (body as Record<string, unknown>).inquiry_only === true
+
+    if (inquiryOnly) {
+      const result = await processDemoInquiry(
+        {
+          ...validation.data,
+          ...meta,
+        },
+        context,
+      )
+
+      if (result.outcome !== 'inquiry_created') {
+        logApiWarning('demo_inquiry_failed', {
+          ip: meta.ip_address,
+          email: validation.data.email,
+          outcome: result.outcome,
+        })
+        return jsonError(result.message, result.status)
+      }
+
+      logApiInfo('demo_inquiry_success', {
+        ip: meta.ip_address,
+        email: result.lead.email,
+        leadId: result.lead.id,
+      })
+
+      return jsonOk({ lead: result.lead, inquiry: true }, { status: 201 })
+    }
 
     const result = await processDemoRequest(
       {

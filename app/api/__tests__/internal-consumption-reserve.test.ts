@@ -23,7 +23,7 @@ vi.mock('@/lib/db/demo-leads', () => ({
     id: 1,
     email: 'demo@example.com',
     account_type: 'DEMO',
-    document_limit: 50,
+    document_limit: 20,
     used_documents: 0,
     lifecycle_status: 'ACTIVE',
   })),

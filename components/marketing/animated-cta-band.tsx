@@ -1,6 +1,7 @@
 import { Headphones, Rocket, Shield } from 'lucide-react'
 
 import { ButtonLink, Icon, SectionContainer } from '@/components/ui'
+import { contactFormHref } from '@/lib/contact-routes'
 import { homepageDemoLimitLabel, homepageSectionY } from '@/lib/homepage-content'
 
 const ctaPoints = [
@@ -39,7 +40,7 @@ export function AnimatedCtaBand() {
 
           <div className="mt-10">
             <ButtonLink
-              href="/demo"
+              href={contactFormHref('demo')}
               variant="secondary"
               className="px-8 py-3 text-base font-semibold"
               aria-label="Ücretsiz demo talep et"

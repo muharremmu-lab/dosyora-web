@@ -60,11 +60,16 @@ function renderFieldListText(fields: Array<{ label: string; value: string | null
   return fields.map((field) => `${field.label}: ${field.value?.trim() || '—'}`).join('\n')
 }
 
+function resolveLeadDocumentLimit(lead: DemoLead): number {
+  return lead.document_limit ?? DEMO_DOCUMENT_LIMIT
+}
+
 export function buildDemoApplicantEmail(lead: DemoLead, activationToken?: string): EmailTemplate {
   const contactName = lead.contact_name.trim()
   const companyName = lead.company_name.trim()
   const loginUrl = getCustomerLoginUrl()
   const activationUrl = activationToken ? buildActivationUrl(activationToken, siteConfig.url) : null
+  const documentLimit = resolveLeadDocumentLimit(lead)
 
   const textLines = [
     `Merhaba ${contactName},`,
@@ -72,7 +77,7 @@ export function buildDemoApplicantEmail(lead: DemoLead, activationToken?: string
     'DOSYORA demo hesabınız hazır.',
     '',
     `Firma: ${companyName}`,
-    `Ücretsiz belge hakkınız: ${DEMO_DOCUMENT_LIMIT}`,
+    `Ücretsiz belge hakkınız: ${documentLimit}`,
     '',
   ]
 
@@ -100,7 +105,7 @@ export function buildDemoApplicantEmail(lead: DemoLead, activationToken?: string
       <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Merhaba ${escapeHtml(contactName)},</p>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">DOSYORA demo hesabınız hazır.</p>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;"><strong>Firma:</strong> ${escapeHtml(companyName)}</p>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;"><strong>Ücretsiz belge hakkınız:</strong> ${DEMO_DOCUMENT_LIMIT}</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;"><strong>Ücretsiz belge hakkınız:</strong> ${documentLimit}</p>
       ${activationHtml}
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;"><strong>Giriş adresi:</strong> ${escapeHtml(loginUrl)}</p>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">Sorularınız için <a href="mailto:info@dosyora.com">info@dosyora.com</a> adresinden bize ulaşabilirsiniz.</p>

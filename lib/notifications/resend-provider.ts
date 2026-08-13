@@ -87,6 +87,11 @@ export class ResendNotificationProvider implements NotificationProvider {
       return
     }
 
+    if (payload.type === 'demo_inquiry_created') {
+      await this.sendAdminDemoEmail(payload.lead)
+      return
+    }
+
     await this.sendContactMessageCreated(payload.message)
   }
 

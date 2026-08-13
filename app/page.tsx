@@ -1,6 +1,7 @@
 import {
   AnimatedCtaBand,
   AudienceSection,
+  ContactSection,
   FaqSection,
   HeroSection,
   HomeFeaturesSection,
@@ -10,6 +11,7 @@ import {
   SiteHeader,
   WhyDosyoraSection,
 } from '@/components/marketing'
+import { parseContactFormType } from '@/lib/contact-routes'
 import { createPageMetadata } from '@/lib/metadata'
 import { siteConfig } from '@/lib/site'
 
@@ -19,7 +21,14 @@ export const metadata = createPageMetadata({
   path: '/',
 })
 
-export default function HomePage() {
+type HomePageProps = {
+  searchParams: Promise<{ type?: string }>
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams
+  const defaultType = parseContactFormType(params.type)
+
   return (
     <>
       <SiteHeader />
@@ -32,6 +41,7 @@ export default function HomePage() {
         <AudienceSection />
         <FaqSection />
         <AnimatedCtaBand />
+        <ContactSection defaultType={defaultType} />
       </main>
       <SiteFooter />
     </>

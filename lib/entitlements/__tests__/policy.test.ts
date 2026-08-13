@@ -5,11 +5,16 @@ import {
   getDocumentEntitlement,
   getRemainingDocumentQuota,
   resolveDemoDocumentLimit,
+  resolveDemoDocumentLimitForAttempt,
 } from '@/lib/entitlements/policy'
 
 describe('entitlement policy', () => {
-  it('assigns fixed 50 document limit for new demo accounts', () => {
-    expect(resolveDemoDocumentLimit()).toBe(50)
+  it('uses 20 as marketing default and first-attempt fallback', () => {
+    expect(resolveDemoDocumentLimit()).toBe(20)
+    expect(resolveDemoDocumentLimitForAttempt(0)).toBe(20)
+    expect(resolveDemoDocumentLimitForAttempt(1)).toBe(10)
+    expect(resolveDemoDocumentLimitForAttempt(2)).toBe(5)
+    expect(resolveDemoDocumentLimitForAttempt(3)).toBeNull()
   })
 
   it('preserves legacy demo document limits stored on the account', () => {
@@ -23,14 +28,14 @@ describe('entitlement policy', () => {
     expect(entitlement.remaining).toBe(65)
   })
 
-  it('falls back to 50 when demo account has no stored limit', () => {
+  it('falls back to 20 when demo account has no stored limit', () => {
     const entitlement = getDocumentEntitlement({
       account_type: 'DEMO',
       document_limit: null,
       used_documents: 13,
     })
 
-    expect(entitlement.remaining).toBe(37)
+    expect(entitlement.remaining).toBe(7)
     expect(entitlement.canProcess).toBe(true)
   })
 
@@ -38,8 +43,8 @@ describe('entitlement policy', () => {
     expect(
       canProcessDocument({
         account_type: 'DEMO',
-        document_limit: 50,
-        used_documents: 50,
+        document_limit: 20,
+        used_documents: 20,
       }),
     ).toBe(false)
   })

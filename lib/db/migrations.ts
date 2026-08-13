@@ -6,7 +6,7 @@ import { executeWithClient, type SqlArgs } from './execute'
 import { logDbInitError, logDbInitStart, logDbInitSuccess } from './libsql-log'
 import { runMigrationPreflight } from './migration-preflight'
 
-const REQUIRED_TABLES = ['demo_leads', 'contact_messages', 'ip_demo_quota', 'document_consumption_events'] as const
+const REQUIRED_TABLES = ['demo_leads', 'contact_messages', 'ip_demo_quota', 'email_demo_quota', 'document_consumption_events'] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
 const DEMO_LEADS_COLUMNS = [
@@ -157,6 +157,15 @@ export async function runMigrations(client: Client) {
 )`,
     },
     {
+      operation: 'migration.create.email_demo_quota',
+      sql: `CREATE TABLE IF NOT EXISTS email_demo_quota (
+  email TEXT PRIMARY KEY,
+  demo_count INTEGER NOT NULL DEFAULT 0,
+  window_started_at TEXT NOT NULL,
+  window_expires_at TEXT NOT NULL
+)`,
+    },
+    {
       operation: 'migration.create.document_consumption_events',
       sql: `CREATE TABLE IF NOT EXISTS document_consumption_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -220,6 +229,16 @@ export async function runMigrations(client: Client) {
       client,
       'migration.index.demo_leads_account_status',
       `CREATE INDEX IF NOT EXISTS idx_demo_leads_account_status ON demo_leads(account_status)`,
+    )
+
+    await runStatement(
+      client,
+      'migration.index.demo_leads_unique_active_demo_email',
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_demo_leads_unique_active_demo_email
+       ON demo_leads(email)
+       WHERE account_type = 'DEMO'
+         AND COALESCE(lifecycle_status, 'ACTIVE') = 'ACTIVE'
+         AND account_status IN ('ACTIVE', 'DISABLED')`,
     )
 
     await verifySchema(client)

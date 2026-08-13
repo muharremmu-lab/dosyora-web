@@ -3,6 +3,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
 import { processDemoRequest } from '@/lib/demo-policy/service'
 
+import { createDemoQuotaReservationMock } from './demo-quota-reservation.mock'
+
+const quotaReservationMock = createDemoQuotaReservationMock()
+
+vi.mock('@/lib/db/demo-quota-reservation', () => ({
+  reserveDemoAttemptQuota: (...args: Parameters<typeof quotaReservationMock.reserveDemoAttemptQuota>) =>
+    quotaReservationMock.reserveDemoAttemptQuota(...args),
+  releaseDemoAttemptQuota: (...args: Parameters<typeof quotaReservationMock.releaseDemoAttemptQuota>) =>
+    quotaReservationMock.releaseDemoAttemptQuota(...args),
+}))
+
 vi.mock('@/lib/db/demo-leads', () => ({
   createDemoAccount: vi.fn(async (input) => ({
     id: 1,
@@ -44,9 +55,10 @@ vi.mock('@/lib/notifications/service', () => ({
 describe('processDemoRequest S1 policy', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    quotaReservationMock.reset()
   })
 
-  it('creates new demo accounts with fixed 50 document limit', async () => {
+  it('creates new demo accounts with first-attempt 20 document limit', async () => {
     const { createDemoAccount } = await import('@/lib/db/demo-leads')
 
     const result = await processDemoRequest(
@@ -71,7 +83,7 @@ describe('processDemoRequest S1 policy', () => {
 
     expect(createDemoAccount).toHaveBeenCalledWith(
       expect.objectContaining({
-        document_limit: 50,
+        document_limit: 20,
         account_type: 'DEMO',
       }),
     )
@@ -98,7 +110,7 @@ describe('processDemoRequest S1 policy', () => {
     expect(provisionDemoAccountSafely).toHaveBeenCalledWith(
       expect.objectContaining({
         externalAccountId: '1',
-        documentLimit: 50,
+        documentLimit: 20,
       }),
     )
   })
@@ -154,5 +166,96 @@ describe('processDemoRequest S1 policy', () => {
     )
 
     expect(result.outcome).toBe('duplicate_email')
+  })
+
+  it('returns repeat quota exceeded when email history reaches fourth attempt', async () => {
+    quotaReservationMock.seed({ email: 'quota@example.com', count: 3 })
+
+    const result = await processDemoRequest(
+      {
+        company_name: 'Atlas',
+        contact_name: 'Ayşe',
+        email: 'quota@example.com',
+        phone: '+905551112233',
+      },
+      {
+        email: 'quota@example.com',
+        ipAddress: '10.0.0.2',
+        userAgent: 'vitest',
+        phone: '+905551112233',
+      },
+    )
+
+    expect(result.outcome).toBe('ip_quota_exceeded')
+  })
+
+  it('assigns 10 belge when same email was used before on another IP', async () => {
+    quotaReservationMock.seed({ email: 'repeat@example.com', count: 1 })
+
+    const { createDemoAccount } = await import('@/lib/db/demo-leads')
+
+    const result = await processDemoRequest(
+      {
+        company_name: 'Atlas',
+        contact_name: 'Ayşe',
+        email: 'repeat@example.com',
+        phone: '+905551112233',
+      },
+      {
+        email: 'repeat@example.com',
+        ipAddress: '10.0.0.9',
+        userAgent: 'vitest',
+        phone: '+905551112233',
+      },
+    )
+
+    expect(result.outcome).toBe('created')
+    if (result.outcome === 'created') {
+      expect(result.documentLimit).toBe(10)
+    }
+    expect(createDemoAccount).toHaveBeenCalledWith(
+      expect.objectContaining({ document_limit: 10 }),
+    )
+  })
+
+  it('reserves attempt quota before provisioning', async () => {
+    await processDemoRequest(
+      {
+        company_name: 'Atlas',
+        contact_name: 'Ayşe',
+        email: 'counter@example.com',
+        phone: '+905551112233',
+      },
+      {
+        email: 'counter@example.com',
+        ipAddress: '127.0.0.1',
+        userAgent: 'vitest',
+        phone: '+905551112233',
+      },
+    )
+
+    expect(quotaReservationMock.emailQuotaState.get('counter@example.com')).toBe(1)
+    expect(quotaReservationMock.ipQuotaState.get('127.0.0.1')).toBe(1)
+  })
+
+  it('returns ip_quota_exceeded after third demo on same IP', async () => {
+    quotaReservationMock.seed({ ip: '127.0.0.1', count: 3 })
+
+    const result = await processDemoRequest(
+      {
+        company_name: 'Atlas',
+        contact_name: 'Ayşe',
+        email: 'quota@example.com',
+        phone: '+905551112233',
+      },
+      {
+        email: 'quota@example.com',
+        ipAddress: '127.0.0.1',
+        userAgent: 'vitest',
+        phone: '+905551112233',
+      },
+    )
+
+    expect(result.outcome).toBe('ip_quota_exceeded')
   })
 })

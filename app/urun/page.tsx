@@ -5,6 +5,7 @@ import {
   SiteHeader,
 } from '@/components/marketing'
 import { SectionContainer } from '@/components/ui'
+import { homepageDemoLimitLabel, homepageDemoMarketingDescription } from '@/lib/homepage-content'
 import { createPageMetadata } from '@/lib/metadata'
 
 export const metadata = createPageMetadata({
@@ -34,8 +35,8 @@ export default function UrunPage() {
         <ProductVersionsSection />
 
         <FinalCtaSection
-          title="100 Belge Ücretsiz Ön İzleme"
-          description="Demo hesabınız otomatik oluşturulur; varsayılan 100 belge okuma hakkı tanımlanır."
+          title={`${homepageDemoLimitLabel} Ücretsiz Ön İzleme`}
+          description={homepageDemoMarketingDescription}
           buttonLabel="Demo Talep Et"
         />
       </main>

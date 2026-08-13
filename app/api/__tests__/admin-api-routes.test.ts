@@ -25,6 +25,7 @@ vi.mock('@/lib/db/contact-messages', () => ({
 
 vi.mock('@/lib/demo-policy/service', () => ({
   processDemoRequest: vi.fn(),
+  processDemoInquiry: vi.fn(),
 }))
 
 vi.mock('@/lib/rate-limit', () => ({

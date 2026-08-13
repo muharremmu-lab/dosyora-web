@@ -49,7 +49,8 @@ export const mainNavItems = [
 
 export const footerNavItems = [
   { path: '/hakkimizda', label: 'Hakkımızda' },
-  { path: '/iletisim', label: 'İletişim' },
+  { path: '/#iletisim', label: 'İletişim' },
+  { path: '/?type=demo#iletisim', label: 'Demo Talep Et' },
   { path: '/kvkk', label: 'Kişisel Verilerin Korunması' },
   { path: '/gizlilik', label: 'Gizlilik Politikası' },
   { path: '/kullanim-sartlari', label: 'Kullanım Şartları' },

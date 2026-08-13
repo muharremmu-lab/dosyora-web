@@ -7,8 +7,8 @@ import { cn } from '@/lib/design-system/cn'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', exact: true },
-  { href: '/admin/demo-leads', label: 'Demo Talepleri' },
-  { href: '/admin/contact-messages', label: 'İletişim Mesajları' },
+  { href: '/admin/contact-requests', label: 'İletişim Talepleri' },
+  { href: '/admin/demo-leads', label: 'Demo Hesapları' },
 ]
 
 export function AdminNav() {

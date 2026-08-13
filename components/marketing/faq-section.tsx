@@ -18,7 +18,7 @@ const faqItems = [
   {
     question: 'Ön izleme programı nasıl çalışır?',
     answer:
-      `Demo başvurunuz incelenir; onaylanan firmalara ${DEMO_DOCUMENT_LIMIT} belge okuma hakkı tanımlanır. Başvuru için /demo sayfasındaki formu doldurmanız yeterlidir.`,
+      `Demo başvurunuz incelenir; onaylanan firmalara ${DEMO_DOCUMENT_LIMIT} belge okuma hakkı tanımlanır. Ana sayfadaki iletişim formundan demo talebi gönderebilirsiniz.`,
   },
   {
     question: 'Hangi muhasebe programlarıyla uyumludur?',

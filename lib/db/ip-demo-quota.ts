@@ -1,3 +1,5 @@
+import { DEMO_RUNTIME_LIMITS } from '@/lib/entitlements/constants'
+
 import { dbQueryOne, dbRun } from './query'
 import type { IpDemoQuota } from './types'
 
@@ -49,26 +51,33 @@ export async function getIpDemoQuota(ipAddress: string): Promise<IpDemoQuota> {
 }
 
 export async function incrementIpDemoQuota(ipAddress: string): Promise<IpDemoQuota> {
-  const quota = await getIpDemoQuota(ipAddress)
+  await getIpDemoQuota(ipAddress)
 
   await dbRun(
     'incrementIpDemoQuota',
     `
     UPDATE ip_demo_quota
-    SET demo_count = ?
+    SET demo_count = demo_count + 1
     WHERE ip_address = ?
   `,
-    [quota.demo_count + 1, ipAddress],
+    [ipAddress],
   )
 
-  return {
-    ...quota,
-    demo_count: quota.demo_count + 1,
+  const row = await dbQueryOne<IpDemoQuota>(
+    'incrementIpDemoQuota.select',
+    'SELECT * FROM ip_demo_quota WHERE ip_address = ?',
+    [ipAddress],
+  )
+
+  if (!row) {
+    throw new Error('IP demo quota row missing after increment.')
   }
+
+  return row
 }
 
-export const IP_DOCUMENT_LIMITS = [100, 75, 50, 25] as const
-export const IP_MAX_FREE_DEMOS = IP_DOCUMENT_LIMITS.length
+export const IP_DOCUMENT_LIMITS = DEMO_RUNTIME_LIMITS
+export const IP_MAX_FREE_DEMOS = DEMO_RUNTIME_LIMITS.length
 
 export function getDocumentLimitForIpCount(demoCount: number): number | null {
   if (demoCount >= IP_MAX_FREE_DEMOS) {
