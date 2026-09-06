@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 export const runtime = 'nodejs'
 
 import { createClient } from '@libsql/client/web'
