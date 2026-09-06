@@ -10,7 +10,6 @@ import type {
   CreateDemoAccountInput,
   CreateDemoLeadInput,
   DemoLead,
-  LeadStatus,
   PaginatedResult,
   UpdateDemoLeadInput,
 } from './types'
