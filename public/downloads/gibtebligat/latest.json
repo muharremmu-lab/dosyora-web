@@ -1,8 +1,8 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "39319cc908b209fc73c5b1ef93b848a061f54380901c84989101d5b725c9138c",
-  "notes": "GibTebligat Pro 1.0.2. Lisans ve paket penceresi. Tek dosya sürüm; yerel kütüphaneler paketin içinde.",
+  "sha256": "4024581250e3adcf264d9530157be050270bae4ea2b036b63868098d4e5c6be8",
+  "notes": "GibTebligat Pro 1.0.3. Zorunlu sessiz güncelleme ve anlık GİB ayar dosyası.",
   "mandatory": true,
-  "releaseNote": "GibTebligat Pro 1.0.2. Lisans ve paket penceresi. Tek dosya sürüm; yerel kütüphaneler paketin içinde."
+  "releaseNote": "Sistem / GİB uyumluluk güncellemesi. Zorunlu sürüm."
 }
