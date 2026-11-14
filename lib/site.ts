@@ -41,6 +41,7 @@ export const siteRoutes = [
 ] as const
 
 export const mainNavItems = [
+  { path: '/indir', label: 'GibTebligat Pro İndir' },
   { path: '/urun', label: 'Ürün' },
   { path: '/#nasil-calisir', label: 'Nasıl Çalışır?' },
   { path: '/cozumler', label: 'Çözümler' },

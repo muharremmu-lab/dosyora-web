@@ -8,26 +8,38 @@ import { GibTebligatPricing } from './gibtebligat-pricing'
 
 type ProductFamilySectionProps = {
   headingLevel?: 'h1' | 'h2'
+  placement?: 'hero' | 'section'
+  showDetailsLink?: boolean
 }
 
-export function ProductFamilySection({ headingLevel = 'h2' }: ProductFamilySectionProps) {
+export function ProductFamilySection({
+  headingLevel = 'h2',
+  placement = 'section',
+  showDetailsLink = false,
+}: ProductFamilySectionProps) {
   const Heading = headingLevel
+  const isHero = placement === 'hero'
 
   return (
     <SectionContainer
       id="urun-ailesi"
-      className={`border-t border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] ${homepageSectionY} ${homepageScrollMt}`}
+      className={`${isHero ? 'pt-9 sm:pt-10' : 'border-t border-[var(--ds-color-border)]'} bg-[var(--ds-color-surface)] ${homepageSectionY} ${homepageScrollMt}`}
       aria-labelledby="product-family-heading"
     >
-      <div className="max-w-3xl">
-        <p className="text-sm font-semibold uppercase tracking-wide text-[var(--ds-color-primary)]">Ürün ailesi</p>
+      <div className="max-w-4xl">
+        <p className="text-sm font-semibold uppercase tracking-wide text-[var(--ds-color-primary)]">
+          Dosyora Ürün Ailesi
+        </p>
         <Heading
           id="product-family-heading"
-          className="mt-2 text-2xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-3xl"
+          className={
+            isHero
+              ? 'mt-3 text-[1.75rem] font-bold leading-[1.15] tracking-tight text-[var(--ds-color-text)] sm:text-[2.35rem]'
+              : 'mt-2 text-2xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-3xl'
+          }
         >
-          Tebligatlarınızı okuyun, arşivleyin, takip edin.
+          Tebligatlarınızı okuyun, arşivleyin, takip edin · Tüm güncellemeler ücretsiz
         </Heading>
-        <p className="mt-3 text-base font-medium text-[var(--ds-color-text)] sm:text-lg">Tüm güncellemeler ücretsiz.</p>
       </div>
 
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
@@ -35,7 +47,7 @@ export function ProductFamilySection({ headingLevel = 'h2' }: ProductFamilySecti
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="success">Yayında · v1.0.0</Badge>
           </div>
-          <h3 className="mt-4 text-xl font-bold text-[var(--ds-color-text)]">GibTebligat Pro</h3>
+          <h3 className="mt-4 text-xl font-bold text-[var(--ds-color-text)]">1. GibTebligat Pro</h3>
           <p className="mt-3 flex-1 text-sm leading-relaxed text-[var(--ds-color-text-muted)] sm:text-base">
             GİB e-Tebligatlarınızı tek tıkla otomatik sorgulayın; PDF ve ekleriyle birlikte bilgisayarınıza
             düzenli klasörler halinde okuyun, arşivleyin ve okunma durumlarını anlık takip edin. 14 gün
@@ -46,7 +58,7 @@ export function ProductFamilySection({ headingLevel = 'h2' }: ProductFamilySecti
               <Download className="size-4" aria-hidden="true" />
               14 Gün Ücretsiz İndir
             </a>
-            {headingLevel === 'h2' ? (
+            {showDetailsLink ? (
               <a href="/indir" className={buttonClassName('outline', 'px-5 py-2.5')}>
                 Detayları İncele
               </a>
@@ -57,7 +69,7 @@ export function ProductFamilySection({ headingLevel = 'h2' }: ProductFamilySecti
         <article className="flex h-full flex-col rounded-[var(--ds-radius-xl)] border border-dashed border-[var(--ds-color-border)] bg-[var(--ds-color-surface-alt)] p-6 sm:p-8">
           <Badge variant="warning">Yakında</Badge>
           <h3 className="mt-4 text-xl font-bold text-[var(--ds-color-text)]">
-            Belge Okuma, Arşiv ve Muhasebeleştirme
+            2. Belge Okuma, Arşiv ve Muhasebeleştirme
           </h3>
           <p className="mt-3 text-sm leading-relaxed text-[var(--ds-color-text-muted)] sm:text-base">
             Fatura, banka ekstresi, beyanname ve mali belgelerinizi yapay zeka ile okuyun, dijital olarak
