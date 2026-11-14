@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import type { DemoLead } from '@/lib/db/types'
+import type { DemoLead, LicenseNotification } from '@/lib/db/types'
+import { bankTransferInstructions } from '@/lib/license/bank-instructions'
 
 import { extractAccountingProgram, extractLeadNotes } from '@/lib/notifications/lead-fields'
-import { buildDemoAdminEmail, buildDemoApplicantEmail } from '@/lib/notifications/templates'
+import { buildDemoAdminEmail, buildDemoApplicantEmail, buildLicenseNotificationAdminEmail } from '@/lib/notifications/templates'
 
 const sampleLead: DemoLead = {
   id: 1,
@@ -62,6 +63,27 @@ describe('notification templates', () => {
     expect(email.html).not.toContain('<script')
     expect(email.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
     expect(email.text).toContain('<script>alert(1)</script>')
+  })
+
+  it('includes bank instructions only in the admin license email', () => {
+    const notification: LicenseNotification = {
+      id: 4,
+      full_name: 'Atlas A.Ş.',
+      email: 'fatura@example.com',
+      tax_number: '1234567890',
+      tax_office: 'Davutpaşa',
+      address: 'İstanbul',
+      status: 'PENDING',
+      created_at: '2026-11-15T00:00:00.000Z',
+      updated_at: '2026-11-15T00:00:00.000Z',
+    }
+
+    const email = buildLicenseNotificationAdminEmail(notification)
+
+    expect(email.text).toContain(bankTransferInstructions.iban)
+    expect(email.text).toContain(bankTransferInstructions.recipientName)
+    expect(email.text).toContain(bankTransferInstructions.relayNote)
+    expect(email.html).toContain('PENDING')
   })
 
   it('extracts accounting program and notes from lead message', () => {

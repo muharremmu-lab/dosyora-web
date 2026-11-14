@@ -5,6 +5,8 @@ import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
 import { getCustomerLoginUrl } from '@/lib/customer-portal'
 import { siteConfig } from '@/lib/site'
 
+import { bankTransferInstructions } from '@/lib/license/bank-instructions'
+
 import { escapeHtml, escapeHtmlOrDash } from './escape'
 import { buildDemoLeadAdminFields } from './lead-fields'
 
@@ -186,17 +188,26 @@ export function buildLicenseNotificationAdminEmail(notification: LicenseNotifica
     { label: 'Fatura Adresi', value: notification.address },
     { label: 'Durum', value: notification.status },
     { label: 'Bildirim Zamanı', value: notification.created_at },
+    { label: 'Alıcı', value: bankTransferInstructions.recipientName },
+    { label: 'IBAN', value: bankTransferInstructions.iban },
   ]
 
-  const text = ['Yeni bir Dosyora kurumsal lisans havale bildirimi alındı.', '', renderFieldListText(fields)].join('\n')
+  const text = [
+    'Yeni bir Dosyora kurumsal lisans havale bildirimi alındı.',
+    '',
+    renderFieldListText(fields),
+    '',
+    bankTransferInstructions.relayNote,
+  ].join('\n')
   const html = wrapEmailHtml(
     'Yeni Dosyora Havale Bildirimi',
     `
       <h1 style="margin:0 0 16px;font-size:20px;line-height:1.4;color:#111827;">Yeni Dosyora Havale Bildirimi</h1>
-      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#374151;">Kurumsal lisans formundan yeni bir havale bildirimi alındı.</p>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#374151;">Kurumsal lisans formundan yeni bir havale bildirimi alındı. Banka bilgileri yalnızca bu bildirimdedir; onaydan sonra müşteriye e-posta ile iletin.</p>
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
         ${renderFieldListHtml(fields)}
       </table>
+      <p style="margin:20px 0 0;font-size:14px;line-height:1.6;color:#374151;">${escapeHtml(bankTransferInstructions.relayNote)}</p>
     `,
   )
 

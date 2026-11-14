@@ -17,6 +17,12 @@ type LicenseNotification = {
   created_at: string
 }
 
+type BankTransfer = {
+  recipientName: string
+  iban: string
+  relayNote: string
+}
+
 const STATUS_LABELS: Record<NotificationStatus, string> = {
   PENDING: 'Bekliyor',
   APPROVED: 'Onaylandı',
@@ -25,6 +31,7 @@ const STATUS_LABELS: Record<NotificationStatus, string> = {
 
 export function LicenseNotificationsPanel() {
   const [items, setItems] = useState<LicenseNotification[]>([])
+  const [bankTransfer, setBankTransfer] = useState<BankTransfer | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(true)
@@ -35,8 +42,9 @@ export function LicenseNotificationsPanel() {
     if (!response.ok) {
       throw new Error('Havale bildirimleri okunamadı.')
     }
-    const payload = (await response.json()) as { notifications: LicenseNotification[] }
+    const payload = (await response.json()) as { notifications: LicenseNotification[]; bankTransfer?: BankTransfer }
     setItems(payload.notifications)
+    setBankTransfer(payload.bankTransfer ?? null)
   }
 
   useEffect(() => {
@@ -82,6 +90,22 @@ export function LicenseNotificationsPanel() {
 
   return (
     <div className="space-y-4">
+      {bankTransfer ? (
+        <section className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-alt)] p-4">
+          <h2 className="text-sm font-semibold text-[var(--ds-color-text)]">Onay sonrası iletilecek havale bilgileri</h2>
+          <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs text-[var(--ds-color-text-muted)]">Alıcı</dt>
+              <dd className="text-sm font-medium text-[var(--ds-color-text)]">{bankTransfer.recipientName}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-[var(--ds-color-text-muted)]">IBAN</dt>
+              <dd className="font-mono text-sm font-medium text-[var(--ds-color-text)]">{bankTransfer.iban}</dd>
+            </div>
+          </dl>
+          <p className="mt-3 text-xs leading-relaxed text-[var(--ds-color-text-muted)]">{bankTransfer.relayNote}</p>
+        </section>
+      ) : null}
       {error ? <p className="text-sm text-[var(--ds-color-danger)]">{error}</p> : null}
       {notice ? <p className="text-sm text-[var(--ds-color-text)]">{notice}</p> : null}
       <div className="overflow-x-auto rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)]">

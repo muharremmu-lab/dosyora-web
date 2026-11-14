@@ -5,7 +5,7 @@ import { createPageMetadata } from '@/lib/metadata'
 export const metadata = createPageMetadata({
   title: 'Kurumsal Lisans ve Ödeme',
   description:
-    'Dosyora Pro yıllık kurumsal lisans. Banka havalesi ile ödeme ve fatura bildirim formu. Belgeler yerel bilgisayarda saklanır.',
+    'Dosyora ürün gamı ve Dosyora Pro Sınırsız yıllık lisans. Fatura bildirimi sonrası ödeme talimatları e-posta ile iletilir. Belgeler yerel bilgisayarda saklanır.',
   path: '/fiyatlandirma',
 })
 

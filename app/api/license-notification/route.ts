@@ -7,6 +7,7 @@ import { logApiError, logApiInfo, logApiWarning } from '@/lib/api-logger'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { createLicenseNotification, listLicenseNotifications } from '@/lib/db/license-notifications'
 import { notificationService } from '@/lib/notifications/service'
+import { bankTransferInstructions } from '@/lib/license/bank-instructions'
 import { FORM_RATE_LIMIT, checkRateLimit } from '@/lib/rate-limit'
 import { getRequestMeta } from '@/lib/request-meta'
 import { validateLicenseNotificationPayload } from '@/lib/validation/license-notification'
@@ -63,7 +64,7 @@ export async function GET() {
 
   try {
     const notifications = await listLicenseNotifications()
-    return jsonOk({ notifications })
+    return jsonOk({ notifications, bankTransfer: bankTransferInstructions })
   } catch (error) {
     logApiError('license_notification_list_failed', {}, error)
     return jsonError('Bildirimler okunamadı.', 500)

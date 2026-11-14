@@ -7,7 +7,7 @@ export default function LicenseNotificationsPage() {
   return (
     <AdminShell
       title="Lisans / Havale Bildirimleri"
-      description="Kurumsal lisans havale bildirimlerini onaylayın veya reddedin."
+      description="Kurumsal lisans havale bildirimlerini onaylayın veya reddedin. Havale bilgileri giriş yaptıktan sonra bu panelde görünür."
     >
       <LicenseNotificationsPanel />
     </AdminShell>

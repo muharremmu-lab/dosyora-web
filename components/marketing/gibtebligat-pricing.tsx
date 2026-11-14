@@ -2,63 +2,21 @@ import { Check, Download } from 'lucide-react'
 
 import { Badge, buttonClassName } from '@/components/ui'
 import { cn } from '@/lib/design-system/cn'
+import { gibTebligatPlans } from '@/lib/gibtebligat-plans'
 
 import { DownloadAnchor } from './download-anchor'
 
-const plans = [
-  {
-    name: 'Firma Paketi',
-    price: '100 TL',
-    cadence: '/ Yıl (KDV Dahil)',
-    popular: false,
-    features: [
-      '1 Firma kapasitesi',
-      'Sınırsız sorgu',
-      'Tebligat okuma, arşivleme ve takip',
-      '14 gün ücretsiz deneme',
-      'Ücretsiz güncellemeler',
-    ],
-  },
-  {
-    name: 'Mali Müşavir 50',
-    price: '500 TL',
-    cadence: '/ Yıl (KDV Dahil)',
-    popular: false,
-    features: [
-      '50 müşteri kapasitesi',
-      'Sınırsız sorgu',
-      'Mükellef bazlı arşiv ve takip',
-      '14 gün ücretsiz deneme',
-      'Ücretsiz güncellemeler',
-    ],
-  },
-  {
-    name: 'Mali Müşavir 100',
-    price: '750 TL',
-    cadence: '/ Yıl (KDV Dahil)',
-    popular: true,
-    features: [
-      '100 müşteri kapasitesi',
-      'Sınırsız sorgu',
-      'Mükellef bazlı arşiv ve takip',
-      '14 gün ücretsiz deneme',
-      'Ücretsiz güncellemeler',
-    ],
-  },
-    {
-      name: 'Mali Müşavir 200',
-      price: '1.000 TL',
-      cadence: '/ Yıl (KDV Dahil)',
-      popular: false,
-      features: [
-        '200 müşteri kapasitesi',
-        'Sınırsız sorgu',
-        'Mükellef bazlı arşiv ve takip',
-        '14 gün ücretsiz deneme',
-        'Ücretsiz güncellemeler',
-      ],
-    },
-  ] as const
+const plans = gibTebligatPlans.map((plan) => ({
+  ...plan,
+  popular: plan.name === 'Mali Müşavir 100',
+  features: [
+    plan.features[0],
+    plan.features[1],
+    plan.name.startsWith('Mali') ? 'Mükellef bazlı arşiv ve takip' : 'Tebligat okuma, arşivleme ve takip',
+    '14 gün ücretsiz deneme',
+    'Ücretsiz güncellemeler',
+  ],
+}))
 
 type GibTebligatPricingProps = {
   source: 'home' | 'indir'
