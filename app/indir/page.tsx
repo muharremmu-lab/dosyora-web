@@ -1,4 +1,4 @@
-import { DesktopDownloadSection, SiteFooter, SiteHeader } from '@/components/marketing'
+import { ProductFamilySection, SiteFooter, SiteHeader } from '@/components/marketing'
 import { createPageMetadata } from '@/lib/metadata'
 
 export const metadata = createPageMetadata({
@@ -13,7 +13,7 @@ export default function IndirPage() {
     <>
       <SiteHeader />
       <main>
-        <DesktopDownloadSection headingLevel="h1" />
+        <ProductFamilySection headingLevel="h1" />
       </main>
       <SiteFooter />
     </>

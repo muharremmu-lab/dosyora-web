@@ -2,12 +2,12 @@ import {
   AnimatedCtaBand,
   AudienceSection,
   ContactSection,
-  DesktopDownloadSection,
   FaqSection,
   HeroSection,
   HomeFeaturesSection,
   HomeV123Section,
   HowItWorksSection,
+  ProductFamilySection,
   SiteFooter,
   SiteHeader,
   WhyDosyoraSection,
@@ -39,7 +39,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <HomeFeaturesSection />
         <HomeV123Section />
         <WhyDosyoraSection />
-        <DesktopDownloadSection />
+        <ProductFamilySection />
         <AudienceSection />
         <FaqSection />
         <AnimatedCtaBand />
