@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 
+import { LicenseOrdersPanel } from './license-orders-panel'
+
 type TelemetryRow = {
   id: number
   createdAt: string
@@ -132,6 +134,8 @@ export function GibTebligatReports() {
           </table>
         </div>
       </section>
+
+      <LicenseOrdersPanel />
     </div>
   )
 }

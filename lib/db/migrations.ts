@@ -15,6 +15,8 @@ const REQUIRED_TABLES = [
   'trial_claims',
   'telemetry_logs',
   'download_logs',
+  'license_orders',
+  'license_settings',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -247,6 +249,61 @@ export async function runMigrations(client: Client) {
     {
       operation: 'migration.index.download_logs_created_at',
       sql: `CREATE INDEX IF NOT EXISTS idx_download_logs_created_at ON download_logs(created_at)`,
+    },
+    {
+      operation: 'migration.create.license_orders',
+      sql: `CREATE TABLE IF NOT EXISTS license_orders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  hwid TEXT NOT NULL,
+  package_code TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  vkn TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  status TEXT NOT NULL,
+  license_key TEXT,
+  expires_at TEXT,
+  payment_code TEXT,
+  price_tl INTEGER NOT NULL
+)`,
+    },
+    {
+      operation: 'migration.create.license_settings',
+      sql: `CREATE TABLE IF NOT EXISTS license_settings (
+  setting_key TEXT PRIMARY KEY,
+  setting_value TEXT NOT NULL
+)`,
+    },
+    {
+      operation: 'migration.index.license_orders_hwid',
+      sql: `CREATE INDEX IF NOT EXISTS idx_license_orders_hwid ON license_orders(hwid)`,
+    },
+    {
+      operation: 'migration.index.license_orders_vkn',
+      sql: `CREATE INDEX IF NOT EXISTS idx_license_orders_vkn ON license_orders(vkn)`,
+    },
+    {
+      operation: 'migration.index.license_orders_status',
+      sql: `CREATE INDEX IF NOT EXISTS idx_license_orders_status ON license_orders(status)`,
+    },
+    {
+      operation: 'migration.index.license_orders_one_provisional_hwid',
+      sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_license_orders_one_provisional_hwid
+ON license_orders(hwid) WHERE status = 'provisional'`,
+    },
+    {
+      operation: 'migration.index.license_orders_one_provisional_vkn',
+      sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_license_orders_one_provisional_vkn
+ON license_orders(vkn) WHERE status = 'provisional'`,
+    },
+    {
+      operation: 'migration.seed.license_settings',
+      sql: `INSERT OR IGNORE INTO license_settings (setting_key, setting_value) VALUES
+  ('iban', ''),
+  ('account_name', 'DOSYORA'),
+  ('note_prefix', 'GT')`,
     },
   ]
 
