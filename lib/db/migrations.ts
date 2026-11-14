@@ -6,7 +6,14 @@ import { executeWithClient, type SqlArgs } from './execute'
 import { logDbInitError, logDbInitStart, logDbInitSuccess } from './libsql-log'
 import { runMigrationPreflight } from './migration-preflight'
 
-const REQUIRED_TABLES = ['demo_leads', 'contact_messages', 'ip_demo_quota', 'email_demo_quota', 'document_consumption_events'] as const
+const REQUIRED_TABLES = [
+  'demo_leads',
+  'contact_messages',
+  'ip_demo_quota',
+  'email_demo_quota',
+  'document_consumption_events',
+  'trial_claims',
+] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
 const DEMO_LEADS_COLUMNS = [
@@ -163,6 +170,15 @@ export async function runMigrations(client: Client) {
   demo_count INTEGER NOT NULL DEFAULT 0,
   window_started_at TEXT NOT NULL,
   window_expires_at TEXT NOT NULL
+)`,
+    },
+    {
+      operation: 'migration.create.trial_claims',
+      sql: `CREATE TABLE IF NOT EXISTS trial_claims (
+  vkn_hash TEXT PRIMARY KEY,
+  first_hwid TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL
 )`,
     },
     {
