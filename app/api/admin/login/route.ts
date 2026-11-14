@@ -7,8 +7,8 @@ import {
   ADMIN_SESSION_MAX_AGE_SECONDS,
   createAdminSessionToken,
   isAdminAuthConfigured,
-  validateAdminCredentials,
 } from '@/lib/admin-auth'
+import { authenticateAdmin } from '@/lib/admin-password-reset'
 import {
   checkAdminLoginRateLimit,
   clearAdminLoginRateLimit,
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    if (!validateAdminCredentials(username, password)) {
+    if (!(await authenticateAdmin(username, password))) {
       logApiWarning('admin_login_failed', { ip: meta.ip_address })
       return jsonError('Geçersiz kullanıcı adı veya şifre.', 401)
     }

@@ -18,6 +18,8 @@ const REQUIRED_TABLES = [
   'license_orders',
   'license_settings',
   'device_heartbeats',
+  'admin_password_resets',
+  'admin_password_overrides',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -314,6 +316,24 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
     {
       operation: 'migration.index.device_heartbeats_last_seen',
       sql: `CREATE INDEX IF NOT EXISTS idx_device_heartbeats_last_seen ON device_heartbeats(last_seen_at)`,
+    },
+    {
+      operation: 'migration.create.admin_password_resets',
+      sql: `CREATE TABLE IF NOT EXISTS admin_password_resets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  token_hash TEXT NOT NULL UNIQUE,
+  expires_at TEXT NOT NULL,
+  used_at TEXT,
+  created_at TEXT NOT NULL
+)`,
+    },
+    {
+      operation: 'migration.create.admin_password_overrides',
+      sql: `CREATE TABLE IF NOT EXISTS admin_password_overrides (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  password_hash TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+)`,
     },
     {
       operation: 'migration.seed.license_settings',

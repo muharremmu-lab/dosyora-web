@@ -15,7 +15,7 @@ import {
 export const ADMIN_SESSION_COOKIE = 'dosyora_admin_session'
 export const ADMIN_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7
 
-function safeEqual(left: string, right: string): boolean {
+export function safeEqual(left: string, right: string): boolean {
   const leftBuffer = Buffer.from(left)
   const rightBuffer = Buffer.from(right)
 
