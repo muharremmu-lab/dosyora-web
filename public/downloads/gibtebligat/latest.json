@@ -1,8 +1,8 @@
 {
-  "version": "1.0.8",
+  "version": "1.0.8.1",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "5996a260552ed15f7a3d5d03a4541fe2e1fb8538c3d6554ce0810e7b2cb1f1eb",
-  "notes": "GibTebligat Pro 1.0.8. Tebligat PDF'i WhatsApp ve e-posta ile gönderilir.",
+  "sha256": "1faef675a58d0896b947ca4cb4c6409c8b6e8f4734c457d05b54aec89fc2bce6",
+  "notes": "GibTebligat Pro 1.0.8.1. Listeden seçilen mükellef düzenleme formuna aktarılır.",
   "mandatory": true,
-  "releaseNote": "Mükellef kartına telefon ve e-posta eklendi. Seçili tebligat WhatsApp veya e-posta ile hazır metinle gönderilebilir."
+  "releaseNote": "Mükellef listesinde seçim veya çift tıklama; unvan, VKN, şifre, telefon ve e-postayı forma doldurur."
 }
