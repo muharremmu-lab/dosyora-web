@@ -1,8 +1,8 @@
 {
-  "version": "1.0.3",
+  "version": "1.0.4",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "4024581250e3adcf264d9530157be050270bae4ea2b036b63868098d4e5c6be8",
-  "notes": "GibTebligat Pro 1.0.3. Zorunlu sessiz güncelleme ve anlık GİB ayar dosyası.",
+  "sha256": "b111aa957dcb111fbfc8b7059f93d435117b8a7350cd3925a30914cd09f08c89",
+  "notes": "GibTebligat Pro 1.0.4. Playwright sürücüsü ve Chromium kurulum paketinin içinde.",
   "mandatory": true,
-  "releaseNote": "Sistem / GİB uyumluluk güncellemesi. Zorunlu sürüm."
+  "releaseNote": "Playwright sürücü hatası giderildi. Tarayıcı motoru kurulumla birlikte gelir."
 }
