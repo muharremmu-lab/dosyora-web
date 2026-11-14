@@ -1,8 +1,8 @@
 {
-  "version": "1.0.7",
+  "version": "1.0.8",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "d23c2dd9da144410ed3a4511a1cade236c9b6b6cb4cdef9f4d7bf4ba1e014521",
-  "notes": "GibTebligat Pro 1.0.7. Cihaz sinyali ve 5. gün yasal tebliğ süresi.",
+  "sha256": "5996a260552ed15f7a3d5d03a4541fe2e1fb8538c3d6554ce0810e7b2cb1f1eb",
+  "notes": "GibTebligat Pro 1.0.8. Tebligat PDF'i WhatsApp ve e-posta ile gönderilir.",
   "mandatory": true,
-  "releaseNote": "Uygulama açılışında cihaz sinyali gönderilir. Tebligat listesinde yasal tebliğ tarihi ve kalan süre renkli rozetle gösterilir."
+  "releaseNote": "Mükellef kartına telefon ve e-posta eklendi. Seçili tebligat WhatsApp veya e-posta ile hazır metinle gönderilebilir."
 }
