@@ -1,4 +1,5 @@
 import { AdminShell, StatCard } from '@/components/admin'
+import { GibTebligatReports } from '@/components/admin/gibtebligat-reports'
 import {
   countAllContactMessages,
   countContactMessagesByStatus,
@@ -52,6 +53,15 @@ export default async function AdminDashboardPage() {
         <StatCard label="İletişim Formları" value={totalContactMessages} />
         <StatCard label="Yeni İletişim Mesajları" value={newContactMessages} />
       </div>
+      <section className="mt-10">
+        <h2 className="text-xl font-bold text-[var(--ds-color-text)]">GibTebligat Raporları</h2>
+        <p className="mt-1 text-sm text-[var(--ds-color-text-muted)]">
+          Kurulum indirmeleri, aktif demo kurulumları ve GİB hata telemetrisi
+        </p>
+        <div className="mt-6">
+          <GibTebligatReports />
+        </div>
+      </section>
     </AdminShell>
   )
 }

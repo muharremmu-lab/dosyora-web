@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import type { NextRequest } from 'next/server'
 
+import { requireAdminApiAuth } from '@/lib/admin-api-auth'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { downloadCounts } from '@/lib/db/download-logs'
 import { logDbRouteError } from '@/lib/db/libsql-log'
@@ -11,8 +12,9 @@ import { activeTrialSummary } from '@/lib/db/trial-claims-report'
 import { isTelemetryAdminRequest } from '@/lib/telemetry/admin-key'
 
 export async function GET(request: NextRequest) {
-  if (!isTelemetryAdminRequest(request)) {
-    return jsonError('Yetkisiz erişim.', 401)
+  const sessionError = await requireAdminApiAuth()
+  if (sessionError && !isTelemetryAdminRequest(request)) {
+    return sessionError
   }
 
   try {
