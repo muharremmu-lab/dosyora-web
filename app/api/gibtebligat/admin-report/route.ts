@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server'
 
 import { requireAdminApiAuth } from '@/lib/admin-api-auth'
 import { jsonError, jsonOk } from '@/lib/api-response'
+import { listRecentHeartbeats } from '@/lib/db/device-heartbeats'
 import { downloadCounts } from '@/lib/db/download-logs'
 import { logDbRouteError } from '@/lib/db/libsql-log'
 import { listRecentTelemetry } from '@/lib/db/telemetry-logs'
@@ -18,12 +19,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [downloads, demos, telemetry] = await Promise.all([
+    const [downloads, demos, telemetry, heartbeats] = await Promise.all([
       downloadCounts(),
       activeTrialSummary(),
       listRecentTelemetry(50),
+      listRecentHeartbeats(50),
     ])
-    return jsonOk({ downloads, demos, telemetry })
+    return jsonOk({ downloads, demos, telemetry, heartbeats })
   } catch (error) {
     logDbRouteError('gibtebligat_admin_report_failed', error, { operation: 'adminReport' })
     return jsonError('Rapor okunamadı.', 500)

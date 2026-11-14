@@ -17,6 +17,7 @@ const REQUIRED_TABLES = [
   'download_logs',
   'license_orders',
   'license_settings',
+  'device_heartbeats',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -297,6 +298,22 @@ ON license_orders(hwid) WHERE status = 'provisional'`,
       operation: 'migration.index.license_orders_one_provisional_vkn',
       sql: `CREATE UNIQUE INDEX IF NOT EXISTS idx_license_orders_one_provisional_vkn
 ON license_orders(vkn) WHERE status = 'provisional'`,
+    },
+    {
+      operation: 'migration.create.device_heartbeats',
+      sql: `CREATE TABLE IF NOT EXISTS device_heartbeats (
+  hwid TEXT PRIMARY KEY,
+  app_version TEXT NOT NULL,
+  license_status TEXT NOT NULL,
+  os_user TEXT NOT NULL,
+  first_seen_at TEXT NOT NULL,
+  last_seen_at TEXT NOT NULL,
+  seen_count INTEGER NOT NULL DEFAULT 1
+)`,
+    },
+    {
+      operation: 'migration.index.device_heartbeats_last_seen',
+      sql: `CREATE INDEX IF NOT EXISTS idx_device_heartbeats_last_seen ON device_heartbeats(last_seen_at)`,
     },
     {
       operation: 'migration.seed.license_settings',
