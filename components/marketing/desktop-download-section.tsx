@@ -4,7 +4,7 @@ import { Badge, buttonClassName, Icon, SectionContainer } from '@/components/ui'
 import type { LucideIcon } from '@/components/ui/icon'
 import { homepageScrollMt, homepageSectionY } from '@/lib/homepage-content'
 
-export const desktopDownloadHref = '/downloads/gibtebligat/GibTebligatPro-Kurulum.zip'
+export const desktopDownloadHref = '/downloads/gibtebligat/GibTebligatPro-Kurulum.exe'
 
 const features: { title: string; icon: LucideIcon }[] = [
   { title: 'Otomatik GİB e-Tebligat tarama', icon: ScanSearch },
@@ -61,7 +61,7 @@ export function DesktopDownloadSection({ headingLevel = 'h2' }: DesktopDownloadS
           <div className="rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface-alt)] p-5 sm:p-6">
             <p className="text-sm font-semibold text-[var(--ds-color-text)]">Kurulum paketi</p>
             <p className="mt-1 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-              Windows 64-bit. ZIP içinde uygulama, tarama verisi ve model dosyaları bulunur.
+              Windows 64-bit. Kurulum sihirbazı klasörü sorar; uygulama, tarama verisi ve model dosyalarını kurar.
             </p>
             <a
               href={desktopDownloadHref}
@@ -72,7 +72,7 @@ export function DesktopDownloadSection({ headingLevel = 'h2' }: DesktopDownloadS
               Windows İçin İndir (64-bit)
             </a>
             <p className="mt-3 text-center text-xs text-[var(--ds-color-text-muted)]">
-              GibTebligatPro-Kurulum.zip
+              GibTebligatPro-Kurulum.exe
             </p>
           </div>
         </div>
