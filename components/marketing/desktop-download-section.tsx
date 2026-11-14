@@ -1,6 +1,8 @@
 import { Archive, Download, ScanSearch, Timer, Users } from 'lucide-react'
 
 import { Badge, buttonClassName, Icon, SectionContainer } from '@/components/ui'
+
+import { DownloadAnchor } from './download-anchor'
 import type { LucideIcon } from '@/components/ui/icon'
 import { homepageScrollMt, homepageSectionY } from '@/lib/homepage-content'
 
@@ -63,14 +65,10 @@ export function DesktopDownloadSection({ headingLevel = 'h2' }: DesktopDownloadS
             <p className="mt-1 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
               Windows 64-bit. Kurulum sihirbazı klasörü sorar; uygulama, tarama verisi ve model dosyalarını kurar.
             </p>
-            <a
-              href={desktopDownloadHref}
-              download
-              className={buttonClassName('primary', 'mt-5 w-full px-5 py-3 text-base')}
-            >
+            <DownloadAnchor source="home" className={buttonClassName('primary', 'mt-5 w-full px-5 py-3 text-base')}>
               <Download className="size-4" aria-hidden="true" />
               Windows İçin İndir (64-bit)
-            </a>
+            </DownloadAnchor>
             <p className="mt-3 text-center text-xs text-[var(--ds-color-text-muted)]">
               GibTebligatPro-Kurulum.exe
             </p>

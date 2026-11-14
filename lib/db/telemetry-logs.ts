@@ -140,7 +140,7 @@ export async function listRecentTelemetry(limit = 50): Promise<TelemetryLogView[
     `
     SELECT id, created_at, app_version, hwid_hash, error_code, step, detail, os_version, critical_alert
     FROM telemetry_logs
-    ORDER BY id DESC
+    ORDER BY critical_alert DESC, id DESC
     LIMIT ?
   `,
     [limit],

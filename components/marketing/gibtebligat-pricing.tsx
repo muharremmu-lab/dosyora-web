@@ -3,7 +3,7 @@ import { Check, Download } from 'lucide-react'
 import { Badge, buttonClassName } from '@/components/ui'
 import { cn } from '@/lib/design-system/cn'
 
-import { desktopDownloadHref } from './desktop-download-section'
+import { DownloadAnchor } from './download-anchor'
 
 const plans = [
   {
@@ -45,35 +45,26 @@ const plans = [
       'Ücretsiz güncellemeler',
     ],
   },
-  {
-    name: 'Mali Müşavir 200',
-    price: '1.000 TL',
-    cadence: '/ Yıl (KDV Dahil)',
-    popular: false,
-    features: [
-      '200 müşteri kapasitesi',
-      'Sınırsız sorgu',
-      'Mükellef bazlı arşiv ve takip',
-      '14 gün ücretsiz deneme',
-      'Ücretsiz güncellemeler',
-    ],
-  },
-  {
-    name: 'Mali Müşavir Sınırsız',
-    price: '1.500 TL',
-    cadence: '/ Yıl (KDV Dahil)',
-    popular: false,
-    features: [
-      'Sınırsız müşteri kapasitesi',
-      'Sınırsız sorgu',
-      'Tam arşiv ve takip',
-      '14 gün ücretsiz deneme',
-      'Ücretsiz güncellemeler',
-    ],
-  },
-] as const
+    {
+      name: 'Mali Müşavir 200',
+      price: '1.000 TL',
+      cadence: '/ Yıl (KDV Dahil)',
+      popular: false,
+      features: [
+        '200 müşteri kapasitesi',
+        'Sınırsız sorgu',
+        'Mükellef bazlı arşiv ve takip',
+        '14 gün ücretsiz deneme',
+        'Ücretsiz güncellemeler',
+      ],
+    },
+  ] as const
 
-export function GibTebligatPricing() {
+type GibTebligatPricingProps = {
+  source: 'home' | 'indir'
+}
+
+export function GibTebligatPricing({ source }: GibTebligatPricingProps) {
   return (
     <div className="mt-10" aria-labelledby="gibtebligat-pricing-heading">
       <h3
@@ -82,7 +73,7 @@ export function GibTebligatPricing() {
       >
         14 Gün Ücretsiz Kullanım · Tüm Güncellemeler Ücretsiz · Yıllık KDV Dahil Fiyatlar
       </h3>
-      <div className="mt-6 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mt-6 grid grid-cols-1 items-stretch gap-3 md:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => (
           <article
             key={plan.name}
@@ -109,9 +100,8 @@ export function GibTebligatPricing() {
                 </li>
               ))}
             </ul>
-            <a
-              href={desktopDownloadHref}
-              download
+            <DownloadAnchor
+              source={source}
               className={buttonClassName(
                 plan.popular ? 'primary' : 'outline',
                 'mt-4 w-full whitespace-normal px-2 py-2 text-center text-xs leading-snug',
@@ -119,7 +109,7 @@ export function GibTebligatPricing() {
             >
               <Download className="size-3.5 shrink-0" aria-hidden="true" />
               14 Gün Ücretsiz İndir
-            </a>
+            </DownloadAnchor>
           </article>
         ))}
       </div>

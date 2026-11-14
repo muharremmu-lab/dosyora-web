@@ -3,8 +3,9 @@ import { Download, Sparkles } from 'lucide-react'
 import { Badge, buttonClassName, SectionContainer } from '@/components/ui'
 import { homepageScrollMt, homepageSectionY } from '@/lib/homepage-content'
 
-import { desktopDownloadHref } from './desktop-download-section'
+import { DownloadAnchor } from './download-anchor'
 import { GibTebligatPricing } from './gibtebligat-pricing'
+import type { DownloadSource } from './track-download'
 
 type ProductFamilySectionProps = {
   headingLevel?: 'h1' | 'h2'
@@ -19,6 +20,7 @@ export function ProductFamilySection({
 }: ProductFamilySectionProps) {
   const Heading = headingLevel
   const isHero = placement === 'hero'
+  const downloadSource: DownloadSource = isHero ? 'home' : 'indir'
 
   return (
     <SectionContainer
@@ -54,10 +56,10 @@ export function ProductFamilySection({
             ücretsiz deneme ve ömür boyu ücretsiz otomatik güncellemeler.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <a href={desktopDownloadHref} download className={buttonClassName('primary', 'px-5 py-2.5')}>
+            <DownloadAnchor source={downloadSource} className={buttonClassName('primary', 'px-5 py-2.5')}>
               <Download className="size-4" aria-hidden="true" />
               14 Gün Ücretsiz İndir
-            </a>
+            </DownloadAnchor>
             {showDetailsLink ? (
               <a href="/indir" className={buttonClassName('outline', 'px-5 py-2.5')}>
                 Detayları İncele
@@ -89,7 +91,7 @@ export function ProductFamilySection({
         </div>
       </div>
 
-      <GibTebligatPricing />
+      <GibTebligatPricing source={downloadSource} />
     </SectionContainer>
   )
 }

@@ -14,6 +14,7 @@ const REQUIRED_TABLES = [
   'document_consumption_events',
   'trial_claims',
   'telemetry_logs',
+  'download_logs',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -198,6 +199,14 @@ export async function runMigrations(client: Client) {
 )`,
     },
     {
+      operation: 'migration.create.download_logs',
+      sql: `CREATE TABLE IF NOT EXISTS download_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at TEXT NOT NULL,
+  source TEXT NOT NULL
+)`,
+    },
+    {
       operation: 'migration.create.document_consumption_events',
       sql: `CREATE TABLE IF NOT EXISTS document_consumption_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -234,6 +243,10 @@ export async function runMigrations(client: Client) {
     {
       operation: 'migration.index.telemetry_logs_created_at',
       sql: `CREATE INDEX IF NOT EXISTS idx_telemetry_logs_created_at ON telemetry_logs(created_at)`,
+    },
+    {
+      operation: 'migration.index.download_logs_created_at',
+      sql: `CREATE INDEX IF NOT EXISTS idx_download_logs_created_at ON download_logs(created_at)`,
     },
   ]
 
