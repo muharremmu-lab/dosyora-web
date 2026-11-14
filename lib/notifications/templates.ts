@@ -1,4 +1,4 @@
-import type { ContactMessage, DemoLead } from '@/lib/db/types'
+import type { ContactMessage, DemoLead, LicenseNotification } from '@/lib/db/types'
 
 import { buildActivationUrl } from '@/lib/activation/tokens'
 import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
@@ -172,6 +172,36 @@ export function buildContactAdminEmail(message: ContactMessage): EmailTemplate {
 
   return {
     subject: 'Yeni DOSYORA İletişim Mesajı',
+    html,
+    text,
+  }
+}
+
+export function buildLicenseNotificationAdminEmail(notification: LicenseNotification): EmailTemplate {
+  const fields = [
+    { label: 'Ad Soyad / Unvan', value: notification.full_name },
+    { label: 'E-posta', value: notification.email },
+    { label: 'TCKN / VKN', value: notification.tax_number },
+    { label: 'Vergi Dairesi', value: notification.tax_office },
+    { label: 'Fatura Adresi', value: notification.address },
+    { label: 'Durum', value: notification.status },
+    { label: 'Bildirim Zamanı', value: notification.created_at },
+  ]
+
+  const text = ['Yeni bir Dosyora kurumsal lisans havale bildirimi alındı.', '', renderFieldListText(fields)].join('\n')
+  const html = wrapEmailHtml(
+    'Yeni Dosyora Havale Bildirimi',
+    `
+      <h1 style="margin:0 0 16px;font-size:20px;line-height:1.4;color:#111827;">Yeni Dosyora Havale Bildirimi</h1>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#374151;">Kurumsal lisans formundan yeni bir havale bildirimi alındı.</p>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+        ${renderFieldListHtml(fields)}
+      </table>
+    `,
+  )
+
+  return {
+    subject: 'Yeni Dosyora havale bildirimi',
     html,
     text,
   }

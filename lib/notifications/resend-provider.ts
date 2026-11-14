@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 
 import { logApiError, logApiInfo, logApiWarning } from '@/lib/api-logger'
-import type { ContactMessage, DemoLead } from '@/lib/db/types'
+import type { ContactMessage, DemoLead, LicenseNotification } from '@/lib/db/types'
 
 import {
   getNotificationEnvConfig,
@@ -13,6 +13,7 @@ import {
   buildContactAdminEmail,
   buildDemoAdminEmail,
   buildDemoApplicantEmail,
+  buildLicenseNotificationAdminEmail,
 } from './templates'
 import type { NotificationPayload, NotificationProvider } from './types'
 
@@ -92,6 +93,11 @@ export class ResendNotificationProvider implements NotificationProvider {
       return
     }
 
+    if (payload.type === 'license_notification_created') {
+      await this.sendLicenseNotificationCreated(payload.notification)
+      return
+    }
+
     await this.sendContactMessageCreated(payload.message)
   }
 
@@ -155,6 +161,41 @@ export class ResendNotificationProvider implements NotificationProvider {
         'notification_demo_admin_failed',
         {
           leadId: lead.id,
+          recipient: maskEmailAddress(this.config.adminNotificationEmail),
+        },
+        error,
+      )
+    }
+  }
+
+  private async sendLicenseNotificationCreated(notification: LicenseNotification): Promise<void> {
+    if (!this.config.adminNotificationEmail) {
+      logApiWarning('notification_license_admin_skipped', {
+        notificationId: notification.id,
+        reason: 'missing_admin_notification_email',
+      })
+      return
+    }
+
+    const template = buildLicenseNotificationAdminEmail(notification)
+
+    try {
+      await sendResendEmail(this.client!, this.config.emailFrom!, {
+        to: this.config.adminNotificationEmail,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      })
+
+      logApiInfo('notification_license_admin_sent', {
+        notificationId: notification.id,
+        recipient: maskEmailAddress(this.config.adminNotificationEmail),
+      })
+    } catch (error) {
+      logApiError(
+        'notification_license_admin_failed',
+        {
+          notificationId: notification.id,
           recipient: maskEmailAddress(this.config.adminNotificationEmail),
         },
         error,

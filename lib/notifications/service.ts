@@ -1,4 +1,4 @@
-import type { ContactMessage, DemoLead } from '@/lib/db/types'
+import type { ContactMessage, DemoLead, LicenseNotification } from '@/lib/db/types'
 
 import { getNotificationEnvConfig, isResendSendConfigured } from './env'
 import { createResendNotificationProvider } from './resend-provider'
@@ -39,6 +39,10 @@ export class NotificationService {
 
   async notifyContactMessageCreated(message: ContactMessage): Promise<void> {
     await this.dispatch({ type: 'contact_message_created', message })
+  }
+
+  async notifyLicenseNotificationCreated(notification: LicenseNotification): Promise<void> {
+    await this.dispatch({ type: 'license_notification_created', notification })
   }
 
   private async dispatch(payload: NotificationPayload): Promise<void> {

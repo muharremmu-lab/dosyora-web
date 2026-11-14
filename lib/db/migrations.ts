@@ -20,6 +20,7 @@ const REQUIRED_TABLES = [
   'device_heartbeats',
   'admin_password_resets',
   'admin_password_overrides',
+  'license_notifications',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -334,6 +335,28 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
   password_hash TEXT NOT NULL,
   updated_at TEXT NOT NULL
 )`,
+    },
+    {
+      operation: 'migration.create.license_notifications',
+      sql: `CREATE TABLE IF NOT EXISTS license_notifications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  full_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  tax_number TEXT NOT NULL,
+  tax_office TEXT NOT NULL,
+  address TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'PENDING',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+)`,
+    },
+    {
+      operation: 'migration.index.license_notifications_created_at',
+      sql: `CREATE INDEX IF NOT EXISTS idx_license_notifications_created_at ON license_notifications(created_at)`,
+    },
+    {
+      operation: 'migration.index.license_notifications_status',
+      sql: `CREATE INDEX IF NOT EXISTS idx_license_notifications_status ON license_notifications(status)`,
     },
     {
       operation: 'migration.seed.license_settings',

@@ -145,6 +145,30 @@ export type IpDemoQuota = {
   window_expires_at: string
 }
 
+export const LICENSE_NOTIFICATION_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const
+
+export type LicenseNotificationStatus = (typeof LICENSE_NOTIFICATION_STATUSES)[number]
+
+export type LicenseNotification = {
+  id: number
+  full_name: string
+  email: string
+  tax_number: string
+  tax_office: string
+  address: string
+  status: LicenseNotificationStatus
+  created_at: string
+  updated_at: string
+}
+
+export type CreateLicenseNotificationInput = {
+  full_name: string
+  email: string
+  tax_number: string
+  tax_office: string
+  address: string
+}
+
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
