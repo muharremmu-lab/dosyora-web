@@ -45,7 +45,7 @@ export function ProductFamilySection({
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         <article className="flex h-full flex-col rounded-[var(--ds-radius-xl)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] p-6 shadow-[var(--ds-shadow-md)] sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="success">Yayında · v1.0.0</Badge>
+            <Badge variant="success">Yayında · v1.0.1</Badge>
           </div>
           <h3 className="mt-4 text-xl font-bold text-[var(--ds-color-text)]">1. GibTebligat Pro</h3>
           <p className="mt-3 flex-1 text-sm leading-relaxed text-[var(--ds-color-text-muted)] sm:text-base">

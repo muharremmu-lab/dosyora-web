@@ -31,13 +31,13 @@ export function DesktopDownloadSection({ headingLevel = 'h2' }: DesktopDownloadS
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge>Windows masaüstü</Badge>
-              <Badge variant="success">v1.0.0</Badge>
+              <Badge variant="success">v1.0.1</Badge>
             </div>
             <Heading
               id="gibtebligat-download-heading"
               className="mt-4 text-2xl font-bold tracking-tight text-[var(--ds-color-text)] sm:text-3xl"
             >
-              GibTebligat Pro — Windows Masaüstü Uygulaması (v1.0.0)
+              GibTebligat Pro — Windows Masaüstü Uygulaması (v1.0.1)
             </Heading>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--ds-color-text-muted)] sm:text-base">
               GİB e-Tebligatlarını bilgisayarınızdan tarayın, PDF ve ekleri arşivleyin. Kurulumdan
