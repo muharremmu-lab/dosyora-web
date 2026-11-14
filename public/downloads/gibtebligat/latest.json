@@ -1,8 +1,8 @@
 {
-  "version": "1.0.9",
+  "version": "1.1.0",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "5d2bd2eafc86d689dc62d46c0f4432372fef139d692c0ea1b4f56e8b15d0b109",
-  "notes": "GibTebligat Pro 1.0.9. WhatsApp gönderiminde onay penceresi açılır.",
+  "sha256": "9cc8c606436a2256e9233a45bddc0f9ae911484c3d27ddba93a03787cdea551f",
+  "notes": "GibTebligat Pro 1.1.0. WhatsApp ön mesajı belge türüne göre hazırlanır.",
   "mandatory": true,
-  "releaseNote": "WhatsApp ile Gönder; unvan, telefon ve belge numarasını onaylatır, PDF'yi panoya alıp sohbeti hazırlar."
+  "releaseNote": "Belge türüne göre ön mesaj; onaydan sonra metin ve PDF WhatsApp sohbetine bırakılır."
 }
