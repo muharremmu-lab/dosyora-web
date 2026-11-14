@@ -1,8 +1,8 @@
 {
-  "version": "1.0.8.1",
+  "version": "1.0.9",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "1faef675a58d0896b947ca4cb4c6409c8b6e8f4734c457d05b54aec89fc2bce6",
-  "notes": "GibTebligat Pro 1.0.8.1. Listeden seçilen mükellef düzenleme formuna aktarılır.",
+  "sha256": "5d2bd2eafc86d689dc62d46c0f4432372fef139d692c0ea1b4f56e8b15d0b109",
+  "notes": "GibTebligat Pro 1.0.9. WhatsApp gönderiminde onay penceresi açılır.",
   "mandatory": true,
-  "releaseNote": "Mükellef listesinde seçim veya çift tıklama; unvan, VKN, şifre, telefon ve e-postayı forma doldurur."
+  "releaseNote": "WhatsApp ile Gönder; unvan, telefon ve belge numarasını onaylatır, PDF'yi panoya alıp sohbeti hazırlar."
 }
