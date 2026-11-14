@@ -1,8 +1,8 @@
 {
-  "version": "1.1.2",
+  "version": "1.1.3",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "f2fc25f6b518d5ca8cbe25019e0ec8b3259ebffadeb382837cfd4122598dd046",
-  "notes": "GibTebligat Pro 1.1.2. Sorgu aralığı son 7 gün; kayıtlı tebligatlar yeniden taranır.",
+  "sha256": "f17bc999d251acffc420a618a97075741d63720a750879c823484195767a5df0",
+  "notes": "GibTebligat Pro 1.1.3. WhatsApp gönderimi masaüstü protokolü ile açılır.",
   "mandatory": true,
-  "releaseNote": "Varsayılan sorgu son 7 gün. Geçmiş kayıtlar ve arşiv yeniden sorgulanır. Kalan süre ve not, unvanın yanına alındı."
+  "releaseNote": "Gönder ve Onayla, tarayıcı açmadan whatsapp:// ile masaüstü sohbete metni yapıştırır."
 }
