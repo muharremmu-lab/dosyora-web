@@ -1,6 +1,7 @@
 import { Check, Download } from 'lucide-react'
 
 import { Badge, buttonClassName } from '@/components/ui'
+import { cn } from '@/lib/design-system/cn'
 
 import { desktopDownloadHref } from './desktop-download-section'
 
@@ -11,7 +12,7 @@ const plans = [
     cadence: '/ Yıl (KDV Dahil)',
     popular: false,
     features: [
-      '1 Firma',
+      '1 Firma kapasitesi',
       'Sınırsız sorgu',
       'Tebligat okuma, arşivleme ve takip',
       '14 gün ücretsiz deneme',
@@ -19,10 +20,36 @@ const plans = [
     ],
   },
   {
-    name: 'Mali Müşavir 200',
-    price: '1.500 TL',
+    name: 'Mali Müşavir 50',
+    price: '500 TL',
+    cadence: '/ Yıl (KDV Dahil)',
+    popular: false,
+    features: [
+      '50 müşteri kapasitesi',
+      'Sınırsız sorgu',
+      'Mükellef bazlı arşiv ve takip',
+      '14 gün ücretsiz deneme',
+      'Ücretsiz güncellemeler',
+    ],
+  },
+  {
+    name: 'Mali Müşavir 100',
+    price: '750 TL',
     cadence: '/ Yıl (KDV Dahil)',
     popular: true,
+    features: [
+      '100 müşteri kapasitesi',
+      'Sınırsız sorgu',
+      'Mükellef bazlı arşiv ve takip',
+      '14 gün ücretsiz deneme',
+      'Ücretsiz güncellemeler',
+    ],
+  },
+  {
+    name: 'Mali Müşavir 200',
+    price: '1.000 TL',
+    cadence: '/ Yıl (KDV Dahil)',
+    popular: false,
     features: [
       '200 müşteri kapasitesi',
       'Sınırsız sorgu',
@@ -33,7 +60,7 @@ const plans = [
   },
   {
     name: 'Mali Müşavir Sınırsız',
-    price: '2.000 TL',
+    price: '1.500 TL',
     cadence: '/ Yıl (KDV Dahil)',
     popular: false,
     features: [
@@ -55,28 +82,29 @@ export function GibTebligatPricing() {
       >
         14 Gün Ücretsiz Kullanım · Tüm Güncellemeler Ücretsiz · Yıllık KDV Dahil Fiyatlar
       </h3>
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {plans.map((plan) => (
           <article
             key={plan.name}
-            className={
+            className={cn(
+              'relative flex h-full min-w-0 flex-col rounded-[var(--ds-radius-xl)] bg-[var(--ds-color-surface)] p-4 pt-5',
               plan.popular
-                ? 'relative flex h-full flex-col rounded-[var(--ds-radius-xl)] border-2 border-[var(--ds-color-primary)] bg-[var(--ds-color-surface)] p-6 shadow-[var(--ds-shadow-md)]'
-                : 'flex h-full flex-col rounded-[var(--ds-radius-xl)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] p-6 shadow-[var(--ds-shadow-sm)]'
-            }
+                ? 'border-2 border-[var(--ds-color-primary)] shadow-[var(--ds-shadow-md)]'
+                : 'border border-[var(--ds-color-border)] shadow-[var(--ds-shadow-sm)]',
+            )}
           >
-            <div className="flex items-start justify-between gap-3">
-              <h4 className="text-lg font-bold text-[var(--ds-color-text)]">{plan.name}</h4>
-              {plan.popular ? <Badge>Popüler</Badge> : null}
-            </div>
-            <p className="mt-4 text-[var(--ds-color-text)]">
-              <span className="text-3xl font-bold tracking-tight">{plan.price}</span>
-              <span className="ml-1 text-sm text-[var(--ds-color-text-muted)]">{plan.cadence}</span>
+            {plan.popular ? (
+              <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2">Popüler</Badge>
+            ) : null}
+            <h4 className="min-h-10 text-sm font-bold leading-snug text-[var(--ds-color-text)]">{plan.name}</h4>
+            <p className="mt-3 text-[var(--ds-color-text)]">
+              <span className="block text-2xl font-bold tracking-tight">{plan.price}</span>
+              <span className="mt-1 block text-xs text-[var(--ds-color-text-muted)]">{plan.cadence}</span>
             </p>
-            <ul className="mt-5 flex flex-1 flex-col gap-2.5">
+            <ul className="mt-4 flex flex-1 flex-col gap-2">
               {plan.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm text-[var(--ds-color-text)]">
-                  <Check className="mt-0.5 size-4 shrink-0 text-[var(--ds-color-success)]" aria-hidden="true" />
+                <li key={feature} className="flex items-start gap-1.5 text-xs leading-snug text-[var(--ds-color-text)]">
+                  <Check className="mt-0.5 size-3.5 shrink-0 text-[var(--ds-color-success)]" aria-hidden="true" />
                   <span>{feature}</span>
                 </li>
               ))}
@@ -84,9 +112,12 @@ export function GibTebligatPricing() {
             <a
               href={desktopDownloadHref}
               download
-              className={buttonClassName(plan.popular ? 'primary' : 'outline', 'mt-6 w-full px-4 py-2.5')}
+              className={buttonClassName(
+                plan.popular ? 'primary' : 'outline',
+                'mt-4 w-full whitespace-normal px-2 py-2 text-center text-xs leading-snug',
+              )}
             >
-              <Download className="size-4" aria-hidden="true" />
+              <Download className="size-3.5 shrink-0" aria-hidden="true" />
               14 Gün Ücretsiz İndir
             </a>
           </article>
