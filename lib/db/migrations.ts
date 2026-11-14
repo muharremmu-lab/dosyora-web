@@ -13,6 +13,7 @@ const REQUIRED_TABLES = [
   'email_demo_quota',
   'document_consumption_events',
   'trial_claims',
+  'telemetry_logs',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -182,6 +183,21 @@ export async function runMigrations(client: Client) {
 )`,
     },
     {
+      operation: 'migration.create.telemetry_logs',
+      sql: `CREATE TABLE IF NOT EXISTS telemetry_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at TEXT NOT NULL,
+  app_version TEXT NOT NULL,
+  hwid_hash TEXT NOT NULL,
+  error_code TEXT NOT NULL,
+  step TEXT NOT NULL,
+  detail TEXT NOT NULL,
+  os_version TEXT,
+  critical_alert INTEGER NOT NULL DEFAULT 0,
+  alert_sent INTEGER NOT NULL DEFAULT 0
+)`,
+    },
+    {
       operation: 'migration.create.document_consumption_events',
       sql: `CREATE TABLE IF NOT EXISTS document_consumption_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -210,6 +226,14 @@ export async function runMigrations(client: Client) {
     {
       operation: 'migration.index.contact_messages_created_at',
       sql: `CREATE INDEX IF NOT EXISTS idx_contact_messages_created_at ON contact_messages(created_at)`,
+    },
+    {
+      operation: 'migration.index.telemetry_logs_error_created',
+      sql: `CREATE INDEX IF NOT EXISTS idx_telemetry_logs_error_created ON telemetry_logs(error_code, created_at)`,
+    },
+    {
+      operation: 'migration.index.telemetry_logs_created_at',
+      sql: `CREATE INDEX IF NOT EXISTS idx_telemetry_logs_created_at ON telemetry_logs(created_at)`,
     },
   ]
 
