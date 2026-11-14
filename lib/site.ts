@@ -33,6 +33,7 @@ export const siteRoutes = [
   { path: '/hakkimizda', label: 'Hakkımızda' },
   { path: '/iletisim', label: 'İletişim' },
   { path: '/demo', label: 'Demo' },
+  { path: '/indir', label: 'İndir' },
   { path: '/fiyatlandirma', label: 'Fiyatlandırma' },
   { path: '/kvkk', label: 'KVKK' },
   { path: '/gizlilik', label: 'Gizlilik' },

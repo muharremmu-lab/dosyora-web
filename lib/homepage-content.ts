@@ -101,4 +101,5 @@ export const footerProductFamily = [
   { label: 'Akıllı Ofis', path: '/cozumler' },
   { label: 'Belge Üretme', path: '/ozellikler' },
   { label: 'Sektörel Çözümler', path: '/cozumler' },
+  { label: 'GibTebligat Pro', path: '/indir' },
 ] as const
