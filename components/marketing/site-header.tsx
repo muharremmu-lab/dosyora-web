@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react'
 
 import { ButtonLink } from '@/components/ui/button'
 import { cn } from '@/lib/design-system/cn'
-import { contactFormHref } from '@/lib/contact-routes'
 import { getCustomerLoginUrl, isExternalCustomerLogin } from '@/lib/customer-portal'
 import { mainNavItems, siteConfig } from '@/lib/site'
 
@@ -68,8 +67,8 @@ export function SiteHeader() {
           >
             Giriş
           </ButtonLink>
-          <ButtonLink href={contactFormHref('demo')} variant="primary">
-            Demo Talep Et
+          <ButtonLink href="/#gibtebligat" variant="primary">
+            GibTebligat İndir
           </ButtonLink>
         </div>
 
@@ -109,8 +108,8 @@ export function SiteHeader() {
             >
               Giriş
             </ButtonLink>
-            <ButtonLink href={contactFormHref('demo')} variant="primary" className="mt-3 w-full">
-              Demo Talep Et
+            <ButtonLink href="/#gibtebligat" variant="primary" className="mt-3 w-full" onClick={() => setMobileOpen(false)}>
+              GibTebligat İndir
             </ButtonLink>
           </nav>
         </div>

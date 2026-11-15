@@ -1,47 +1,26 @@
-import {
-  AnimatedCtaBand,
-  AudienceSection,
-  ContactSection,
-  FaqSection,
-  HeroSection,
-  HomeFeaturesSection,
-  HomeV123Section,
-  HowItWorksSection,
-  SiteFooter,
-  SiteHeader,
-  WhyDosyoraSection,
-} from '@/components/marketing'
-import { parseContactFormType } from '@/lib/contact-routes'
+import { FeedbackSection, ProductFamilySection, SiteFooter, SiteHeader } from '@/components/marketing'
 import { createPageMetadata } from '@/lib/metadata'
 import { siteConfig } from '@/lib/site'
 
 export const metadata = createPageMetadata({
   title: siteConfig.seoTitle,
-  description: siteConfig.description,
+  description: 'GibTebligat Pro, belge okuma ve akıllı ofis. Öneri ve bildirimlerinizi doğrudan iletin.',
   path: '/',
 })
 
 type HomePageProps = {
-  searchParams: Promise<{ type?: string }>
+  searchParams: Promise<{ bildirim?: string }>
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const params = await searchParams
-  const defaultType = parseContactFormType(params.type)
 
   return (
     <>
       <SiteHeader />
       <main>
-        <HeroSection />
-        <HowItWorksSection />
-        <HomeFeaturesSection />
-        <HomeV123Section />
-        <WhyDosyoraSection />
-        <AudienceSection />
-        <FaqSection />
-        <AnimatedCtaBand />
-        <ContactSection defaultType={defaultType} />
+        <ProductFamilySection />
+        <FeedbackSection sent={params.bildirim === '1'} />
       </main>
       <SiteFooter />
     </>

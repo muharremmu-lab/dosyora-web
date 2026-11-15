@@ -21,6 +21,7 @@ const REQUIRED_TABLES = [
   'admin_password_resets',
   'admin_password_overrides',
   'license_notifications',
+  'site_feedback',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -357,6 +358,24 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
     {
       operation: 'migration.index.license_notifications_status',
       sql: `CREATE INDEX IF NOT EXISTS idx_license_notifications_status ON license_notifications(status)`,
+    },
+    {
+      operation: 'migration.create.site_feedback',
+      sql: `CREATE TABLE IF NOT EXISTS site_feedback (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  contact_name TEXT NOT NULL,
+  contact_email TEXT NOT NULL,
+  contact_phone TEXT,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'NEW'
+)`,
+    },
+    {
+      operation: 'migration.index.site_feedback_created_at',
+      sql: `CREATE INDEX IF NOT EXISTS idx_site_feedback_created_at ON site_feedback(created_at)`,
     },
     {
       operation: 'migration.seed.license_settings',

@@ -41,18 +41,17 @@ export const siteRoutes = [
 ] as const
 
 export const mainNavItems = [
-  { path: '/indir', label: 'GibTebligat Pro İndir' },
-  { path: '/urun', label: 'Ürün' },
-  { path: '/#nasil-calisir', label: 'Nasıl Çalışır?' },
-  { path: '/cozumler', label: 'Çözümler' },
-  { path: '/#platform-v123', label: 'V1 / V2 / V3' },
+  { path: '/#gibtebligat', label: 'GibTebligat Pro' },
+  { path: '/#belge-okuma', label: 'Belge Okuma' },
+  { path: '/#akilli-ofis', label: 'Akıllı Ofis' },
+  { path: '/#oneri', label: 'Öneri & Bildirim' },
   { path: '/hakkimizda', label: 'Hakkımızda' },
 ] as const
 
 export const footerNavItems = [
   { path: '/hakkimizda', label: 'Hakkımızda' },
-  { path: '/#iletisim', label: 'İletişim' },
-  { path: '/?type=demo#iletisim', label: 'Demo Talep Et' },
+  { path: '/#oneri', label: 'Öneri & Bildirim' },
+  { path: '/#gibtebligat', label: 'GibTebligat Pro' },
   { path: '/kvkk', label: 'Kişisel Verilerin Korunması' },
   { path: '/gizlilik', label: 'Gizlilik Politikası' },
   { path: '/kullanim-sartlari', label: 'Kullanım Şartları' },

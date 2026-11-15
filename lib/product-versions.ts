@@ -6,7 +6,7 @@ export type ProductFeature = {
 }
 
 export type ProductVersion = {
-  id: 'v1' | 'v2' | 'v3'
+  id: 'v1' | 'v2'
   title: string
   subtitle: string
   status: ProductVersionStatus
@@ -56,22 +56,6 @@ export const productVersions: ProductVersion[] = [
       'Belge ilişkilendirme',
       'Hatırlatmalar',
       'Ofis iş akışları',
-    ],
-  },
-  {
-    id: 'v3',
-    title: 'V3',
-    subtitle: 'Sektörel Çözümler',
-    status: 'vision',
-    statusLabel: 'Platform Vizyonu',
-    description:
-      'Belgeden çıkarılan verinin doğrudan iş süreçlerini oluşturduğu sektörel DOSYORA uygulamaları.',
-    features: [
-      'KDV İade',
-      'Filo / Rent a Car',
-      'Hakediş',
-      'Sektörel belge ve veri akışları',
-      'Yeni modüler çözümler',
     ],
   },
 ]

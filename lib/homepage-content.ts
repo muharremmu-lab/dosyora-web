@@ -97,9 +97,8 @@ export const audienceCards = [
 ] as const
 
 export const footerProductFamily = [
-  { label: 'Belge Okuma', path: '/urun' },
-  { label: 'Akıllı Ofis', path: '/cozumler' },
-  { label: 'Belge Üretme', path: '/ozellikler' },
-  { label: 'Sektörel Çözümler', path: '/cozumler' },
-  { label: 'GibTebligat Pro', path: '/indir' },
+  { label: 'GibTebligat Pro', path: '/#gibtebligat' },
+  { label: 'Belge Okuma', path: '/#belge-okuma' },
+  { label: 'Akıllı Ofis', path: '/#akilli-ofis' },
+  { label: 'Öneri & Bildirim', path: '/#oneri' },
 ] as const

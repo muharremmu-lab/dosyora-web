@@ -73,7 +73,6 @@ const roadmapVersions: RoadmapVersion[] = [
       'Teknik Servis',
       'İnşaat',
       'Sağlık',
-      'Oto Kiralama',
     ],
   },
 ]

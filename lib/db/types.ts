@@ -177,3 +177,29 @@ export type CreateLicenseNotificationInput = {
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
+
+export const FEEDBACK_KINDS = ['oneri', 'istek', 'sikayet'] as const
+export type FeedbackKind = (typeof FEEDBACK_KINDS)[number]
+
+export const FEEDBACK_STATUSES = ['NEW', 'READ', 'ARCHIVED'] as const
+export type FeedbackStatus = (typeof FEEDBACK_STATUSES)[number]
+
+export type SiteFeedback = {
+  id: number
+  created_at: string
+  updated_at: string
+  kind: FeedbackKind
+  contact_name: string
+  contact_email: string
+  contact_phone: string | null
+  message: string
+  status: FeedbackStatus
+}
+
+export type CreateSiteFeedbackInput = {
+  kind: FeedbackKind
+  contact_name: string
+  contact_email: string
+  contact_phone: string | null
+  message: string
+}

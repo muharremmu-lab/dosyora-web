@@ -3,7 +3,6 @@ import { Badge, Card, SectionContainer } from '@/components/ui'
 import { ScrollReveal } from './scroll-reveal'
 
 const comingSoonItems = [
-  'KDV İadesi',
   'Hakediş Yönetimi',
   'Akıllı Ofis',
   'Belge Üretme',
