@@ -1,9 +1,9 @@
 {
-    "version":  "1.1.9",
-    "url":  "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-    "sha256":  "37a304c6e990939e584f7bbd7681b30d0924375a0ffe8a8a40e21d351b28899c",
-    "notes":  "GibTebligat Pro 1.1.9. Obfuscation zorunlu; crash.log + MessageBox; gib-config otomatik.",
-    "mandatory":  true,
-    "critical":  false,
-    "releaseNote":  "Release gÃ¼venlik kapÄ±larÄ±: Obfuscar, global exception yakalayÄ±cÄ±, crash.log, gib-config otomatik oluÅŸturma."
+  "version": "1.1.9",
+  "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
+  "sha256": "37a304c6e990939e584f7bbd7681b30d0924375a0ffe8a8a40e21d351b28899c",
+  "notes": "GibTebligat Pro 1.1.9. Obfuscation zorunlu; crash.log + MessageBox; gib-config otomatik.",
+  "mandatory": true,
+  "critical": false,
+  "releaseNote": "Release guvenlik kapalari: Obfuscar, global exception yakalayici, crash.log, gib-config otomatik olusturma."
 }
