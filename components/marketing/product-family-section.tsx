@@ -29,7 +29,7 @@ export function ProductFamilySection() {
 
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <article id="gibtebligat" className={`rounded-[var(--ds-radius-xl)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-md)] ${homepageScrollMt}`}>
-          <Badge variant="success">Yayında · v1.1.6</Badge>
+          <Badge variant="success">Yayında · v1.1.7</Badge>
           <h2 className="mt-4 text-xl font-bold text-[var(--ds-color-text)]">GibTebligat Pro</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
             GİB e-Tebligatlarını arka planda tarar, PDF’leri bilgisayarınıza indirir ve okunma durumunu takip eder.
@@ -44,7 +44,7 @@ export function ProductFamilySection() {
               <p>Kurulum dosyası doğrudan bu siteden indirilir.</p>
               <a href={INSTALLER_HREF} className={`${buttonClassName('outline', 'px-5 py-2.5')} inline-flex`}>
                 <Download className="size-4" aria-hidden="true" />
-                GibTebligat Pro 1.1.6 indir
+                GibTebligat Pro 1.1.7 indir
               </a>
             </div>
           </details>

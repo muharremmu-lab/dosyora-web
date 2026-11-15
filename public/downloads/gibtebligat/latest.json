@@ -1,8 +1,8 @@
 {
-  "version": "1.1.3",
+  "version": "1.1.7",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "f17bc999d251acffc420a618a97075741d63720a750879c823484195767a5df0",
-  "notes": "GibTebligat Pro 1.1.3. WhatsApp gönderimi masaüstü protokolü ile açılır.",
+  "sha256": "ecf6e80e8ab825a754448b539c03e065aff32bc51d1972f6d509ae1538cb5c12",
+  "notes": "GibTebligat Pro 1.1.7. Uygulama ikonu lacivert kalkan ve beyaz şimşek olarak yenilendi.",
   "mandatory": true,
-  "releaseNote": "Gönder ve Onayla, tarayıcı açmadan whatsapp:// ile masaüstü sohbete metni yapıştırır."
+  "releaseNote": "Masaüstü kısayolu, görev çubuğu ve pencere ikonu lacivert kalkan ve beyaz şimşek tasarımına geçti."
 }
