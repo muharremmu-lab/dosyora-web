@@ -20,21 +20,14 @@ describe('validateLicenseNotificationPayload', () => {
     }
   })
 
-  it('accepts a desktop payload without a tax office', () => {
+  it('requires tax office, package and hardware id for a desktop application', () => {
     const result = validateLicenseNotificationPayload({
       full_name: 'Atlas Ltd.',
       tax_number: '12345678901',
       email: 'Masaustu@Firma.com',
-      address: 'Ankara',
       source: 'desktop_app',
     })
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data.tax_office).toBe('Belirtilmedi')
-      expect(result.data.email).toBe('masaustu@firma.com')
-      expect(result.data.source).toBe('desktop_app')
-      expect(result.data.hardware_id).toBeNull()
-    }
+    expect(result.success).toBe(false)
   })
 
   it('stores a desktop hardware id when it is 64 hex characters', () => {
@@ -42,14 +35,34 @@ describe('validateLicenseNotificationPayload', () => {
     const result = validateLicenseNotificationPayload({
       full_name: 'Atlas Ltd.',
       tax_number: '12345678901',
+      tax_office: 'Çankaya',
       email: 'masa@firma.com',
-      address: 'Ankara',
       source: 'desktop_app',
       hardware_id: hardwareId.toLowerCase(),
+      license_plan: 'F1',
     })
     expect(result.success).toBe(true)
     if (result.success) {
       expect(result.data.hardware_id).toBe(hardwareId)
+      expect(result.data.tax_office).toBe('Çankaya')
+      expect(result.data.address).toBe('Belirtilmedi')
+      expect(result.data.license_plan).toBe('F1')
+    }
+  })
+
+  it('stores a selected desktop license plan', () => {
+    const result = validateLicenseNotificationPayload({
+      full_name: 'Atlas Ltd.',
+      tax_number: '12345678901',
+      tax_office: 'Çankaya',
+      email: 'masa@firma.com',
+      source: 'desktop_app',
+      hardware_id: 'B'.repeat(64),
+      license_plan: 'mm100',
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.license_plan).toBe('MM100')
     }
   })
 

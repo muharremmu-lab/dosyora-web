@@ -76,6 +76,7 @@ describe('notification templates', () => {
       status: 'PENDING',
       source: 'desktop_app',
       hardware_id: null,
+      license_plan: 'MM100',
       license_key: null,
       created_at: '2026-11-15T00:00:00.000Z',
       updated_at: '2026-11-15T00:00:00.000Z',

@@ -9,7 +9,8 @@ type PendingDesktopLicense = {
   fullName: string
   taxNumber: string
   email: string
-  address: string
+  taxOffice: string
+  licensePlan: string | null
   hardwareId: string | null
   createdAt: string
 }
@@ -136,6 +137,7 @@ export function LicenseNotificationsPanel() {
               <th className="px-4 py-3 font-semibold">Ad Soyad / Unvan</th>
               <th className="px-4 py-3 font-semibold">TCKN / VKN</th>
               <th className="px-4 py-3 font-semibold">İletişim</th>
+              <th className="px-4 py-3 font-semibold">Lisans</th>
               <th className="px-4 py-3 font-semibold">Donanım kimliği</th>
               <th className="px-4 py-3 font-semibold">İşlem</th>
             </tr>
@@ -143,7 +145,7 @@ export function LicenseNotificationsPanel() {
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-[var(--ds-color-text-muted)]">
+                <td colSpan={7} className="px-4 py-8 text-center text-[var(--ds-color-text-muted)]">
                   Bekleyen masaüstü lisans talebi yok.
                 </td>
               </tr>
@@ -155,8 +157,9 @@ export function LicenseNotificationsPanel() {
                   <td className="px-4 py-3">{item.taxNumber}</td>
                   <td className="px-4 py-3">
                     <div>{item.email}</div>
-                    <div className="text-xs text-[var(--ds-color-text-muted)]">{item.address}</div>
+                    <div className="text-xs text-[var(--ds-color-text-muted)]">{item.taxOffice}</div>
                   </td>
+                  <td className="px-4 py-3">{item.licensePlan ?? '—'}</td>
                   <td className="px-4 py-3 font-mono text-xs">{item.hardwareId ?? '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">

@@ -159,6 +159,7 @@ export type LicenseNotification = {
   status: LicenseNotificationStatus
   source: string | null
   hardware_id: string | null
+  license_plan: string | null
   license_key: string | null
   created_at: string
   updated_at: string
@@ -172,6 +173,7 @@ export type CreateLicenseNotificationInput = {
   address: string
   source?: string | null
   hardware_id?: string | null
+  license_plan?: string | null
 }
 
 export function normalizeEmail(email: string): string {

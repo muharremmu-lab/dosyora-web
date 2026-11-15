@@ -6,17 +6,23 @@ import {
 } from '@/lib/db/license-notifications'
 import type { LicenseNotification } from '@/lib/db/types'
 
-import { addIstanbulDays, createOfflineLicenseKey, endOfIstanbulDayIso, normalizeHardwareId } from './offline-key'
+import { addIstanbulDays, createOfflineLicenseKey, endOfIstanbulDayIso, isLicensePackage, LICENSE_PACKAGES, normalizeHardwareId, type LicensePackageCode } from './offline-key'
 
-const DESKTOP_PACKAGE = 'UNLIMITED' as const
-const YEARLY_PRICE_TL = 5988
+const PLAN_PRICES: Record<LicensePackageCode | 'UNLIMITED', number> = {
+  F1: LICENSE_PACKAGES.F1.priceTl,
+  MM50: LICENSE_PACKAGES.MM50.priceTl,
+  MM100: LICENSE_PACKAGES.MM100.priceTl,
+  MM200: LICENSE_PACKAGES.MM200.priceTl,
+  UNLIMITED: 5988,
+}
 
 export type PendingDesktopLicense = {
   id: number
   fullName: string
   taxNumber: string
   email: string
-  address: string
+  taxOffice: string
+  licensePlan: string | null
   hardwareId: string | null
   createdAt: string
 }
@@ -27,7 +33,8 @@ export function toPendingDesktopLicense(row: LicenseNotification): PendingDeskto
     fullName: row.full_name,
     taxNumber: row.tax_number,
     email: row.email,
-    address: row.address,
+    taxOffice: row.tax_office,
+    licensePlan: row.license_plan,
     hardwareId: row.hardware_id,
     createdAt: row.created_at,
   }
@@ -56,7 +63,10 @@ export async function approveDesktopLicense(id: number): Promise<
   }
 
   const stamp = addIstanbulDays(365)
-  const licenseKey = createOfflineLicenseKey(hardwareId, DESKTOP_PACKAGE, stamp)
+  const selected = current.license_plan === 'UNLIMITED' || isLicensePackage(current.license_plan ?? '')
+    ? (current.license_plan as LicensePackageCode | 'UNLIMITED')
+    : 'UNLIMITED'
+  const licenseKey = createOfflineLicenseKey(hardwareId, selected, stamp)
   const expiresAt = endOfIstanbulDayIso(stamp)
   const now = new Date().toISOString()
 
@@ -71,14 +81,14 @@ export async function approveDesktopLicense(id: number): Promise<
       now,
       now,
       hardwareId,
-      DESKTOP_PACKAGE,
+      selected,
       current.full_name,
       current.tax_number,
       current.email,
       '',
       licenseKey,
       expiresAt,
-      YEARLY_PRICE_TL,
+      PLAN_PRICES[selected],
     ],
   )
 

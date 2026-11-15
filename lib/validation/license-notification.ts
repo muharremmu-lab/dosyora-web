@@ -1,5 +1,5 @@
 import type { CreateLicenseNotificationInput } from '@/lib/db/types'
-import { normalizeHardwareId } from '@/lib/licensing/offline-key'
+import { isLicensePackage, normalizeHardwareId } from '@/lib/licensing/offline-key'
 
 import { collectErrors, validateEmail, validateRequired, type ValidationResult } from './common'
 
@@ -27,13 +27,22 @@ export function validateLicenseNotificationPayload(
   const address = String(payload.address ?? '')
   const source = typeof payload.source === 'string' ? payload.source.trim().slice(0, 40) : ''
   const hardwareId = normalizeHardwareId(payload.hardwareId ?? payload.hardware_id ?? payload.hwid)
+  const licensePlan = String(payload.licensePlan ?? payload.license_plan ?? '').trim().toUpperCase()
+  const licensePlanValid = licensePlan === '' || licensePlan === 'UNLIMITED' || isLicensePackage(licensePlan)
 
   const errors = collectErrors([
     validateRequired(fullName, 'Ad soyad / şirket unvanı', 200),
     validateEmail(email),
     validateTaxNumber(taxNumber),
-    taxOffice ? validateRequired(taxOffice, 'Vergi dairesi', 200) : null,
-    validateRequired(address, 'Fatura adresi', 1000),
+    source === 'desktop_app'
+      ? validateRequired(taxOffice, 'Vergi dairesi', 200)
+      : taxOffice
+        ? validateRequired(taxOffice, 'Vergi dairesi', 200)
+        : null,
+    address.trim() ? validateRequired(address, 'Fatura adresi', 1000) : null,
+    licensePlanValid ? null : 'Seçilen lisans paketi geçersiz.',
+    source === 'desktop_app' && !licensePlan ? 'Lisans paketi seçilmelidir.' : null,
+    source === 'desktop_app' && !hardwareId ? 'Donanım kimliği gerekli.' : null,
   ])
 
   if (errors.length > 0) {
@@ -47,9 +56,10 @@ export function validateLicenseNotificationPayload(
       email: email.trim().toLowerCase(),
       tax_number: taxNumber.replace(/\D/g, ''),
       tax_office: taxOffice || 'Belirtilmedi',
-      address: address.trim(),
+      address: address.trim() || 'Belirtilmedi',
       source: source || null,
       hardware_id: hardwareId,
+      license_plan: licensePlan || null,
     },
   }
 }
