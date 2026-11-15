@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useState } from 'react'
 
 import { formInputClassName } from '@/lib/form-styles'
 
-type DisplayStatus = 'provisional' | 'pending' | 'approved' | 'expired'
+type DisplayStatus = 'provisional' | 'pending' | 'approved' | 'expired' | 'demo'
 
 type Order = {
   id: number
@@ -34,6 +34,7 @@ const BADGES: Record<DisplayStatus, string> = {
   pending: 'Onay Bekliyor',
   approved: 'Onaylı (1 Yıl)',
   expired: 'İptal / Süresi Doldu',
+  demo: 'Demo',
 }
 
 export function LicenseOrdersPanel() {
@@ -67,6 +68,29 @@ export function LicenseOrdersPanel() {
       active = false
     }
   }, [])
+
+  async function setDemo(order: Order) {
+    setBusyId(order.id)
+    setNotice('')
+    setError('')
+    try {
+      const response = await fetch('/api/admin/licenses/set-demo', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ hardwareId: order.hwid }),
+      })
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string }
+        throw new Error(payload.error || 'Demo moda alınamadı.')
+      }
+      await load()
+      setNotice('Kullanıcı demo moda alındı. Aktif lisans anahtarı kapatıldı.')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Demo moda alınamadı.')
+    } finally {
+      setBusyId(null)
+    }
+  }
 
   async function act(id: number, action: 'approve' | 'revoke') {
     setBusyId(id)
@@ -175,6 +199,16 @@ export function LicenseOrdersPanel() {
                   >
                     İptal Et (Demoya Döndür)
                   </button>
+                  {order.status !== 'demo' ? (
+                    <button
+                      type="button"
+                      disabled={busyId === order.id}
+                      onClick={() => setDemo(order)}
+                      className="block rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] px-3 py-1.5 text-xs font-semibold disabled:opacity-60"
+                    >
+                      Demo Moda Al
+                    </button>
+                  ) : null}
                 </td>
               </tr>
             ))}

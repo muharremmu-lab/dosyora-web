@@ -58,6 +58,29 @@ export function LicenseNotificationsPanel() {
     }
   }, [])
 
+  async function setDemo(id: number) {
+    setBusyId(id)
+    setNotice('')
+    setError('')
+    try {
+      const response = await fetch('/api/admin/licenses/set-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string }
+        throw new Error(payload.error || 'Demo moda alınamadı.')
+      }
+      await load()
+      setNotice('Kullanıcı demo moda alındı. Aktif lisans anahtarı kapatıldı.')
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Demo moda alınamadı.')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   async function updateStatus(id: number, status: 'APPROVED' | 'REJECTED') {
     setBusyId(id)
     setNotice('')
@@ -152,6 +175,14 @@ export function LicenseNotificationsPanel() {
                         className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] px-3 py-1.5 text-xs font-medium disabled:opacity-50"
                       >
                         Reddet
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busyId === item.id}
+                        onClick={() => setDemo(item.id)}
+                        className="rounded-[var(--ds-radius-md)] border border-[var(--ds-color-border)] px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+                      >
+                        Demo Moda Al
                       </button>
                     </div>
                   </td>

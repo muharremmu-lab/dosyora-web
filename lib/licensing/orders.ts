@@ -9,7 +9,7 @@ import {
   type LicensePackageCode,
 } from './offline-key'
 
-export type LicenseOrderStatus = 'provisional' | 'pending' | 'approved' | 'revoked'
+export type LicenseOrderStatus = 'provisional' | 'pending' | 'approved' | 'revoked' | 'demo'
 
 export type LicenseOrder = {
   id: number
@@ -269,6 +269,11 @@ export async function licenseCheck(hwid: string): Promise<
     }
   }
 
+  if (orders.some((order) => order.status === 'demo')) {
+    // Kurulu istemci revoked yanıtında yerel anahtarı silip demo sürüme döner.
+    return { status: 'revoked' }
+  }
+
   if (orders.some((order) => order.status === 'revoked' || order.status === 'provisional' || order.status === 'approved')) {
     return { status: 'revoked' }
   }
@@ -280,7 +285,8 @@ export async function licenseCheck(hwid: string): Promise<
   return { status: 'none' }
 }
 
-export function displayStatus(order: LicenseOrder): 'provisional' | 'pending' | 'approved' | 'expired' {
+export function displayStatus(order: LicenseOrder): 'provisional' | 'pending' | 'approved' | 'expired' | 'demo' {
+  if (order.status === 'demo') return 'demo'
   if (order.status === 'approved' && isActive(order)) return 'approved'
   if (order.status === 'provisional' && isActive(order)) return 'provisional'
   if (order.status === 'pending') return 'pending'

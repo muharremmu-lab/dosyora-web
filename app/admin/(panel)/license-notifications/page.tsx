@@ -7,7 +7,7 @@ export default function LicenseNotificationsPage() {
   return (
     <AdminShell
       title="Lisans / Havale Bildirimleri"
-      description="Masaüstü uygulamadan gelen bekleyen lisans taleplerini onaylayın veya reddedin. Onay, donanım kimliğine bağlı lisans anahtarı üretir."
+      description="Masaüstü uygulamadan gelen bekleyen lisans taleplerini onaylayın, reddedin veya demo moda alın. Onay, donanım kimliğine bağlı lisans anahtarı üretir."
     >
       <LicenseNotificationsPanel />
     </AdminShell>

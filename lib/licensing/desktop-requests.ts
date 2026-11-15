@@ -1,4 +1,4 @@
-import { dbInsertReturningId } from '@/lib/db/query'
+import { dbInsertReturningId, dbQueryOne, dbRun } from '@/lib/db/query'
 import {
   getLicenseNotificationById,
   listPendingDesktopLicenseNotifications,
@@ -105,4 +105,60 @@ export async function rejectDesktopLicense(id: number): Promise<{ ok: true } | {
   }
 
   return { ok: true }
+}
+
+export async function setDesktopLicenseDemo(input: {
+  notificationId?: number
+  hardwareId?: string
+}): Promise<{ ok: true; hardwareId: string; status: 'DEMO' } | { ok: false; error: string; status: number }> {
+  const notification = input.notificationId ? await getLicenseNotificationById(input.notificationId) : null
+  if (input.notificationId && !notification) {
+    return { ok: false, error: 'Masaüstü lisans talebi bulunamadı.', status: 404 }
+  }
+
+  const hardwareId = normalizeHardwareId(input.hardwareId) ?? normalizeHardwareId(notification?.hardware_id)
+  if (!hardwareId) {
+    return { ok: false, error: 'Geçerli bir donanım kimliği yok.', status: 400 }
+  }
+
+  const now = new Date().toISOString()
+  const updated = await dbRun(
+    'licenseOrders.setDemo',
+    `UPDATE license_orders
+     SET status = 'demo', license_key = NULL, updated_at = ?
+     WHERE hwid = ? AND status IN ('approved', 'provisional', 'pending')`,
+    [now, hardwareId],
+  )
+
+  const existingDemo = await dbQueryOne<{ id: number }>(
+    'licenseOrders.demoByHwid',
+    `SELECT id FROM license_orders WHERE hwid = ? AND status = 'demo' LIMIT 1`,
+    [hardwareId],
+  )
+
+  if (Number(updated.rowsAffected ?? 0) === 0 && !existingDemo) {
+    if (!notification) {
+      return { ok: false, error: 'Bu donanım kimliği için lisans kaydı bulunamadı.', status: 404 }
+    }
+
+    await dbInsertReturningId(
+      'licenseOrders.insertDemo',
+      `INSERT INTO license_orders (
+        created_at, updated_at, hwid, package_code, full_name, vkn, email, phone,
+        status, license_key, expires_at, payment_code, price_tl
+      ) VALUES (?, ?, ?, 'UNLIMITED', ?, ?, ?, '', 'demo', NULL, NULL, NULL, 0)
+      RETURNING id`,
+      [now, now, hardwareId, notification.full_name, notification.tax_number, notification.email],
+    )
+  }
+
+  await dbRun(
+    'licenseNotifications.setDemo',
+    `UPDATE license_notifications
+     SET status = 'DEMO', license_key = NULL, updated_at = ?
+     WHERE hardware_id = ? AND status IN ('PENDING', 'APPROVED')`,
+    [now, hardwareId],
+  )
+
+  return { ok: true, hardwareId, status: 'DEMO' }
 }
