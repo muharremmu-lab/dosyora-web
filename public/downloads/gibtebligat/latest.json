@@ -1,9 +1,9 @@
 {
-  "version": "1.1.7",
+  "version": "1.1.8",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "ecf6e80e8ab825a754448b539c03e065aff32bc51d1972f6d509ae1538cb5c12",
-  "notes": "GibTebligat Pro 1.1.7. Uygulama ikonu lacivert kalkan ve beyaz şimşek olarak yenilendi.",
+  "sha256": "774c5fda09eede08291d3233ce8e282209ecbc2d6ccb1a62978f8c67285ab07b",
+  "notes": "GibTebligat Pro 1.1.8. GİB borç sorgulama paneli, birleşik tebligat+borç akışı ve canlı gib-config güncellendi.",
   "mandatory": true,
   "critical": false,
-  "releaseNote": "Masaüstü kısayolu, görev çubuğu ve pencere ikonu lacivert kalkan ve beyaz şimşek tasarımına geçti."
+  "releaseNote": "Üst menüde GİB Gelen Tebligatlar, GİB Borç Sorgulama ve Tümünü Sorgula eklendi. Canlı sürümde mock kapalı; gib-config debtPortalUrl ile yayınlandı."
 }

@@ -6,6 +6,8 @@
   "envelopeApi": "https://dijital.gib.gov.tr/apigateway/etebligat/etebligat/zarf-detay-sorgula",
   "attachmentApi": "https://dijital.gib.gov.tr/apigateway/etebligat/etebligat/belge-ek-listele",
   "documentApi": "https://dijital.gib.gov.tr/apigateway/etebligat/etebligat/belge-getir",
+  "debtQueryApi": "",
+  "debtPortalUrl": "https://dijital.gib.gov.tr/portal/odeme-borc-islemleri",
   "userIdSelector": "#userid",
   "passwordSelector": "#sifre",
   "captchaInputSelector": "#dk",
