@@ -30,6 +30,12 @@ export async function createLicenseNotification(
     ],
   )
 
+  await dbRun(
+    'setLicenseNotificationPaymentCode',
+    'UPDATE license_notifications SET payment_code = ? WHERE id = ?',
+    [`GT-${id}`, id],
+  )
+
   const created = await getLicenseNotificationById(id)
   if (!created) {
     throw new Error('Havale bildirimi kaydedilemedi.')
@@ -40,7 +46,7 @@ export async function createLicenseNotification(
 export async function getLicenseNotificationById(id: number): Promise<LicenseNotification | null> {
   return dbQueryOne<LicenseNotification>(
     'getLicenseNotificationById',
-    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_plan, license_key, created_at, updated_at
+    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_plan, payment_code, license_key, created_at, updated_at
      FROM license_notifications WHERE id = ?`,
     [id],
   )
@@ -49,7 +55,7 @@ export async function getLicenseNotificationById(id: number): Promise<LicenseNot
 export async function listLicenseNotifications(limit = 100): Promise<LicenseNotification[]> {
   return dbQueryAll<LicenseNotification>(
     'listLicenseNotifications',
-    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_plan, license_key, created_at, updated_at
+    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_plan, payment_code, license_key, created_at, updated_at
      FROM license_notifications
      ORDER BY created_at DESC
      LIMIT ?`,
@@ -77,7 +83,7 @@ export async function updateLicenseNotificationStatus(
 export async function listPendingDesktopLicenseNotifications(): Promise<LicenseNotification[]> {
   return dbQueryAll<LicenseNotification>(
     'listPendingDesktopLicenseNotifications',
-    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_plan, license_key, created_at, updated_at
+    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_plan, payment_code, license_key, created_at, updated_at
      FROM license_notifications
      WHERE status = 'PENDING' AND source = 'desktop_app'
      ORDER BY created_at DESC

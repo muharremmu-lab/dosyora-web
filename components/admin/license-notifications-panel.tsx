@@ -11,6 +11,7 @@ type PendingDesktopLicense = {
   email: string
   taxOffice: string
   licensePlan: string | null
+  paymentCode: string | null
   hardwareId: string | null
   createdAt: string
 }
@@ -159,7 +160,10 @@ export function LicenseNotificationsPanel() {
                     <div>{item.email}</div>
                     <div className="text-xs text-[var(--ds-color-text-muted)]">{item.taxOffice}</div>
                   </td>
-                  <td className="px-4 py-3">{item.licensePlan ?? '—'}</td>
+                  <td className="px-4 py-3">
+                    <div>{item.licensePlan ?? '—'}</div>
+                    <div className="font-mono text-xs text-[var(--ds-color-text-muted)]">{item.paymentCode ?? '—'}</div>
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs">{item.hardwareId ?? '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-2">

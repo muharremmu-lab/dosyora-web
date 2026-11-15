@@ -160,6 +160,7 @@ export type LicenseNotification = {
   source: string | null
   hardware_id: string | null
   license_plan: string | null
+  payment_code: string | null
   license_key: string | null
   created_at: string
   updated_at: string

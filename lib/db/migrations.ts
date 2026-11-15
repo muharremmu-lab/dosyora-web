@@ -398,6 +398,7 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
     await addColumnIfMissing(client, 'license_notifications', 'hardware_id', 'TEXT')
     await addColumnIfMissing(client, 'license_notifications', 'license_key', 'TEXT')
     await addColumnIfMissing(client, 'license_notifications', 'license_plan', 'TEXT')
+    await addColumnIfMissing(client, 'license_notifications', 'payment_code', 'TEXT')
     await addColumnIfMissing(client, 'demo_leads', 'document_limit', 'INTEGER')
     await addColumnIfMissing(client, 'demo_leads', 'account_status', 'TEXT')
     await addColumnIfMissing(client, 'demo_leads', 'used_documents', 'INTEGER NOT NULL DEFAULT 0')

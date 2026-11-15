@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
         id: notification.id,
         status: notification.status,
         createdAt: notification.created_at,
+        paymentCode: notification.payment_code,
       },
       { status: 201 },
     )

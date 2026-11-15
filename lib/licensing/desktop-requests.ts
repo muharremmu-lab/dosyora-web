@@ -23,6 +23,7 @@ export type PendingDesktopLicense = {
   email: string
   taxOffice: string
   licensePlan: string | null
+  paymentCode: string | null
   hardwareId: string | null
   createdAt: string
 }
@@ -35,6 +36,7 @@ export function toPendingDesktopLicense(row: LicenseNotification): PendingDeskto
     email: row.email,
     taxOffice: row.tax_office,
     licensePlan: row.license_plan,
+    paymentCode: row.payment_code,
     hardwareId: row.hardware_id,
     createdAt: row.created_at,
   }

@@ -1,4 +1,5 @@
 import { dbInsertReturningId, dbQueryAll, dbQueryOne, dbRun } from '@/lib/db/query'
+import { bankTransferInstructions } from '@/lib/license/bank-instructions'
 
 import {
   addIstanbulDays,
@@ -87,9 +88,11 @@ export async function getBankSettings(): Promise<BankSettings> {
     'SELECT setting_key, setting_value FROM license_settings',
   )
   const values = new Map(rows.map((row) => [row.setting_key, row.setting_value]))
+  const storedIban = (values.get('iban') ?? '').replace(/\s+/g, '').trim()
+  const storedName = (values.get('account_name') ?? '').trim()
   return {
-    iban: values.get('iban') ?? '',
-    accountName: values.get('account_name') ?? 'DOSYORA',
+    iban: storedIban || bankTransferInstructions.iban.replace(/\s+/g, ''),
+    accountName: !storedName || storedName === 'DOSYORA' ? bankTransferInstructions.recipientName : storedName,
     notePrefix: values.get('note_prefix')?.trim() || 'GT',
   }
 }

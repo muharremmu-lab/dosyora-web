@@ -91,8 +91,8 @@ export function LicenseApplyForm({ initialHwid }: { initialHwid: string }) {
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <Info label="IBAN" value={result.bank.iban ? formatIban(result.bank.iban) : 'Henüz tanımlanmadı'} />
-          <Info label="Alıcı unvanı" value={result.bank.accountName || 'DOSYORA'} />
+          <Info label="IBAN" value={formatIban(result.bank.iban || 'TR170006200118100006594293')} />
+          <Info label="Alıcı unvanı" value={result.bank.accountName && result.bank.accountName !== 'DOSYORA' ? result.bank.accountName : 'Ege Mutlu'} />
           <Info label="Açıklama kodu" value={result.bank.descriptionCode || '—'} />
         </div>
         <p className="text-sm text-[var(--ds-color-text-muted)]">

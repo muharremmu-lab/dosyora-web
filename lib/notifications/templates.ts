@@ -192,6 +192,7 @@ export function buildLicenseNotificationAdminEmail(
     { label: 'Durum', value: notification.status },
     { label: 'Bildirim Zamanı', value: notification.created_at },
     { label: 'Kaynak', value: source?.trim() || null },
+    { label: 'Açıklama kodu', value: notification.payment_code },
     { label: 'Alıcı', value: bankTransferInstructions.recipientName },
     { label: 'IBAN', value: bankTransferInstructions.iban },
   ]
