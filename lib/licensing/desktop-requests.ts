@@ -1,0 +1,108 @@
+import { dbInsertReturningId } from '@/lib/db/query'
+import {
+  getLicenseNotificationById,
+  listPendingDesktopLicenseNotifications,
+  saveDesktopLicenseDecision,
+} from '@/lib/db/license-notifications'
+import type { LicenseNotification } from '@/lib/db/types'
+
+import { addIstanbulDays, createOfflineLicenseKey, endOfIstanbulDayIso, normalizeHardwareId } from './offline-key'
+
+const DESKTOP_PACKAGE = 'UNLIMITED' as const
+const YEARLY_PRICE_TL = 5988
+
+export type PendingDesktopLicense = {
+  id: number
+  fullName: string
+  taxNumber: string
+  email: string
+  address: string
+  hardwareId: string | null
+  createdAt: string
+}
+
+export function toPendingDesktopLicense(row: LicenseNotification): PendingDesktopLicense {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    taxNumber: row.tax_number,
+    email: row.email,
+    address: row.address,
+    hardwareId: row.hardware_id,
+    createdAt: row.created_at,
+  }
+}
+
+export async function listPendingDesktopLicenses(): Promise<PendingDesktopLicense[]> {
+  const rows = await listPendingDesktopLicenseNotifications()
+  return rows.map(toPendingDesktopLicense)
+}
+
+export async function approveDesktopLicense(id: number): Promise<
+  | { ok: true; hardwareId: string; licenseKey: string; expiresAt: string }
+  | { ok: false; error: string; status: number }
+> {
+  const current = await getLicenseNotificationById(id)
+  if (!current || current.source !== 'desktop_app') {
+    return { ok: false, error: 'Masaüstü lisans talebi bulunamadı.', status: 404 }
+  }
+  if (current.status !== 'PENDING') {
+    return { ok: false, error: 'Yalnızca bekleyen talepler onaylanabilir.', status: 409 }
+  }
+
+  const hardwareId = normalizeHardwareId(current.hardware_id)
+  if (!hardwareId) {
+    return { ok: false, error: 'Talepte geçerli bir donanım kimliği yok.', status: 400 }
+  }
+
+  const stamp = addIstanbulDays(365)
+  const licenseKey = createOfflineLicenseKey(hardwareId, DESKTOP_PACKAGE, stamp)
+  const expiresAt = endOfIstanbulDayIso(stamp)
+  const now = new Date().toISOString()
+
+  await dbInsertReturningId(
+    'licenseOrders.insertApprovedDesktop',
+    `INSERT INTO license_orders (
+      created_at, updated_at, hwid, package_code, full_name, vkn, email, phone,
+      status, license_key, expires_at, payment_code, price_tl
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?, ?, NULL, ?)
+    RETURNING id`,
+    [
+      now,
+      now,
+      hardwareId,
+      DESKTOP_PACKAGE,
+      current.full_name,
+      current.tax_number,
+      current.email,
+      '',
+      licenseKey,
+      expiresAt,
+      YEARLY_PRICE_TL,
+    ],
+  )
+
+  const saved = await saveDesktopLicenseDecision(id, 'APPROVED', licenseKey)
+  if (!saved || saved.status !== 'APPROVED') {
+    return { ok: false, error: 'Talep onaylanamadı.', status: 409 }
+  }
+
+  return { ok: true, hardwareId, licenseKey, expiresAt }
+}
+
+export async function rejectDesktopLicense(id: number): Promise<{ ok: true } | { ok: false; error: string; status: number }> {
+  const current = await getLicenseNotificationById(id)
+  if (!current || current.source !== 'desktop_app') {
+    return { ok: false, error: 'Masaüstü lisans talebi bulunamadı.', status: 404 }
+  }
+  if (current.status !== 'PENDING') {
+    return { ok: false, error: 'Yalnızca bekleyen talepler reddedilebilir.', status: 409 }
+  }
+
+  const saved = await saveDesktopLicenseDecision(id, 'REJECTED', null)
+  if (!saved || saved.status !== 'REJECTED') {
+    return { ok: false, error: 'Talep reddedilemedi.', status: 409 }
+  }
+
+  return { ok: true }
+}

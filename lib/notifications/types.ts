@@ -6,7 +6,7 @@ export type NotificationPayload =
   | { type: 'demo_lead_created'; lead: DemoLead; activationToken?: string }
   | { type: 'demo_inquiry_created'; lead: DemoLead }
   | { type: 'contact_message_created'; message: ContactMessage }
-  | { type: 'license_notification_created'; notification: LicenseNotification }
+  | { type: 'license_notification_created'; notification: LicenseNotification; source?: string | null }
 
 export interface NotificationProvider {
   readonly channel: NotificationChannel

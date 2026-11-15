@@ -179,7 +179,10 @@ export function buildContactAdminEmail(message: ContactMessage): EmailTemplate {
   }
 }
 
-export function buildLicenseNotificationAdminEmail(notification: LicenseNotification): EmailTemplate {
+export function buildLicenseNotificationAdminEmail(
+  notification: LicenseNotification,
+  source?: string | null,
+): EmailTemplate {
   const fields = [
     { label: 'Ad Soyad / Unvan', value: notification.full_name },
     { label: 'E-posta', value: notification.email },
@@ -188,6 +191,7 @@ export function buildLicenseNotificationAdminEmail(notification: LicenseNotifica
     { label: 'Fatura Adresi', value: notification.address },
     { label: 'Durum', value: notification.status },
     { label: 'Bildirim Zamanı', value: notification.created_at },
+    { label: 'Kaynak', value: source?.trim() || null },
     { label: 'Alıcı', value: bankTransferInstructions.recipientName },
     { label: 'IBAN', value: bankTransferInstructions.iban },
   ]

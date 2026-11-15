@@ -74,6 +74,9 @@ describe('notification templates', () => {
       tax_office: 'Davutpaşa',
       address: 'İstanbul',
       status: 'PENDING',
+      source: 'desktop_app',
+      hardware_id: null,
+      license_key: null,
       created_at: '2026-11-15T00:00:00.000Z',
       updated_at: '2026-11-15T00:00:00.000Z',
     }

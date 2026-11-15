@@ -41,8 +41,8 @@ export class NotificationService {
     await this.dispatch({ type: 'contact_message_created', message })
   }
 
-  async notifyLicenseNotificationCreated(notification: LicenseNotification): Promise<void> {
-    await this.dispatch({ type: 'license_notification_created', notification })
+  async notifyLicenseNotificationCreated(notification: LicenseNotification, source?: string | null): Promise<void> {
+    await this.dispatch({ type: 'license_notification_created', notification, source })
   }
 
   private async dispatch(payload: NotificationPayload): Promise<void> {

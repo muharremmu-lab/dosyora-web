@@ -1,4 +1,5 @@
 import type { CreateLicenseNotificationInput } from '@/lib/db/types'
+import { normalizeHardwareId } from '@/lib/licensing/offline-key'
 
 import { collectErrors, validateEmail, validateRequired, type ValidationResult } from './common'
 
@@ -22,14 +23,16 @@ export function validateLicenseNotificationPayload(
   const fullName = String(payload.fullName ?? payload.full_name ?? '')
   const email = String(payload.email ?? '')
   const taxNumber = String(payload.taxNumber ?? payload.tax_number ?? '')
-  const taxOffice = String(payload.taxOffice ?? payload.tax_office ?? '')
+  const taxOffice = String(payload.taxOffice ?? payload.tax_office ?? '').trim()
   const address = String(payload.address ?? '')
+  const source = typeof payload.source === 'string' ? payload.source.trim().slice(0, 40) : ''
+  const hardwareId = normalizeHardwareId(payload.hardwareId ?? payload.hardware_id ?? payload.hwid)
 
   const errors = collectErrors([
     validateRequired(fullName, 'Ad soyad / şirket unvanı', 200),
     validateEmail(email),
     validateTaxNumber(taxNumber),
-    validateRequired(taxOffice, 'Vergi dairesi', 200),
+    taxOffice ? validateRequired(taxOffice, 'Vergi dairesi', 200) : null,
     validateRequired(address, 'Fatura adresi', 1000),
   ])
 
@@ -43,8 +46,10 @@ export function validateLicenseNotificationPayload(
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
       tax_number: taxNumber.replace(/\D/g, ''),
-      tax_office: taxOffice.trim(),
+      tax_office: taxOffice || 'Belirtilmedi',
       address: address.trim(),
+      source: source || null,
+      hardware_id: hardwareId,
     },
   }
 }

@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     const notification = await createLicenseNotification(validation.data)
 
     try {
-      await notificationService.notifyLicenseNotificationCreated(notification)
+      await notificationService.notifyLicenseNotificationCreated(notification, validation.data.source)
     } catch (error) {
       logApiError('license_notification_email_failed', { id: notification.id }, error)
     }

@@ -50,7 +50,11 @@ export function endOfIstanbulDayIso(stamp: string): string {
   return new Date(Date.UTC(year, month - 1, day, 20, 59, 59)).toISOString()
 }
 
-export function createOfflineLicenseKey(hardwareId: string, packageCode: LicensePackageCode, expiresOn: string): string {
+export function createOfflineLicenseKey(
+  hardwareId: string,
+  packageCode: LicensePackageCode | 'UNLIMITED',
+  expiresOn: string,
+): string {
   const hwid = normalizeHardwareId(hardwareId)
   if (!hwid || !/^\d{8}$/.test(expiresOn)) {
     throw new Error('Lisans anahtarı üretilemedi.')

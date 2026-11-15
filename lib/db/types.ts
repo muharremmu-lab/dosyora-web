@@ -157,6 +157,9 @@ export type LicenseNotification = {
   tax_office: string
   address: string
   status: LicenseNotificationStatus
+  source: string | null
+  hardware_id: string | null
+  license_key: string | null
   created_at: string
   updated_at: string
 }
@@ -167,6 +170,8 @@ export type CreateLicenseNotificationInput = {
   tax_number: string
   tax_office: string
   address: string
+  source?: string | null
+  hardware_id?: string | null
 }
 
 export function normalizeEmail(email: string): string {

@@ -94,7 +94,7 @@ export class ResendNotificationProvider implements NotificationProvider {
     }
 
     if (payload.type === 'license_notification_created') {
-      await this.sendLicenseNotificationCreated(payload.notification)
+      await this.sendLicenseNotificationCreated(payload.notification, payload.source)
       return
     }
 
@@ -168,7 +168,10 @@ export class ResendNotificationProvider implements NotificationProvider {
     }
   }
 
-  private async sendLicenseNotificationCreated(notification: LicenseNotification): Promise<void> {
+  private async sendLicenseNotificationCreated(
+    notification: LicenseNotification,
+    source?: string | null,
+  ): Promise<void> {
     if (!this.config.adminNotificationEmail) {
       logApiWarning('notification_license_admin_skipped', {
         notificationId: notification.id,
@@ -177,7 +180,7 @@ export class ResendNotificationProvider implements NotificationProvider {
       return
     }
 
-    const template = buildLicenseNotificationAdminEmail(notification)
+    const template = buildLicenseNotificationAdminEmail(notification, source)
 
     try {
       await sendResendEmail(this.client!, this.config.emailFrom!, {

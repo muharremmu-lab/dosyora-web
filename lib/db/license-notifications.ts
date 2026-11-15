@@ -13,8 +13,8 @@ export async function createLicenseNotification(
   const id = await dbInsertReturningId(
     'createLicenseNotification',
     `INSERT INTO license_notifications (
-      full_name, email, tax_number, tax_office, address, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, 'PENDING', ?, ?)
+      full_name, email, tax_number, tax_office, address, status, created_at, updated_at, source, hardware_id
+    ) VALUES (?, ?, ?, ?, ?, 'PENDING', ?, ?, ?, ?)
     RETURNING id`,
     [
       input.full_name,
@@ -24,6 +24,8 @@ export async function createLicenseNotification(
       input.address,
       timestamp,
       timestamp,
+      input.source ?? null,
+      input.hardware_id ?? null,
     ],
   )
 
@@ -37,7 +39,7 @@ export async function createLicenseNotification(
 export async function getLicenseNotificationById(id: number): Promise<LicenseNotification | null> {
   return dbQueryOne<LicenseNotification>(
     'getLicenseNotificationById',
-    `SELECT id, full_name, email, tax_number, tax_office, address, status, created_at, updated_at
+    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_key, created_at, updated_at
      FROM license_notifications WHERE id = ?`,
     [id],
   )
@@ -46,7 +48,7 @@ export async function getLicenseNotificationById(id: number): Promise<LicenseNot
 export async function listLicenseNotifications(limit = 100): Promise<LicenseNotification[]> {
   return dbQueryAll<LicenseNotification>(
     'listLicenseNotifications',
-    `SELECT id, full_name, email, tax_number, tax_office, address, status, created_at, updated_at
+    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_key, created_at, updated_at
      FROM license_notifications
      ORDER BY created_at DESC
      LIMIT ?`,
@@ -68,5 +70,32 @@ export async function updateLicenseNotificationStatus(
     [status, now.toISOString(), id],
   )
 
+  return getLicenseNotificationById(id)
+}
+
+export async function listPendingDesktopLicenseNotifications(): Promise<LicenseNotification[]> {
+  return dbQueryAll<LicenseNotification>(
+    'listPendingDesktopLicenseNotifications',
+    `SELECT id, full_name, email, tax_number, tax_office, address, status, source, hardware_id, license_key, created_at, updated_at
+     FROM license_notifications
+     WHERE status = 'PENDING' AND source = 'desktop_app'
+     ORDER BY created_at DESC
+     LIMIT 100`,
+  )
+}
+
+export async function saveDesktopLicenseDecision(
+  id: number,
+  status: 'APPROVED' | 'REJECTED',
+  licenseKey: string | null,
+  now = new Date(),
+): Promise<LicenseNotification | null> {
+  await dbRun(
+    'saveDesktopLicenseDecision',
+    `UPDATE license_notifications
+     SET status = ?, license_key = ?, updated_at = ?
+     WHERE id = ? AND status = 'PENDING' AND source = 'desktop_app'`,
+    [status, licenseKey, now.toISOString(), id],
+  )
   return getLicenseNotificationById(id)
 }
