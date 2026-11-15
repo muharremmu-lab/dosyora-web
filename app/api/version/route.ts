@@ -7,5 +7,6 @@ export async function GET() {
   return jsonOk({
     version: '1.1.7',
     url: 'https://www.dosyora.com/downloads/gibtebligat/GibTebligatPro-Kurulum.exe',
+    critical: false,
   })
 }
