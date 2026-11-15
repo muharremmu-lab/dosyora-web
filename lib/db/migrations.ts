@@ -399,6 +399,7 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
     await addColumnIfMissing(client, 'license_notifications', 'license_key', 'TEXT')
     await addColumnIfMissing(client, 'license_notifications', 'license_plan', 'TEXT')
     await addColumnIfMissing(client, 'license_notifications', 'payment_code', 'TEXT')
+    await addColumnIfMissing(client, 'license_orders', 'client_ip', 'TEXT')
     await addColumnIfMissing(client, 'demo_leads', 'document_limit', 'INTEGER')
     await addColumnIfMissing(client, 'demo_leads', 'account_status', 'TEXT')
     await addColumnIfMissing(client, 'demo_leads', 'used_documents', 'INTEGER NOT NULL DEFAULT 0')
@@ -412,6 +413,17 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
     await addColumnIfMissing(client, 'demo_leads', 'activation_expires_at', 'TEXT')
     await addColumnIfMissing(client, 'demo_leads', 'activation_used_at', 'TEXT')
     await addColumnIfMissing(client, 'demo_leads', 'provisioned_at', 'TEXT')
+
+    await runStatement(
+      client,
+      'migration.index.license_orders_email',
+      `CREATE INDEX IF NOT EXISTS idx_license_orders_email ON license_orders(email)`,
+    )
+    await runStatement(
+      client,
+      'migration.index.license_orders_client_ip',
+      `CREATE INDEX IF NOT EXISTS idx_license_orders_client_ip ON license_orders(client_ip)`,
+    )
 
     await runStatement(
       client,

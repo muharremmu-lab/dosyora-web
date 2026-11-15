@@ -14,6 +14,7 @@ const PACKAGES = [
 
 type ApplyResult = {
   status: 'provisional' | 'pending'
+  reused?: boolean
   orderId: number
   packageTitle: string
   priceTl: number
@@ -63,13 +64,17 @@ export function LicenseApplyForm({ initialHwid }: { initialHwid: string }) {
   if (result) {
     return (
       <div className="space-y-6 rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] p-6">
-        {result.status === 'provisional' ? (
+        {result.status === 'provisional' && !result.reused ? (
           <p className="text-base font-medium text-[var(--ds-color-text)]">
-            Lisansınız 12 saatliğine otomatik aktifleştirildi! Programınızı hemen kullanmaya başlayabilirsiniz. 12 saat içinde ödemeniz ulaştığında lisansınız 1 yıla uzatılacaktır.
+            24 saatlik geçici tam yetkiniz tanımlandı. Programı hemen kullanabilirsiniz. Ödeme açıklamasına firma unvanı ve vergi numaranızı yazın; dekont göndermeniz gerekmez.
+          </p>
+        ) : result.reused ? (
+          <p className="text-base font-medium text-[var(--ds-color-text)]">
+            Bu donanım kimliği için 24 saatlik geçici yetki zaten tanımlı. Yeni bir süre açılmadı.
           </p>
         ) : (
           <p className="text-base font-medium text-[var(--ds-color-text)]">
-            Bu donanım kimliği veya vergi kimliği için 12 saatlik geçici hak daha önce kullanılmıştır. Başvurunuz yönetici onayını bekliyor. Ödeme açıklamasına aşağıdaki kodu yazın.
+            Bu donanım kimliği, IP adresi veya e-posta için 24 saatlik geçici yetki daha önce kullanılmıştır. Başvurunuz kayda alındı.
           </p>
         )}
 
@@ -96,7 +101,7 @@ export function LicenseApplyForm({ initialHwid }: { initialHwid: string }) {
           <Info label="Açıklama kodu" value={result.bank.descriptionCode || '—'} />
         </div>
         <p className="text-sm text-[var(--ds-color-text-muted)]">
-          {result.packageTitle} · {result.priceTl.toLocaleString('tr-TR')} TL. Havale açıklamasına yalnızca açıklama kodunu yazın.
+          {result.packageTitle} · {result.priceTl.toLocaleString('tr-TR')} TL (KDV Dahil). Havale açıklaması: {result.bank.descriptionCode}. Dekont göndermeniz gerekmez.
         </p>
       </div>
     )

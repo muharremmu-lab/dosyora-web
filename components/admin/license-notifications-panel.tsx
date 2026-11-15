@@ -16,6 +16,13 @@ type PendingDesktopLicense = {
   createdAt: string
 }
 
+const PLAN_LABELS: Record<string, string> = {
+  F1: 'Firma Paketi · 100 TL (KDV Dahil)',
+  MM50: 'Mali Müşavir 50 · 500 TL (KDV Dahil)',
+  MM100: 'Mali Müşavir 100 · 750 TL (KDV Dahil)',
+  MM200: 'Mali Müşavir 200 · 1.000 TL (KDV Dahil)',
+}
+
 type BankTransfer = {
   recipientName: string
   iban: string
@@ -161,7 +168,7 @@ export function LicenseNotificationsPanel() {
                     <div className="text-xs text-[var(--ds-color-text-muted)]">{item.taxOffice}</div>
                   </td>
                   <td className="px-4 py-3">
-                    <div>{item.licensePlan ?? '—'}</div>
+                    <div>{item.licensePlan ? PLAN_LABELS[item.licensePlan] ?? item.licensePlan : '—'}</div>
                     <div className="font-mono text-xs text-[var(--ds-color-text-muted)]">{item.paymentCode ?? '—'}</div>
                   </td>
                   <td className="px-4 py-3 font-mono text-xs">{item.hardwareId ?? '—'}</td>

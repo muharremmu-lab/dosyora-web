@@ -5,7 +5,7 @@ import { createPageMetadata } from '@/lib/metadata'
 
 export const metadata = createPageMetadata({
   title: 'GibTebligat Pro Lisans Al',
-  description: 'GibTebligat Pro paket başvurusu. Ödeme onaylanana kadar 12 saatlik geçici lisans.',
+  description: 'GibTebligat Pro paket başvurusu. Aynı donanım, IP veya e-posta daha önce kullanmadıysa 24 saatlik geçici tam yetki hemen tanımlanır.',
   path: '/lisans-al',
 })
 
@@ -24,7 +24,7 @@ export default async function LicenseApplyPage({ searchParams }: LicensePageProp
         <SectionContainer>
           <h1 className="text-3xl font-bold tracking-tight">Lisans başvurusu</h1>
           <p className="mt-2 max-w-2xl text-sm text-[var(--ds-color-text-muted)]">
-            Paketinizi seçin. Aynı bilgisayar veya vergi kimliği daha önce 12 saatlik geçici lisans kullanmadıysa anahtarınız hemen üretilir.
+            Paketinizi seçin. Aynı donanım kimliği, IP adresi veya e-posta daha önce 24 saatlik geçici yetki kullanmadıysa anahtarınız hemen üretilir.
           </p>
           <div className="mt-8 max-w-3xl">
             <LicenseApplyForm initialHwid={hwid} />

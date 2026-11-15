@@ -13,6 +13,7 @@ import {
   buildContactAdminEmail,
   buildDemoAdminEmail,
   buildDemoApplicantEmail,
+  buildLicenseApplicantEmail,
   buildLicenseNotificationAdminEmail,
 } from './templates'
 import type { NotificationPayload, NotificationProvider } from './types'
@@ -98,6 +99,11 @@ export class ResendNotificationProvider implements NotificationProvider {
       return
     }
 
+    if (payload.type === 'license_applicant_received') {
+      await this.sendLicenseApplicant(payload.mail)
+      return
+    }
+
     await this.sendContactMessageCreated(payload.message)
   }
 
@@ -163,6 +169,27 @@ export class ResendNotificationProvider implements NotificationProvider {
           leadId: lead.id,
           recipient: maskEmailAddress(this.config.adminNotificationEmail),
         },
+        error,
+      )
+    }
+  }
+
+  private async sendLicenseApplicant(mail: Parameters<typeof buildLicenseApplicantEmail>[0]): Promise<void> {
+    const template = buildLicenseApplicantEmail(mail)
+    try {
+      await sendResendEmail(this.client!, this.config.emailFrom!, {
+        to: mail.email,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      })
+      logApiInfo('notification_license_applicant_sent', {
+        recipient: maskEmailAddress(mail.email),
+      })
+    } catch (error) {
+      logApiError(
+        'notification_license_applicant_failed',
+        { recipient: maskEmailAddress(mail.email) },
         error,
       )
     }

@@ -29,8 +29,15 @@ type BankSettings = {
   notePrefix: string
 }
 
+const PACKAGE_LABELS: Record<string, string> = {
+  F1: 'Firma Paketi',
+  MM50: 'Mali Müşavir 50',
+  MM100: 'Mali Müşavir 100',
+  MM200: 'Mali Müşavir 200',
+}
+
 const BADGES: Record<DisplayStatus, string> = {
-  provisional: 'Geçici Aktif (12 Saat) - Ödeme Bekliyor',
+  provisional: 'Geçici Aktif (24 Saat) - Ödeme Bekliyor',
   pending: 'Onay Bekliyor',
   approved: 'Onaylı (1 Yıl)',
   expired: 'İptal / Süresi Doldu',
@@ -180,7 +187,7 @@ export function LicenseOrdersPanel() {
                   <p className="text-[var(--ds-color-text-muted)]">{order.phone} · {order.paymentCode}</p>
                   <p className="max-w-xs truncate font-mono text-xs">{order.hwid}</p>
                 </td>
-                <td className="px-3 py-2">{order.packageCode} · {order.priceTl} TL</td>
+                <td className="px-3 py-2">{PACKAGE_LABELS[order.packageCode] ?? order.packageCode} · {order.priceTl.toLocaleString('tr-TR')} TL</td>
                 <td className="px-3 py-2">{BADGES[order.displayStatus]}</td>
                 <td className="space-y-2 px-3 py-2">
                   <button

@@ -6,6 +6,7 @@ import { getCustomerLoginUrl } from '@/lib/customer-portal'
 import { siteConfig } from '@/lib/site'
 
 import { bankTransferInstructions } from '@/lib/license/bank-instructions'
+import { isLicensePackage, LICENSE_PACKAGES } from '@/lib/licensing/offline-key'
 
 import { escapeHtml, escapeHtmlOrDash } from './escape'
 import { buildDemoLeadAdminFields } from './lead-fields'
@@ -179,14 +180,119 @@ export function buildContactAdminEmail(message: ContactMessage): EmailTemplate {
   }
 }
 
+export type LicenseApplicantMail = {
+  fullName: string
+  email: string
+  taxNumber: string
+  packageTitle: string
+  priceTl: number
+  outcome: 'granted' | 'blocked' | 'recorded'
+}
+
+export function packagePresentation(code: string | null | undefined): { title: string; priceTl: number } {
+  const normalized = code?.trim().toUpperCase() ?? ''
+  if (isLicensePackage(normalized)) {
+    return { title: LICENSE_PACKAGES[normalized].title, priceTl: LICENSE_PACKAGES[normalized].priceTl }
+  }
+  if (normalized === 'UNLIMITED') {
+    return { title: 'Sınırsız', priceTl: 5988 }
+  }
+  return { title: normalized || 'Seçilmedi', priceTl: 0 }
+}
+
+export function buildLicenseApplicantEmail(mail: LicenseApplicantMail): EmailTemplate {
+  const name = mail.fullName.trim()
+  const taxNumber = mail.taxNumber.trim()
+  const price = `${mail.priceTl.toLocaleString('tr-TR')} TL (KDV Dahil)`
+  const description = `${name} - ${taxNumber}`
+  const opening = mail.outcome === 'granted'
+    ? 'GibTebligatPro ailesine katıldığınız için teşekkür ederiz. Kurumsal lisans başvurunuz alınmış olup, iş süreçlerinizin kesintiye uğramaması adına 24 saatlik geçici tam yetkiniz anında tanımlanmıştır.'
+    : mail.outcome === 'blocked'
+      ? 'GibTebligatPro ailesine katıldığınız için teşekkür ederiz. Kurumsal lisans başvurunuz alınmıştır. Bu donanım kimliği, IP adresi veya e-posta için 24 saatlik geçici tam yetki daha önce kullanıldığı için yeni bir geçici yetki tanımlanmamıştır.'
+      : 'GibTebligatPro ailesine katıldığınız için teşekkür ederiz. Kurumsal lisans başvurunuz alınmıştır.'
+
+  const text = [
+    `Sayın ${name},`,
+    '',
+    opening,
+    '',
+    'Başvuru ve Paket Bilgileri',
+    `Firma / Unvan: ${name}`,
+    `Vergi No (VKN/TCKN): ${taxNumber}`,
+    `Seçilen Paket: ${mail.packageTitle}`,
+    `Ödenecek Tutar: ${price}`,
+    '',
+    'Sıfır Bulut Mimarisi ve Güvenlik',
+    'GibTebligatPro, hassas verilerinizin gizliliğini korumak için sıfır bulut bağımlılığı ile tasarlanmıştır:',
+    '',
+    'Yerel Çalışma: Tüm verileriniz yalnızca sizin bilgisayarınızda barındırılır; üçüncü taraf sunuculara aktarılmaz, yedeklenmez.',
+    'DPAPI Şifreleme: Bilgileriniz Windows\'un en üst düzey kurumsal şifreleme standardı (DPAPI) ile cihazınızda güvence altındadır.',
+    '',
+    'Ödeme ve Aktivasyon',
+    'Lisansınızı kalıcı hale getirmek için ödemenizi aşağıdaki hesabımıza gerçekleştirebilirsiniz (dekont göndermenize gerek yoktur, sistem ödemenizi otomatik eşleştirir):',
+    '',
+    'Banka: Garanti BBVA',
+    'Alıcı: Ege Mutlu',
+    'IBAN: TR17 0006 2001 1810 0006 5942 93',
+    `Açıklama: ${description}`,
+    '',
+    'Not: 24 saat içinde ödemenin tamamlanmaması durumunda uygulama otomatik olarak Demo Moduna geçecektir.',
+    '',
+    'Saygılarımızla,',
+    '',
+    'Ege Mutlu / GibTebligatPro',
+  ].join('\n')
+
+  const html = wrapEmailHtml(
+    'GibTebligatPro Lisans Başvurunuz Alınmıştır – Güvenli ve Kesintisiz Erişim',
+    `
+      <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Sayın ${escapeHtml(name)},</p>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.7;">${escapeHtml(opening)}</p>
+      <h2 style="margin:0 0 8px;font-size:16px;color:#111827;">Başvuru ve Paket Bilgileri</h2>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+        ${renderFieldListHtml([
+          { label: 'Firma / Unvan', value: name },
+          { label: 'Vergi No (VKN/TCKN)', value: taxNumber },
+          { label: 'Seçilen Paket', value: mail.packageTitle },
+          { label: 'Ödenecek Tutar', value: price },
+        ])}
+      </table>
+      <h2 style="margin:20px 0 8px;font-size:16px;color:#111827;">Sıfır Bulut Mimarisi ve Güvenlik</h2>
+      <p style="margin:0 0 12px;font-size:15px;line-height:1.7;">GibTebligatPro, hassas verilerinizin gizliliğini korumak için sıfır bulut bağımlılığı ile tasarlanmıştır:</p>
+      <p style="margin:0 0 8px;font-size:15px;line-height:1.7;"><strong>Yerel Çalışma:</strong> Tüm verileriniz yalnızca sizin bilgisayarınızda barındırılır; üçüncü taraf sunuculara aktarılmaz, yedeklenmez.</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.7;"><strong>DPAPI Şifreleme:</strong> Bilgileriniz Windows'un en üst düzey kurumsal şifreleme standardı (DPAPI) ile cihazınızda güvence altındadır.</p>
+      <h2 style="margin:0 0 8px;font-size:16px;color:#111827;">Ödeme ve Aktivasyon</h2>
+      <p style="margin:0 0 12px;font-size:15px;line-height:1.7;">Lisansınızı kalıcı hale getirmek için ödemenizi aşağıdaki hesabımıza gerçekleştirebilirsiniz. Dekont göndermenize gerek yoktur; sistem ödemenizi otomatik eşleştirir.</p>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+        ${renderFieldListHtml([
+          { label: 'Banka', value: 'Garanti BBVA' },
+          { label: 'Alıcı', value: 'Ege Mutlu' },
+          { label: 'IBAN', value: 'TR17 0006 2001 1810 0006 5942 93' },
+          { label: 'Açıklama', value: description },
+        ])}
+      </table>
+      <p style="margin:16px 0 0;font-size:14px;line-height:1.6;color:#374151;">24 saat içinde ödemenin tamamlanmaması durumunda uygulama otomatik olarak Demo Moduna geçecektir.</p>
+      <p style="margin:24px 0 0;font-size:14px;line-height:1.5;color:#374151;">Saygılarımızla,<br /><strong>Ege Mutlu / GibTebligatPro</strong></p>
+    `,
+  )
+
+  return {
+    subject: 'GibTebligatPro Lisans Başvurunuz Alınmıştır – Güvenli ve Kesintisiz Erişim',
+    html,
+    text,
+  }
+}
+
 export function buildLicenseNotificationAdminEmail(
   notification: LicenseNotification,
   source?: string | null,
 ): EmailTemplate {
+  const selected = packagePresentation(notification.license_plan)
   const fields = [
     { label: 'Ad Soyad / Unvan', value: notification.full_name },
     { label: 'E-posta', value: notification.email },
     { label: 'TCKN / VKN', value: notification.tax_number },
+    { label: 'Seçilen Paket', value: notification.license_plan ? `${selected.title} · ${selected.priceTl.toLocaleString('tr-TR')} TL` : null },
     { label: 'Vergi Dairesi', value: notification.tax_office },
     { label: 'Fatura Adresi', value: notification.address },
     { label: 'Durum', value: notification.status },

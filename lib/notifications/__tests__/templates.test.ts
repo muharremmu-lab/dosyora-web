@@ -4,7 +4,7 @@ import type { DemoLead, LicenseNotification } from '@/lib/db/types'
 import { bankTransferInstructions } from '@/lib/license/bank-instructions'
 
 import { extractAccountingProgram, extractLeadNotes } from '@/lib/notifications/lead-fields'
-import { buildDemoAdminEmail, buildDemoApplicantEmail, buildLicenseNotificationAdminEmail } from '@/lib/notifications/templates'
+import { buildDemoAdminEmail, buildDemoApplicantEmail, buildLicenseApplicantEmail, buildLicenseNotificationAdminEmail } from '@/lib/notifications/templates'
 
 const sampleLead: DemoLead = {
   id: 1,
@@ -89,6 +89,27 @@ describe('notification templates', () => {
     expect(email.text).toContain(bankTransferInstructions.recipientName)
     expect(email.text).toContain(bankTransferInstructions.relayNote)
     expect(email.html).toContain('PENDING')
+    expect(email.text).toContain('Mali Müşavir 100')
+  })
+
+  it('sends the corporate license applicant mail without a receipt step', () => {
+    const email = buildLicenseApplicantEmail({
+      fullName: 'Atlas A.Ş.',
+      email: 'fatura@example.com',
+      taxNumber: '1234567890',
+      packageTitle: 'Mali Müşavir 100',
+      priceTl: 750,
+      outcome: 'granted',
+    })
+
+    expect(email.subject).toBe('GibTebligatPro Lisans Başvurunuz Alınmıştır – Güvenli ve Kesintisiz Erişim')
+    expect(email.text).toContain('24 saatlik geçici tam yetkiniz anında tanımlanmıştır')
+    expect(email.text).toContain('Garanti BBVA')
+    expect(email.text).toContain('DPAPI')
+    expect(email.text).toContain('Atlas A.Ş. - 1234567890')
+    expect(email.text).toContain('750 TL (KDV Dahil)')
+    expect(email.text.toLowerCase()).not.toContain('dekont yükle')
+    expect(email.text).toContain('dekont göndermenize gerek yoktur')
   })
 
   it('extracts accounting program and notes from lead message', () => {

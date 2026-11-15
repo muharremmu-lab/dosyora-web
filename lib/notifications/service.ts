@@ -1,4 +1,5 @@
 import type { ContactMessage, DemoLead, LicenseNotification } from '@/lib/db/types'
+import type { LicenseApplicantMail } from './templates'
 
 import { getNotificationEnvConfig, isResendSendConfigured } from './env'
 import { createResendNotificationProvider } from './resend-provider'
@@ -43,6 +44,10 @@ export class NotificationService {
 
   async notifyLicenseNotificationCreated(notification: LicenseNotification, source?: string | null): Promise<void> {
     await this.dispatch({ type: 'license_notification_created', notification, source })
+  }
+
+  async notifyLicenseApplicant(mail: LicenseApplicantMail): Promise<void> {
+    await this.dispatch({ type: 'license_applicant_received', mail })
   }
 
   private async dispatch(payload: NotificationPayload): Promise<void> {

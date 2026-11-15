@@ -6,6 +6,7 @@ import type { NextRequest } from 'next/server'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { logDbRouteError } from '@/lib/db/libsql-log'
 import { applyForLicense, getBankSettings } from '@/lib/licensing/orders'
+import { notificationService } from '@/lib/notifications/service'
 import { isLicensePackage, LICENSE_PACKAGES, normalizeHardwareId } from '@/lib/licensing/offline-key'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { getClientIp } from '@/lib/request-meta'
@@ -62,12 +63,26 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const [{ order }, bank] = await Promise.all([
-      applyForLicense({ hwid, packageCode, fullName, vkn, email, phone }),
+    const [{ order, reused }, bank] = await Promise.all([
+      applyForLicense({ hwid, packageCode, fullName, vkn, email, phone, clientIp: getClientIp(request) }),
       getBankSettings(),
     ])
+    const granted = order.status === 'provisional' && !reused
+    try {
+      await notificationService.notifyLicenseApplicant({
+        fullName: order.fullName,
+        email: order.email,
+        taxNumber: order.vkn,
+        packageTitle: LICENSE_PACKAGES[order.packageCode].title,
+        priceTl: order.priceTl,
+        outcome: granted ? 'granted' : 'blocked',
+      })
+    } catch (error) {
+      logDbRouteError('gibtebligat_license_apply_email_failed', error, { operation: 'licenseApplyEmail' })
+    }
     return jsonOk({
       status: order.status,
+      reused,
       orderId: order.id,
       package: order.packageCode,
       packageTitle: LICENSE_PACKAGES[order.packageCode].title,
@@ -78,7 +93,7 @@ export async function POST(request: NextRequest) {
       bank: {
         iban: bank.iban,
         accountName: bank.accountName,
-        descriptionCode: order.paymentCode,
+        descriptionCode: `${fullName} - ${vkn}`,
       },
     })
   } catch (error) {

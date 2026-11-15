@@ -50,9 +50,10 @@ type OrderRow = {
   expires_at: string | null
   payment_code: string | null
   price_tl: number | bigint
+  client_ip?: string | null
 }
 
-const PROVISIONAL_MS = 12 * 60 * 60 * 1000
+const PROVISIONAL_MS = 24 * 60 * 60 * 1000
 
 function asNumber(value: number | bigint): number {
   return typeof value === 'bigint' ? Number(value) : value
@@ -113,19 +114,30 @@ export async function saveBankSettings(settings: BankSettings): Promise<void> {
   }
 }
 
-async function ordersForIdentity(hwid: string, vkn: string): Promise<LicenseOrder[]> {
+function normalizeClientIp(value: string | null | undefined): string | null {
+  const ip = value?.trim() ?? ''
+  if (!ip || ip === 'unknown') return null
+  return ip.slice(0, 64)
+}
+
+async function ordersForIdentity(hwid: string, vkn: string, email: string, clientIp: string | null): Promise<LicenseOrder[]> {
   const rows = await dbQueryAll<OrderRow>(
     'licenseOrders.byIdentity',
     `SELECT * FROM license_orders
-     WHERE hwid = ? OR vkn = ?
+     WHERE hwid = ? OR vkn = ? OR email = ? OR (? IS NOT NULL AND client_ip = ?)
      ORDER BY id DESC`,
-    [hwid, vkn],
+    [hwid, vkn, email, clientIp, clientIp],
   )
   return rows.map(mapOrder)
 }
 
 function usedProvisionalRight(orders: LicenseOrder[]): boolean {
-  return orders.some((order) => order.status === 'provisional' || order.status === 'approved' || order.status === 'revoked')
+  return orders.some((order) =>
+    order.status === 'provisional'
+    || order.status === 'approved'
+    || order.status === 'revoked'
+    || order.status === 'demo',
+  )
 }
 
 export async function applyForLicense(input: {
@@ -135,8 +147,11 @@ export async function applyForLicense(input: {
   vkn: string
   email: string
   phone: string
+  clientIp?: string | null
 }): Promise<{ order: LicenseOrder; reused: boolean }> {
-  const existing = await ordersForIdentity(input.hwid, input.vkn)
+  const email = input.email.trim().toLowerCase()
+  const clientIp = normalizeClientIp(input.clientIp)
+  const existing = await ordersForIdentity(input.hwid, input.vkn, email, clientIp)
   const active = existing.find((order) => order.hwid === input.hwid && order.status === 'provisional' && isActive(order))
   if (active) {
     return { order: active, reused: true }
@@ -157,8 +172,8 @@ export async function applyForLicense(input: {
       'licenseOrders.insert',
       `INSERT INTO license_orders (
         created_at, updated_at, hwid, package_code, full_name, vkn, email, phone,
-        status, license_key, expires_at, payment_code, price_tl
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        status, license_key, expires_at, payment_code, price_tl, client_ip
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       RETURNING id`,
       [
         createdAt,
@@ -167,19 +182,20 @@ export async function applyForLicense(input: {
         input.packageCode,
         input.fullName,
         input.vkn,
-        input.email,
+        email,
         input.phone,
         status,
         licenseKey,
         expiresAt,
         null,
         LICENSE_PACKAGES[input.packageCode].priceTl,
+        clientIp,
       ],
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : ''
     if (!message.toLowerCase().includes('unique')) throw error
-    const again = await ordersForIdentity(input.hwid, input.vkn)
+    const again = await ordersForIdentity(input.hwid, input.vkn, email, clientIp)
     const current = again.find((order) => order.hwid === input.hwid && order.status === 'provisional' && isActive(order))
     if (current) return { order: current, reused: true }
     return applyForLicense(input)
