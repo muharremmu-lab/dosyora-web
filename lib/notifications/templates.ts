@@ -1,4 +1,4 @@
-import type { ContactMessage, DemoLead, LicenseNotification } from '@/lib/db/types'
+import type { ContactMessage, DemoLead, FeedbackKind, LicenseNotification, SiteFeedback } from '@/lib/db/types'
 
 import { buildActivationUrl } from '@/lib/activation/tokens'
 import { DEMO_DOCUMENT_LIMIT } from '@/lib/entitlements/constants'
@@ -175,6 +175,45 @@ export function buildContactAdminEmail(message: ContactMessage): EmailTemplate {
 
   return {
     subject: 'Yeni DOSYORA İletişim Mesajı',
+    html,
+    text,
+  }
+}
+
+const FEEDBACK_KIND_LABELS: Record<FeedbackKind, string> = {
+  oneri: 'Öneri',
+  istek: 'İstek',
+  sikayet: 'Şikayet',
+}
+
+export function feedbackKindLabel(kind: FeedbackKind): string {
+  return FEEDBACK_KIND_LABELS[kind]
+}
+
+export function buildSiteFeedbackEmail(feedback: SiteFeedback): EmailTemplate {
+  const fields = [
+    { label: 'Tür', value: feedbackKindLabel(feedback.kind) },
+    { label: 'Ad Soyad', value: feedback.contact_name },
+    { label: 'E-posta', value: feedback.contact_email },
+    { label: 'Telefon', value: feedback.contact_phone },
+    { label: 'Mesaj', value: feedback.message },
+    { label: 'Kayıt Zamanı', value: feedback.created_at },
+  ]
+  const kindLabel = feedbackKindLabel(feedback.kind)
+  const text = [`Yeni bir ${kindLabel} bildirimi alındı.`, '', renderFieldListText(fields)].join('\n')
+  const html = wrapEmailHtml(
+    `Yeni ${kindLabel} bildirimi`,
+    `
+      <h1 style="margin:0 0 16px;font-size:20px;line-height:1.4;color:#111827;">Yeni ${escapeHtml(kindLabel)} bildirimi</h1>
+      <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#374151;">Öneri ve bildirim formundan yeni bir kayıt alındı.</p>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+        ${renderFieldListHtml(fields)}
+      </table>
+    `,
+  )
+
+  return {
+    subject: `Dosyora ${kindLabel}: ${feedback.contact_name}`,
     html,
     text,
   }

@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 
-import { isAdminAuthenticated } from '@/lib/admin-auth'
+import { ADMIN_MODULES, canAccessAdminModule } from '@/lib/admin/super-admins'
+import { getAdminSessionActor } from '@/lib/admin-auth'
 import { jsonError } from '@/lib/api-response'
 
 function requestHost(request: NextRequest): string | null {
@@ -30,8 +31,16 @@ function refererHost(request: NextRequest): string | null {
 }
 
 export async function requireAdminApiAuth(): Promise<Response | null> {
-  if (!(await isAdminAuthenticated())) {
+  const actor = await getAdminSessionActor()
+  if (!actor) {
     return jsonError('Yetkisiz erişim.', 401)
+  }
+
+  if (actor.email) {
+    const allowed = ADMIN_MODULES.every((module) => canAccessAdminModule(actor.email, module))
+    if (!allowed) {
+      return jsonError('Yetkisiz erişim.', 403)
+    }
   }
 
   return null

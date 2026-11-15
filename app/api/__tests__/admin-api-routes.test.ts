@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { isAdminAuthenticated } from '@/lib/admin-auth'
+import { getAdminSessionActor } from '@/lib/admin-auth'
 import { listDemoLeads, updateDemoLead, countAllDemoAccounts } from '@/lib/db/demo-leads'
 
 vi.mock('@/lib/admin-auth', () => ({
-  isAdminAuthenticated: vi.fn(),
+  getAdminSessionActor: vi.fn(),
 }))
 
 vi.mock('@/lib/db/demo-leads', () => ({
@@ -47,7 +47,7 @@ function sameOriginHeaders(): Record<string, string> {
 
 describe('admin api route auth', () => {
   beforeEach(() => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(false)
+    vi.mocked(getAdminSessionActor).mockResolvedValue(null)
   })
 
   afterEach(() => {
@@ -63,7 +63,7 @@ describe('admin api route auth', () => {
   })
 
   it('GET /api/demo-leads succeeds with admin session', async () => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(true)
+    vi.mocked(getAdminSessionActor).mockResolvedValue({ email: null, role: 'admin' })
     vi.mocked(listDemoLeads).mockResolvedValue({
       items: [],
       total: 0,
@@ -95,7 +95,7 @@ describe('admin api route auth', () => {
   })
 
   it('PATCH /api/demo-leads/[id] succeeds with admin session', async () => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(true)
+    vi.mocked(getAdminSessionActor).mockResolvedValue({ email: null, role: 'admin' })
     vi.mocked(updateDemoLead).mockResolvedValue({
       id: 1,
       account_status: 'ACTIVE',
@@ -124,7 +124,7 @@ describe('admin api route auth', () => {
   })
 
   it('GET /api/admin/stats succeeds with admin session', async () => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(true)
+    vi.mocked(getAdminSessionActor).mockResolvedValue({ email: null, role: 'admin' })
     vi.mocked(countAllDemoAccounts).mockResolvedValue(2)
 
     const { GET } = await import('@/app/api/admin/stats/route')
@@ -161,7 +161,7 @@ describe('admin api route auth', () => {
   })
 
   it('returns 401 for tampered admin session on protected route', async () => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(false)
+    vi.mocked(getAdminSessionActor).mockResolvedValue(null)
 
     const { GET } = await import('@/app/api/admin/stats/route')
     const response = await GET()

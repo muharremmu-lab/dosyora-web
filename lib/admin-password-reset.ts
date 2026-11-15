@@ -1,6 +1,5 @@
-import { Resend } from 'resend'
-
 import { logApiError, logApiWarning } from '@/lib/api-logger'
+import { isSuperAdminEmail, normalizeAdminEmail, type AdminRole } from '@/lib/admin/super-admins'
 import { adminPasswordError, hashAdminPassword, verifyAdminPasswordHash } from '@/lib/admin-password'
 import { safeEqual } from '@/lib/admin-auth'
 import { getAdminCredentials, isAdminProductionConfigValid } from '@/lib/security/production-env'
@@ -12,17 +11,18 @@ import {
   saveAdminPasswordOverride,
 } from '@/lib/db/admin-password'
 import { escapeHtml } from '@/lib/notifications/escape'
-import { getNotificationEnvConfig, isResendSendConfigured } from '@/lib/notifications/env'
-import { sendResendEmail } from '@/lib/notifications/resend-provider'
+import { getNotificationEnvConfig } from '@/lib/notifications/env'
+import { CORPORATE_NOTIFICATION_ADDRESS, isSmtpConfigured, sendCorporateEmail } from '@/lib/notifications/smtp'
 import { siteConfig } from '@/lib/site'
 
-export async function authenticateAdmin(username: string, password: string): Promise<boolean> {
-  if (!isAdminProductionConfigValid()) {
-    return false
-  }
+export type AdminLoginActor = {
+  email: string | null
+  role: AdminRole
+}
 
+async function adminPasswordMatches(password: string): Promise<boolean> {
   const credentials = getAdminCredentials()
-  if (!credentials || !safeEqual(username, credentials.username)) {
+  if (!credentials) {
     return false
   }
 
@@ -38,12 +38,44 @@ export async function authenticateAdmin(username: string, password: string): Pro
   return safeEqual(password, credentials.password)
 }
 
+export async function resolveAdminLogin(username: string, password: string): Promise<AdminLoginActor | null> {
+  if (!isAdminProductionConfigValid()) {
+    return null
+  }
+
+  const credentials = getAdminCredentials()
+  if (!credentials) {
+    return null
+  }
+
+  const normalized = normalizeAdminEmail(username)
+  const superAdmin = isSuperAdminEmail(normalized)
+  const legacyAdmin = safeEqual(username, credentials.username)
+  if (!superAdmin && !legacyAdmin) {
+    return null
+  }
+
+  if (!(await adminPasswordMatches(password))) {
+    return null
+  }
+
+  if (superAdmin) {
+    return { email: normalized, role: 'super_admin' }
+  }
+
+  return { email: null, role: 'admin' }
+}
+
+export async function authenticateAdmin(username: string, password: string): Promise<boolean> {
+  return (await resolveAdminLogin(username, password)) !== null
+}
+
 export async function requestAdminPasswordReset(): Promise<'sent' | 'unavailable'> {
   const config = getNotificationEnvConfig()
-  if (!databaseConfigured() || !isResendSendConfigured(config) || !config.adminNotificationEmail || !config.resendApiKey || !config.emailFrom) {
+  if (!databaseConfigured() || !isSmtpConfigured()) {
     logApiWarning('admin_password_reset_unavailable', {
       hasDatabase: databaseConfigured(),
-      hasEmail: Boolean(config.adminNotificationEmail && isResendSendConfigured(config)),
+      hasEmail: isSmtpConfigured(),
     })
     return 'unavailable'
   }
@@ -60,8 +92,8 @@ export async function requestAdminPasswordReset(): Promise<'sent' | 'unavailable
   ].join('\n')
 
   try {
-    await sendResendEmail(new Resend(config.resendApiKey), config.emailFrom, {
-      to: config.adminNotificationEmail,
+    await sendCorporateEmail({
+      to: config.adminNotificationEmail || CORPORATE_NOTIFICATION_ADDRESS,
       subject: 'Dosyora admin şifre sıfırlama',
       text,
       html: `<p>Dosyora admin şifrenizi sıfırlamak için aşağıdaki bağlantıyı kullanın. Bağlantı 30 dakika geçerlidir ve bir kez kullanılabilir.</p><p><a href="${escapeHtml(url)}">Şifreyi sıfırla</a></p><p>Bu isteği siz yapmadıysanız bu e-postayı yok sayın.</p>`,

@@ -20,6 +20,7 @@ const REQUIRED_TABLES = [
   'device_heartbeats',
   'admin_password_resets',
   'admin_password_overrides',
+  'admin_accounts',
   'license_notifications',
   'site_feedback',
 ] as const
@@ -376,6 +377,20 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
     {
       operation: 'migration.index.site_feedback_created_at',
       sql: `CREATE INDEX IF NOT EXISTS idx_site_feedback_created_at ON site_feedback(created_at)`,
+    },
+    {
+      operation: 'migration.create.admin_accounts',
+      sql: `CREATE TABLE IF NOT EXISTS admin_accounts (
+  email TEXT PRIMARY KEY,
+  role TEXT NOT NULL,
+  created_at TEXT NOT NULL
+)`,
+    },
+    {
+      operation: 'migration.seed.admin_accounts',
+      sql: `INSERT OR IGNORE INTO admin_accounts (email, role, created_at) VALUES
+  ('ege@dosyora.com', 'super_admin', '2026-11-15T00:00:00.000Z'),
+  ('muharrem@dosyora.com', 'super_admin', '2026-11-15T00:00:00.000Z')`,
     },
     {
       operation: 'migration.seed.license_settings',

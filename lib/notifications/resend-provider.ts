@@ -1,7 +1,5 @@
-import { Resend } from 'resend'
-
 import { logApiError, logApiInfo, logApiWarning } from '@/lib/api-logger'
-import type { ContactMessage, DemoLead, LicenseNotification } from '@/lib/db/types'
+import type { ContactMessage, DemoLead, LicenseNotification, SiteFeedback } from '@/lib/db/types'
 
 import {
   getNotificationEnvConfig,
@@ -10,13 +8,20 @@ import {
   type NotificationEnvConfig,
 } from './env'
 import {
+  CORPORATE_NOTIFICATION_FROM,
+  FEEDBACK_NOTIFICATION_RECIPIENTS,
+  isSmtpConfigured,
+  sendCorporateEmail,
+} from './smtp'
+import {
   buildContactAdminEmail,
   buildDemoAdminEmail,
   buildDemoApplicantEmail,
   buildLicenseApplicantEmail,
   buildLicenseNotificationAdminEmail,
+  buildSiteFeedbackEmail,
 } from './templates'
-import type { NotificationPayload, NotificationProvider } from './types'
+import type { NotificationChannel, NotificationPayload, NotificationProvider } from './types'
 
 export type ResendSendPayload = {
   to: string
@@ -35,10 +40,6 @@ export type ResendClientLike = {
       text: string
     }) => Promise<{ data?: { id?: string } | null; error?: { message?: string } | null }>
   }
-}
-
-function createResendClient(apiKey: string): ResendClientLike {
-  return new Resend(apiKey)
 }
 
 export async function sendResendEmail(
@@ -60,27 +61,37 @@ export async function sendResendEmail(
 }
 
 export class ResendNotificationProvider implements NotificationProvider {
-  readonly channel = 'resend' as const
+  readonly channel: NotificationChannel
   private readonly config: NotificationEnvConfig
   private client: ResendClientLike | null
 
   constructor(config: NotificationEnvConfig = getNotificationEnvConfig(), client?: ResendClientLike) {
     this.config = config
-    this.client = client ?? (config.resendApiKey ? createResendClient(config.resendApiKey) : null)
+    this.client = client ?? null
+    this.channel = client ? 'resend' : 'smtp'
   }
 
-  async send(payload: NotificationPayload): Promise<void> {
-    if (!isResendSendConfigured(this.config)) {
-      logApiWarning('notification_resend_skipped', {
-        reason: 'missing_resend_config',
-        hasApiKey: Boolean(this.config.resendApiKey),
-        hasFrom: Boolean(this.config.emailFrom),
-      })
+  private async deliver(payload: ResendSendPayload): Promise<void> {
+    if (this.client) {
+      await sendResendEmail(this.client, CORPORATE_NOTIFICATION_FROM, payload)
       return
     }
 
-    if (!this.client) {
-      logApiWarning('notification_resend_skipped', { reason: 'missing_resend_client' })
+    await sendCorporateEmail(payload)
+  }
+
+  async send(payload: NotificationPayload): Promise<void> {
+    if (this.client) {
+      if (!isResendSendConfigured(this.config)) {
+        logApiWarning('notification_resend_skipped', {
+          reason: 'missing_resend_config',
+          hasApiKey: Boolean(this.config.resendApiKey),
+          hasFrom: Boolean(this.config.emailFrom),
+        })
+        return
+      }
+    } else if (!isSmtpConfigured()) {
+      logApiWarning('notification_smtp_skipped', { reason: 'missing_smtp_password' })
       return
     }
 
@@ -104,6 +115,11 @@ export class ResendNotificationProvider implements NotificationProvider {
       return
     }
 
+    if (payload.type === 'site_feedback_created') {
+      await this.sendSiteFeedback(payload.feedback)
+      return
+    }
+
     await this.sendContactMessageCreated(payload.message)
   }
 
@@ -116,7 +132,7 @@ export class ResendNotificationProvider implements NotificationProvider {
     const template = buildDemoApplicantEmail(lead, activationToken)
 
     try {
-      await sendResendEmail(this.client!, this.config.emailFrom!, {
+      await this.deliver({
         to: lead.email,
         subject: template.subject,
         html: template.html,
@@ -151,7 +167,7 @@ export class ResendNotificationProvider implements NotificationProvider {
     const template = buildDemoAdminEmail(lead)
 
     try {
-      await sendResendEmail(this.client!, this.config.emailFrom!, {
+      await this.deliver({
         to: this.config.adminNotificationEmail,
         subject: template.subject,
         html: template.html,
@@ -177,7 +193,7 @@ export class ResendNotificationProvider implements NotificationProvider {
   private async sendLicenseApplicant(mail: Parameters<typeof buildLicenseApplicantEmail>[0]): Promise<void> {
     const template = buildLicenseApplicantEmail(mail)
     try {
-      await sendResendEmail(this.client!, this.config.emailFrom!, {
+      await this.deliver({
         to: mail.email,
         subject: template.subject,
         html: template.html,
@@ -210,7 +226,7 @@ export class ResendNotificationProvider implements NotificationProvider {
     const template = buildLicenseNotificationAdminEmail(notification, source)
 
     try {
-      await sendResendEmail(this.client!, this.config.emailFrom!, {
+      await this.deliver({
         to: this.config.adminNotificationEmail,
         subject: template.subject,
         html: template.html,
@@ -245,7 +261,7 @@ export class ResendNotificationProvider implements NotificationProvider {
     const template = buildContactAdminEmail(message)
 
     try {
-      await sendResendEmail(this.client!, this.config.emailFrom!, {
+      await this.deliver({
         to: this.config.adminNotificationEmail,
         subject: template.subject,
         html: template.html,
@@ -265,6 +281,27 @@ export class ResendNotificationProvider implements NotificationProvider {
         },
         error,
       )
+    }
+  }
+
+  private async sendSiteFeedback(feedback: SiteFeedback): Promise<void> {
+    const template = buildSiteFeedbackEmail(feedback)
+    const recipients = FEEDBACK_NOTIFICATION_RECIPIENTS.join(', ')
+
+    try {
+      await this.deliver({
+        to: recipients,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+      })
+
+      logApiInfo('notification_site_feedback_sent', {
+        feedbackId: feedback.id,
+        kind: feedback.kind,
+      })
+    } catch (error) {
+      logApiError('notification_site_feedback_failed', { feedbackId: feedback.id }, error)
     }
   }
 }

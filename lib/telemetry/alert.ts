@@ -1,9 +1,7 @@
-import { Resend } from 'resend'
-
 import { logApiError, logApiInfo } from '@/lib/api-logger'
 import { escapeHtml } from '@/lib/notifications/escape'
-import { getNotificationEnvConfig, isResendSendConfigured } from '@/lib/notifications/env'
-import { sendResendEmail } from '@/lib/notifications/resend-provider'
+import { getNotificationEnvConfig } from '@/lib/notifications/env'
+import { CORPORATE_NOTIFICATION_ADDRESS, isSmtpConfigured, sendCorporateEmail } from '@/lib/notifications/smtp'
 
 export type PortalChangeSignal = {
   errorCode: string
@@ -59,10 +57,7 @@ function telegramConfig(): { token: string; chatId: string } | null {
 }
 
 export function hasAlertChannel(): boolean {
-  const email = getNotificationEnvConfig()
-  return Boolean(
-    (isResendSendConfigured(email) && email.adminNotificationEmail) || telegramConfig() || webhookUrl(),
-  )
+  return Boolean(isSmtpConfigured() || telegramConfig() || webhookUrl())
 }
 
 function alertText(signal: PortalChangeSignal): string {
@@ -79,13 +74,13 @@ function alertText(signal: PortalChangeSignal): string {
 
 async function sendEmail(signal: PortalChangeSignal): Promise<void> {
   const config = getNotificationEnvConfig()
-  if (!isResendSendConfigured(config) || !config.adminNotificationEmail || !config.resendApiKey || !config.emailFrom) {
-    throw new Error('Resend yapılandırması eksik.')
+  if (!isSmtpConfigured()) {
+    throw new Error('SMTP yapılandırması eksik.')
   }
 
   const text = alertText(signal)
-  await sendResendEmail(new Resend(config.resendApiKey), config.emailFrom, {
-    to: config.adminNotificationEmail,
+  await sendCorporateEmail({
+    to: config.adminNotificationEmail || CORPORATE_NOTIFICATION_ADDRESS,
     subject: `GibTebligat portal uyarısı: ${signal.errorCode}`,
     text,
     html: `<pre>${escapeHtml(text)}</pre>`,
@@ -133,8 +128,7 @@ async function sendWebhook(signal: PortalChangeSignal): Promise<void> {
 
 export async function sendPortalChangeAlert(signal: PortalChangeSignal): Promise<boolean> {
   const tasks: Array<() => Promise<void>> = []
-  const email = getNotificationEnvConfig()
-  if (isResendSendConfigured(email) && email.adminNotificationEmail) tasks.push(() => sendEmail(signal))
+  if (isSmtpConfigured()) tasks.push(() => sendEmail(signal))
   if (telegramConfig()) tasks.push(() => sendTelegram(signal))
   if (webhookUrl()) tasks.push(() => sendWebhook(signal))
 

@@ -1,3 +1,5 @@
+import { CORPORATE_NOTIFICATION_ADDRESS, CORPORATE_NOTIFICATION_FROM } from './smtp'
+
 export type NotificationEnvConfig = {
   resendApiKey: string | null
   emailFrom: string | null
@@ -7,8 +9,8 @@ export type NotificationEnvConfig = {
 export function getNotificationEnvConfig(): NotificationEnvConfig {
   return {
     resendApiKey: process.env.RESEND_API_KEY?.trim() || null,
-    emailFrom: process.env.EMAIL_FROM?.trim() || null,
-    adminNotificationEmail: process.env.ADMIN_NOTIFICATION_EMAIL?.trim() || null,
+    emailFrom: process.env.EMAIL_FROM?.trim() || CORPORATE_NOTIFICATION_FROM,
+    adminNotificationEmail: process.env.ADMIN_NOTIFICATION_EMAIL?.trim() || CORPORATE_NOTIFICATION_ADDRESS,
   }
 }
 

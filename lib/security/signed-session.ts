@@ -1,9 +1,13 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 
+export type SessionRole = 'super_admin' | 'admin'
+
 export type SignedSessionPayload = {
   sid: string
   iat: number
   exp: number
+  email?: string
+  role?: SessionRole
 }
 
 export const DEFAULT_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -20,6 +24,12 @@ function decodePayload(encoded: string): SignedSessionPayload | null {
       typeof parsed.iat !== 'number' ||
       typeof parsed.exp !== 'number'
     ) {
+      return null
+    }
+    if (parsed.email !== undefined && typeof parsed.email !== 'string') {
+      return null
+    }
+    if (parsed.role !== undefined && parsed.role !== 'super_admin' && parsed.role !== 'admin') {
       return null
     }
     return parsed
@@ -48,11 +58,16 @@ export function createSignedSessionToken(
   secret: string,
   nowMs: number = Date.now(),
   ttlMs: number = DEFAULT_SESSION_TTL_MS,
+  identity?: { email: string; role: SessionRole },
 ): string {
   const payload: SignedSessionPayload = {
     sid: randomBytes(32).toString('hex'),
     iat: nowMs,
     exp: nowMs + ttlMs,
+  }
+  if (identity) {
+    payload.email = identity.email
+    payload.role = identity.role
   }
 
   const encodedPayload = encodePayload(payload)
@@ -60,35 +75,39 @@ export function createSignedSessionToken(
   return `${encodedPayload}.${signature}`
 }
 
-export function verifySignedSessionToken(
+export function readSignedSessionToken(
   token: string,
   secret: string,
   nowMs: number = Date.now(),
-): boolean {
+): SignedSessionPayload | null {
   const separatorIndex = token.lastIndexOf('.')
   if (separatorIndex <= 0) {
-    return false
+    return null
   }
 
   const encodedPayload = token.slice(0, separatorIndex)
   const signature = token.slice(separatorIndex + 1)
 
   if (!encodedPayload || !signature) {
-    return false
+    return null
   }
 
   if (!verifySignature(secret, encodedPayload, signature)) {
-    return false
+    return null
   }
 
   const payload = decodePayload(encodedPayload)
-  if (!payload) {
-    return false
+  if (!payload || payload.sid.length < 16 || nowMs > payload.exp) {
+    return null
   }
 
-  if (payload.sid.length < 16) {
-    return false
-  }
+  return payload
+}
 
-  return nowMs <= payload.exp
+export function verifySignedSessionToken(
+  token: string,
+  secret: string,
+  nowMs: number = Date.now(),
+): boolean {
+  return readSignedSessionToken(token, secret, nowMs) !== null
 }

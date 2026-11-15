@@ -1,7 +1,8 @@
-import type { ContactMessage, DemoLead, LicenseNotification } from '@/lib/db/types'
+import type { ContactMessage, DemoLead, LicenseNotification, SiteFeedback } from '@/lib/db/types'
 import type { LicenseApplicantMail } from './templates'
 
-import { getNotificationEnvConfig, isResendSendConfigured } from './env'
+import { getNotificationEnvConfig } from './env'
+import { isSmtpConfigured } from './smtp'
 import { createResendNotificationProvider } from './resend-provider'
 import type { NotificationPayload, NotificationProvider } from './types'
 
@@ -9,14 +10,14 @@ class NoopNotificationProvider implements NotificationProvider {
   readonly channel = 'noop' as const
 
   async send(): Promise<void> {
-    // Used when Resend is not configured.
+    // Used when Google Workspace SMTP is not configured.
   }
 }
 
 export function createNotificationProviders(): NotificationProvider[] {
   const config = getNotificationEnvConfig()
 
-  if (isResendSendConfigured(config)) {
+  if (isSmtpConfigured()) {
     return [createResendNotificationProvider(config)]
   }
 
@@ -48,6 +49,10 @@ export class NotificationService {
 
   async notifyLicenseApplicant(mail: LicenseApplicantMail): Promise<void> {
     await this.dispatch({ type: 'license_applicant_received', mail })
+  }
+
+  async notifySiteFeedbackCreated(feedback: SiteFeedback): Promise<void> {
+    await this.dispatch({ type: 'site_feedback_created', feedback })
   }
 
   private async dispatch(payload: NotificationPayload): Promise<void> {

@@ -164,9 +164,10 @@ describe('createNotificationProviders', () => {
     vi.unstubAllEnvs()
   })
 
-  it('uses noop provider when RESEND_API_KEY is missing', () => {
+  it('uses noop provider when SMTP_PASSWORD is missing', () => {
+    vi.stubEnv('SMTP_PASSWORD', '')
     vi.stubEnv('RESEND_API_KEY', '')
-    vi.stubEnv('EMAIL_FROM', 'DOSYORA <noreply@dosyora.com>')
+    vi.stubEnv('EMAIL_FROM', 'DOSYORA <bilgi@dosyora.com>')
 
     const providers = createNotificationProviders()
 

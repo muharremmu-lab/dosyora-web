@@ -47,7 +47,7 @@ export function AdminLoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4" aria-label="Admin giriş formu">
       <label className="block space-y-1.5">
-        <span className="text-sm font-medium text-[var(--ds-color-text)]">Kullanıcı adı</span>
+        <span className="text-sm font-medium text-[var(--ds-color-text)]">Kullanıcı adı veya e-posta</span>
         <input
           type="text"
           name="username"

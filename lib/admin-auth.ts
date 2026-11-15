@@ -2,9 +2,12 @@ import { timingSafeEqual } from 'node:crypto'
 
 import { cookies } from 'next/headers'
 
+import { isSuperAdminEmail, normalizeAdminEmail, type AdminRole } from '@/lib/admin/super-admins'
 import {
   createSignedSessionToken,
+  readSignedSessionToken,
   verifySignedSessionToken,
+  type SessionRole,
 } from '@/lib/security/signed-session'
 import {
   getAdminCredentials,
@@ -26,13 +29,18 @@ export function safeEqual(left: string, right: string): boolean {
   return timingSafeEqual(leftBuffer, rightBuffer)
 }
 
-export function createAdminSessionToken(): string | null {
+export type AdminSessionActor = {
+  email: string | null
+  role: AdminRole
+}
+
+export function createAdminSessionToken(identity?: { email: string; role: SessionRole }): string | null {
   const secret = getAdminSessionSecret()
   if (!secret) {
     return null
   }
 
-  return createSignedSessionToken(secret)
+  return createSignedSessionToken(secret, Date.now(), undefined, identity)
 }
 
 export function verifyAdminSessionToken(token: string | undefined | null): boolean {
@@ -52,14 +60,35 @@ export function verifyAdminSessionToken(token: string | undefined | null): boole
   return verifySignedSessionToken(token, secret)
 }
 
-export async function isAdminAuthenticated(): Promise<boolean> {
+export async function getAdminSessionActor(): Promise<AdminSessionActor | null> {
   if (!isAdminProductionConfigValid()) {
-    return false
+    return null
   }
 
+  const secret = getAdminSessionSecret()
   const cookieStore = await cookies()
   const session = cookieStore.get(ADMIN_SESSION_COOKIE)?.value
-  return verifyAdminSessionToken(session)
+  if (!session || !secret || session === secret) {
+    return null
+  }
+
+  const payload = readSignedSessionToken(session, secret)
+  if (!payload) {
+    return null
+  }
+
+  if (payload.email) {
+    if (!isSuperAdminEmail(payload.email)) {
+      return null
+    }
+    return { email: normalizeAdminEmail(payload.email), role: 'super_admin' }
+  }
+
+  return { email: null, role: 'admin' }
+}
+
+export async function isAdminAuthenticated(): Promise<boolean> {
+  return (await getAdminSessionActor()) !== null
 }
 
 export function validateAdminCredentials(username: string, password: string): boolean {

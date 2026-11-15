@@ -2,8 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { requireAdminApiAuth } from '@/lib/admin-api-auth'
 import { jsonError, jsonOk } from '@/lib/api-response'
-import { logApiWarning } from '@/lib/api-logger'
+import { logApiError, logApiWarning } from '@/lib/api-logger'
 import { createSiteFeedback, listSiteFeedback } from '@/lib/db/feedback'
+import { notificationService } from '@/lib/notifications/service'
 import { logDbRouteError } from '@/lib/db/libsql-log'
 import { FORM_RATE_LIMIT, checkRateLimit } from '@/lib/rate-limit'
 import { getRequestMeta } from '@/lib/request-meta'
@@ -47,6 +48,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const feedback = await createSiteFeedback(validation.data)
+    try {
+      await notificationService.notifySiteFeedbackCreated(feedback)
+    } catch (error) {
+      logApiError('feedback_notification_failed', { feedbackId: feedback.id }, error)
+    }
     if (!wantsJson) {
       return NextResponse.redirect(new URL('/?bildirim=1#oneri', request.url), 303)
     }

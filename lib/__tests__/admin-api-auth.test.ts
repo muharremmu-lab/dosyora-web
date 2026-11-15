@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { isAdminAuthenticated } from '@/lib/admin-auth'
+import { getAdminSessionActor } from '@/lib/admin-auth'
 import {
   requireAdminApiAuth,
   requireAdminMutationAuth,
@@ -9,7 +9,7 @@ import {
 } from '@/lib/admin-api-auth'
 
 vi.mock('@/lib/admin-auth', () => ({
-  isAdminAuthenticated: vi.fn(),
+  getAdminSessionActor: vi.fn(),
 }))
 
 describe('admin api auth helpers', () => {
@@ -18,7 +18,7 @@ describe('admin api auth helpers', () => {
   })
 
   it('returns 401 when admin session is missing', async () => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(false)
+    vi.mocked(getAdminSessionActor).mockResolvedValue(null)
 
     const response = await requireAdminApiAuth()
 
@@ -27,9 +27,17 @@ describe('admin api auth helpers', () => {
   })
 
   it('returns null when admin session is valid', async () => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(true)
+    vi.mocked(getAdminSessionActor).mockResolvedValue({ email: null, role: 'admin' })
 
     await expect(requireAdminApiAuth()).resolves.toBeNull()
+  })
+
+  it('returns 403 when the session email is not a super admin', async () => {
+    vi.mocked(getAdminSessionActor).mockResolvedValue({ email: 'baska@dosyora.com', role: 'admin' })
+
+    const response = await requireAdminApiAuth()
+
+    expect(response?.status).toBe(403)
   })
 
   it('allows same-origin mutation when origin matches host', () => {
@@ -57,7 +65,7 @@ describe('admin api auth helpers', () => {
   })
 
   it('returns 401 before same-origin check when unauthenticated', async () => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(false)
+    vi.mocked(getAdminSessionActor).mockResolvedValue(null)
 
     const request = new NextRequest('http://localhost:3000/api/demo-leads/1', {
       method: 'PATCH',

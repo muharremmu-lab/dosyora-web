@@ -1,10 +1,10 @@
 import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { isAdminAuthenticated } from '@/lib/admin-auth'
+import { getAdminSessionActor } from '@/lib/admin-auth'
 
 vi.mock('@/lib/admin-auth', () => ({
-  isAdminAuthenticated: vi.fn(),
+  getAdminSessionActor: vi.fn(),
 }))
 
 vi.mock('@/lib/db/demo-leads', () => ({
@@ -25,7 +25,7 @@ function sameOriginHeaders(): Record<string, string> {
 
 describe('S1 admin cleanup route security', () => {
   beforeEach(() => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(false)
+    vi.mocked(getAdminSessionActor).mockResolvedValue(null)
   })
 
   afterEach(() => {
@@ -47,7 +47,7 @@ describe('S1 admin cleanup route security', () => {
   })
 
   it('PATCH archive returns 403 for cross-origin mutation', async () => {
-    vi.mocked(isAdminAuthenticated).mockResolvedValue(true)
+    vi.mocked(getAdminSessionActor).mockResolvedValue({ email: null, role: 'admin' })
 
     const { PATCH } = await import('@/app/api/admin/demo-leads/[id]/archive/route')
     const response = await PATCH(

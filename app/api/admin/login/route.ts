@@ -8,7 +8,7 @@ import {
   createAdminSessionToken,
   isAdminAuthConfigured,
 } from '@/lib/admin-auth'
-import { authenticateAdmin } from '@/lib/admin-password-reset'
+import { resolveAdminLogin } from '@/lib/admin-password-reset'
 import {
   checkAdminLoginRateLimit,
   clearAdminLoginRateLimit,
@@ -40,12 +40,15 @@ export async function POST(request: NextRequest) {
       return response
     }
 
-    if (!(await authenticateAdmin(username, password))) {
+    const actor = await resolveAdminLogin(username, password)
+    if (!actor) {
       logApiWarning('admin_login_failed', { ip: meta.ip_address })
       return jsonError('Geçersiz kullanıcı adı veya şifre.', 401)
     }
 
-    const token = createAdminSessionToken()
+    const token = createAdminSessionToken(
+      actor.email ? { email: actor.email, role: actor.role } : undefined,
+    )
     if (!token) {
       logApiError('admin_login_config_invalid', {})
       return jsonError('Sunucu yapılandırması eksik.', 503)
