@@ -13,7 +13,7 @@ export default function IndirPage() {
     <>
       <SiteHeader />
       <main>
-        <ProductFamilySection headingLevel="h1" />
+        <ProductFamilySection />
       </main>
       <SiteFooter />
     </>
