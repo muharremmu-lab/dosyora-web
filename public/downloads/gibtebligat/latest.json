@@ -5,5 +5,5 @@
   "notes": "GibTebligat Pro 1.1.9. Obfuscation zorunlu; crash.log + MessageBox; gib-config otomatik.",
   "mandatory": true,
   "critical": false,
-  "releaseNote": "Release guvenlik kapalari: Obfuscar, global exception yakalayici, crash.log, gib-config otomatik olusturma."
+  "releaseNote": "Release guvenlik: Obfuscar, global exception yakalayici, crash.log, gib-config otomatik olusturma."
 }
