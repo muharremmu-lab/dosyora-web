@@ -1,9 +1,7 @@
-import { Download } from 'lucide-react'
-
-import { Badge, buttonClassName, SectionContainer } from '@/components/ui'
+import { Badge, SectionContainer } from '@/components/ui'
 import { homepageScrollMt, homepageSectionY } from '@/lib/homepage-content'
 
-const INSTALLER_HREF = '/downloads/gibtebligat/GibTebligatPro-Kurulum.exe'
+import { GibLicensePanel } from './gib-license-panel'
 
 export function ProductFamilySection() {
   return (
@@ -34,20 +32,7 @@ export function ProductFamilySection() {
           <p className="mt-3 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
             GİB e-Tebligatlarını arka planda tarar, PDF’leri bilgisayarınıza indirir ve okunma durumunu takip eder.
           </p>
-          <details id="gib-license-details" className="mt-6">
-            <summary className={`${buttonClassName('primary', 'px-5 py-2.5')} cursor-pointer list-none`}>
-              Lisans ve indirme
-            </summary>
-            <div className="mt-4 space-y-3 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-              <p>Demo ile uygulamayı kendi bilgisayarınızda deneyebilirsiniz.</p>
-              <p>Onaylanan lisans, donanım kimliğine bağlı 365 günlük anahtarla açılır.</p>
-              <p>Kurulum dosyası doğrudan bu siteden indirilir.</p>
-              <a href={INSTALLER_HREF} className={`${buttonClassName('outline', 'px-5 py-2.5')} inline-flex`}>
-                <Download className="size-4" aria-hidden="true" />
-                GibTebligat Pro 1.1.7 indir
-              </a>
-            </div>
-          </details>
+          <GibLicensePanel />
         </article>
 
         <article id="belge-okuma" className={`rounded-[var(--ds-radius-xl)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-md)] ${homepageScrollMt}`}>
