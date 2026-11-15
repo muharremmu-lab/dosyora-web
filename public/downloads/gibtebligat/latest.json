@@ -1,7 +1,7 @@
 {
   "version": "1.1.9",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "ca99c0263320dfb4cac281d0787bb9cd16a6ff2166b8a1328d5aa1772a14faf5",
+  "sha256": "0ed1c012c84adeae59248dd7da3fd37817365823eedd028604699d47d75d753a",
   "notes": "GibTebligat Pro 1.1.9. Obfuscation zorunlu; crash.log + MessageBox; gib-config otomatik.",
   "mandatory": true,
   "critical": false,
