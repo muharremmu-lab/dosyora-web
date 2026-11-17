@@ -27,7 +27,7 @@ export function ProductFamilySection() {
 
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
         <article id="gibtebligat" className={`rounded-[var(--ds-radius-xl)] border border-[var(--ds-color-border)] bg-white p-6 shadow-[var(--ds-shadow-md)] ${homepageScrollMt}`}>
-          <Badge variant="success">Yayında · v1.1.15</Badge>
+          <Badge variant="success">Yayında · v1.1.17</Badge>
           <h2 className="mt-4 text-xl font-bold text-[var(--ds-color-text)]">GibTebligat Pro</h2>
           <p className="mt-3 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
             GİB e-Tebligatlarını arka planda tarar, PDF’leri bilgisayarınıza indirir ve okunma durumunu takip eder.
