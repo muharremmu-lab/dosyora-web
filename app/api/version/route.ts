@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   return jsonOk({
-    version: '1.1.17',
+    version: '1.1.18',
     url: 'https://www.dosyora.com/downloads/gibtebligat/GibTebligatPro-Kurulum.exe',
     critical: false,
   })
