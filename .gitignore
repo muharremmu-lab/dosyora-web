@@ -46,3 +46,13 @@ next-env.d.ts
 *.db
 *.db-shm
 *.db-wal
+
+# security & local scripts
+__pycache__/
+*.pyc
+update_passwords.py
+post-checkout
+post-commit
+post-merge
+pre-push
+

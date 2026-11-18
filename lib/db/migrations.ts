@@ -23,6 +23,10 @@ const REQUIRED_TABLES = [
   'admin_accounts',
   'license_notifications',
   'site_feedback',
+  'users',
+  'packages',
+  'user_packages',
+  'tebligat_companies',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -398,6 +402,89 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
   ('iban', ''),
   ('account_name', 'DOSYORA'),
   ('note_prefix', 'GT')`,
+    },
+    {
+      operation: 'migration.create.users',
+      sql: `CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'user',
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`,
+    },
+    {
+      operation: 'migration.index.users_email',
+      sql: `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`,
+    },
+    {
+      operation: 'migration.create.packages',
+      sql: `CREATE TABLE IF NOT EXISTS packages (
+  id TEXT PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  description TEXT,
+  is_active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`,
+    },
+    {
+      operation: 'migration.seed.packages',
+      sql: `INSERT OR IGNORE INTO packages (id, code, name, description, is_active, created_at) VALUES
+  ('pkg_tebligat', 'tebligat', 'Tebligat', 'GİB E-Tebligat otomatik sorgulama ve bildirim sistemi', 1, CURRENT_TIMESTAMP),
+  ('pkg_belge_okuma', 'belge_okuma', 'Belge Okuma', 'Yapay zeka destekli evrak okuma ve arşiv yönetimi', 1, CURRENT_TIMESTAMP),
+  ('pkg_ithalat', 'ithalat', 'İthalat ve Maliyet Robotu', 'İthalat beyanname ve maliyet analiz robotu', 1, CURRENT_TIMESTAMP),
+  ('pkg_akilli_ofis', 'akilli_ofis', 'Akıllı Ofis', 'Akıllı ofis otomasyon ve operasyon çözümleri', 1, CURRENT_TIMESTAMP)`,
+    },
+    {
+      operation: 'migration.create.user_packages',
+      sql: `CREATE TABLE IF NOT EXISTS user_packages (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  package_code TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  start_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  end_date TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`,
+    },
+    {
+      operation: 'migration.index.user_packages_user_status',
+      sql: `CREATE INDEX IF NOT EXISTS idx_user_packages_user_status ON user_packages(user_id, status)`,
+    },
+    {
+      operation: 'migration.index.user_packages_package_code',
+      sql: `CREATE INDEX IF NOT EXISTS idx_user_packages_package_code ON user_packages(package_code)`,
+    },
+    {
+      operation: 'migration.create.tebligat_companies',
+      sql: `CREATE TABLE IF NOT EXISTS tebligat_companies (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  company_name TEXT NOT NULL,
+  vkn TEXT NOT NULL,
+  authorized_person TEXT,
+  phone TEXT,
+  whatsapp TEXT,
+  email TEXT,
+  query_time TEXT DEFAULT '09:00',
+  status TEXT NOT NULL DEFAULT 'active',
+  last_query_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+)`,
+    },
+    {
+      operation: 'migration.index.tebligat_companies_vkn',
+      sql: `CREATE INDEX IF NOT EXISTS idx_tebligat_companies_vkn ON tebligat_companies(vkn)`,
+    },
+    {
+      operation: 'migration.index.tebligat_companies_user_id',
+      sql: `CREATE INDEX IF NOT EXISTS idx_tebligat_companies_user_id ON tebligat_companies(user_id)`,
     },
   ]
 
