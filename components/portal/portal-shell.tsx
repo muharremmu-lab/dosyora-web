@@ -64,7 +64,7 @@ export function PortalShell({ user, children }: PortalShellProps) {
   const menuItems = [
     {
       show: hasTebligat,
-      href: '/portal/tebligat',
+      href: '/tebligat',
       label: 'Tebligat',
       icon: Bell,
       badge: 'GİB',

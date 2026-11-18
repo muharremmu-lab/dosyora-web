@@ -12,7 +12,7 @@ export const KNOWN_PACKAGES: PackageDefinition[] = [
     code: 'tebligat',
     name: 'Tebligat',
     description: 'GİB E-Tebligat otomatik sorgulama ve bildirim sistemi',
-    route: '/portal/tebligat',
+    route: '/tebligat',
   },
   {
     code: 'belge_okuma',
@@ -81,7 +81,7 @@ export function hasPackageAccess(
 export function getPackageHomeRoute(packageCode: string): string {
   switch (packageCode) {
     case 'tebligat':
-      return '/portal/tebligat'
+      return '/tebligat'
     case 'ithalat':
       return '/portal/ithalat'
     case 'belge_okuma':

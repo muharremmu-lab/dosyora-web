@@ -34,8 +34,9 @@ export async function readAdminPasswordOverride(): Promise<string | null> {
   return row?.password_hash ?? null
 }
 
-export async function createAdminResetToken(now = new Date()): Promise<string> {
+export async function createAdminResetTokenAndCode(now = new Date()): Promise<{ token: string; code: string }> {
   const token = randomBytes(32).toString('base64url')
+  const code = Math.floor(100000 + Math.random() * 900000).toString()
   const createdAt = now.toISOString()
   const expiresAt = new Date(now.getTime() + ADMIN_RESET_TTL_MS).toISOString()
 
@@ -45,19 +46,38 @@ export async function createAdminResetToken(now = new Date()): Promise<string> {
     [createdAt],
   )
   await dbRun(
-    'adminPassword.insertReset',
+    'adminPassword.insertResetToken',
     'INSERT INTO admin_password_resets (token_hash, expires_at, used_at, created_at) VALUES (?, ?, NULL, ?)',
     [hashToken(token), expiresAt, createdAt],
   )
+  await dbRun(
+    'adminPassword.insertResetCode',
+    'INSERT INTO admin_password_resets (token_hash, expires_at, used_at, created_at) VALUES (?, ?, NULL, ?)',
+    [hashToken(code), expiresAt, createdAt],
+  )
 
+  return { token, code }
+}
+
+export async function createAdminResetToken(now = new Date()): Promise<string> {
+  const { token } = await createAdminResetTokenAndCode(now)
   return token
 }
 
-export async function consumeAdminResetToken(token: string, now = new Date()): Promise<boolean> {
+export async function consumeAdminResetToken(tokenOrCode: string, now = new Date()): Promise<boolean> {
+  const trimmed = tokenOrCode.trim()
+  if (!trimmed) return false
+
+  // Acil durum kurtarma kodu desteği (Vercel env'de ADMIN_RECOVERY_CODE veya ADMIN_RESET_CODE tanımlıysa)
+  const recoveryCode = process.env.ADMIN_RECOVERY_CODE?.trim() || process.env.ADMIN_RESET_CODE?.trim()
+  if (recoveryCode && trimmed === recoveryCode) {
+    return true
+  }
+
   const row = await dbQueryOne<ResetRow>(
     'adminPassword.readReset',
     'SELECT token_hash, expires_at, used_at FROM admin_password_resets WHERE token_hash = ?',
-    [hashToken(token)],
+    [hashToken(trimmed)],
   )
   if (!row || row.used_at || row.expires_at <= now.toISOString()) {
     return false

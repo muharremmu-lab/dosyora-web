@@ -130,7 +130,7 @@ describe('User Authentication & Package Permission Rules', () => {
       const isAdmin = user.role === 'admin'
 
       const menuItems = [
-        { show: hasTebligat, href: '/portal/tebligat', label: 'Tebligat' },
+        { show: hasTebligat, href: '/tebligat', label: 'Tebligat' },
         { show: hasBelgeOkuma, href: '/portal/belge-okuma/yukle', label: 'Belge Okuma' },
         { show: hasBelgeOkuma, href: '/portal/belge-okuma/arsiv', label: 'Arşiv' },
         { show: hasIthalat, href: '/portal/ithalat', label: 'İthalat' },
@@ -150,7 +150,7 @@ describe('User Authentication & Package Permission Rules', () => {
       const { menuItems, adminItems } = getVisibleMenuItems(user)
 
       expect(menuItems.map((m) => m.label)).toEqual(['Tebligat'])
-      expect(menuItems.map((m) => m.href)).toEqual(['/portal/tebligat'])
+      expect(menuItems.map((m) => m.href)).toEqual(['/tebligat'])
       expect(adminItems).toHaveLength(0)
     })
 
@@ -213,7 +213,7 @@ describe('User Authentication & Package Permission Rules', () => {
   describe('Portal Yönlendirme ve Rota Çözümleri', () => {
     it('tek paketi olan kullanıcıyı ilgili pakete yönlendirir', () => {
       expect(getUserDefaultPortalRoute({ role: 'user', packages: ['tebligat'] })).toBe(
-        '/portal/tebligat',
+        '/tebligat',
       )
       expect(getUserDefaultPortalRoute({ role: 'user', packages: ['ithalat'] })).toBe(
         '/portal/ithalat',
@@ -258,7 +258,7 @@ describe('User Authentication & Package Permission Rules', () => {
     })
 
     it('getPackageHomeRoute doğru kök yollarını döner', () => {
-      expect(getPackageHomeRoute('tebligat')).toBe('/portal/tebligat')
+      expect(getPackageHomeRoute('tebligat')).toBe('/tebligat')
       expect(getPackageHomeRoute('ithalat')).toBe('/portal/ithalat')
       expect(getPackageHomeRoute('belge_okuma')).toBe('/portal/belge-okuma/yukle')
       expect(getPackageHomeRoute('akilli_ofis')).toBe('/portal/akilli-ofis')

@@ -19,20 +19,20 @@ export async function POST(request: NextRequest) {
       return jsonError('Çok fazla deneme. Lütfen daha sonra tekrar deneyin.', 429)
     }
 
-    const body = (await request.json()) as { token?: string; password?: string }
-    const token = String(body.token ?? '').trim()
+    const body = (await request.json()) as { token?: string; code?: string; password?: string }
+    const tokenOrCode = String(body.token ?? body.code ?? '').trim()
     const password = String(body.password ?? '')
-    if (!token) {
-      return jsonError('Sıfırlama bağlantısı geçersiz.', 400)
+    if (!tokenOrCode) {
+      return jsonError('Sıfırlama kodu veya bağlantısı gereklidir.', 400)
     }
 
-    const result = await completeAdminPasswordReset(token, password)
+    const result = await completeAdminPasswordReset(tokenOrCode, password)
     if (result === 'weak') {
       return jsonError('Şifre en az 10 karakter olmalıdır.', 400)
     }
 
     if (result !== 'updated') {
-      return jsonError('Sıfırlama bağlantısı geçersiz veya süresi dolmuş.', 400)
+      return jsonError('Sıfırlama kodu veya bağlantısı geçersiz ya da süresi dolmuş.', 400)
     }
 
     return jsonOk({ success: true })

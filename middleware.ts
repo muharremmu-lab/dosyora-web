@@ -20,21 +20,21 @@ export function middleware(request: NextRequest) {
     // Oturum yoksa login'e yönlendir
     if (!userSessionCookie && !adminSessionCookie) {
       const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('redirect', `https://${host}/portal/tebligat`)
+      loginUrl.searchParams.set('redirect', `https://${host}/tebligat`)
       return NextResponse.redirect(loginUrl)
     }
 
     // Oturum varsa ve tebligat menüsünde değilse doğrudan tebligat menüsüne yönlendir
-    if (pathname !== '/portal/tebligat') {
-      const tebligatUrl = new URL('/portal/tebligat', request.url)
+    if (pathname !== '/tebligat' && pathname !== '/portal/tebligat') {
+      const tebligatUrl = new URL('/tebligat', request.url)
       return NextResponse.redirect(tebligatUrl)
     }
 
     return NextResponse.next()
   }
 
-  // /portal koruması
-  if (pathname.startsWith('/portal')) {
+  // /portal ve /tebligat koruması
+  if (pathname.startsWith('/portal') || pathname.startsWith('/tebligat')) {
     if (!userSessionCookie && !adminSessionCookie) {
       const loginUrl = new URL('/login', request.url)
       loginUrl.searchParams.set('redirect', pathname)

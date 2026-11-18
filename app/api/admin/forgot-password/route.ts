@@ -12,26 +12,42 @@ export async function POST(request: NextRequest) {
   try {
     const meta = getRequestMeta(request)
     const rateLimit = checkRateLimit(`admin-forgot:${meta.ip_address || 'unknown'}`, {
-      limit: 3,
+      limit: 6,
       windowMs: 15 * 60 * 1000,
     })
     if (!rateLimit.allowed) {
       const response = jsonError('Çok fazla deneme. Lütfen daha sonra tekrar deneyin.', 429)
-      response.headers.set('Retry-After', String(Math.max(1, Math.ceil((rateLimit.resetAt - Date.now()) / 1000))))
+      response.headers.set(
+        'Retry-After',
+        String(Math.max(1, Math.ceil((rateLimit.resetAt - Date.now()) / 1000))),
+      )
       return response
     }
 
-    const result = await requestAdminPasswordReset()
-    if (result !== 'sent') {
-      return jsonError('Şifre sıfırlama e-postası şu anda gönderilemiyor.', 503)
+    let email: string | undefined
+    try {
+      const body = (await request.json()) as { email?: string }
+      if (body?.email) {
+        email = String(body.email).trim()
+      }
+    } catch {
+      // Body is optional
+    }
+
+    const result = await requestAdminPasswordReset(email)
+    if (!result.success) {
+      return jsonError(result.message || 'Şifre sıfırlama şu anda gerçekleştirilemiyor.', 503)
     }
 
     return jsonOk({
       success: true,
-      message: 'Sıfırlama talimatı yönetici e-posta adresine gönderildi. Bağlantı 30 dakika geçerlidir.',
+      status: result.status,
+      recipient: result.recipient,
+      message: result.message,
+      ...(result.code ? { code: result.code } : {}),
     })
   } catch (error) {
     logApiError('admin_password_reset_failed', {}, error)
-    return jsonError('Şifre sıfırlama e-postası şu anda gönderilemiyor.', 503)
+    return jsonError('Şifre sıfırlama şu anda gerçekleştirilemiyor.', 503)
   }
 }

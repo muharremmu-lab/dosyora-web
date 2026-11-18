@@ -14,6 +14,7 @@ export function AdminLoginForm() {
   const [loading, setLoading] = useState(false)
   const [resetOpen, setResetOpen] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
+  const [resetEmail, setResetEmail] = useState('muharrem@dosyora.com')
   const [resetMessage, setResetMessage] = useState<string | null>(null)
   const [resetError, setResetError] = useState<string | null>(null)
 
@@ -105,49 +106,89 @@ export function AdminLoginForm() {
             className="w-full max-w-md rounded-[var(--ds-radius-lg)] border border-[var(--ds-color-border)] bg-[var(--ds-color-surface)] p-6 shadow-[var(--ds-shadow-md)]"
           >
             <h2 id="admin-reset-title" className="text-lg font-bold text-[var(--ds-color-text)]">
-              Şifre sıfırlama
+              Admin Şifre Sıfırlama
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-[var(--ds-color-text-muted)]">
-              Kayıtlı yönetici e-posta adresine 30 dakika geçerli, tek kullanımlık bir sıfırlama bağlantısı gönderilir.
-              Mevcut şifre e-postada yer almaz.
+              Seçilen yönetici hesabı için sıfırlama bağlantısı ve 6 haneli doğrulama kodu oluşturulur.
             </p>
+
+            <div className="mt-3">
+              <label className="block text-xs font-semibold text-[var(--ds-color-text)] mb-1">
+                Yönetici Hesabı:
+              </label>
+              <select
+                className={formInputClassName}
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+              >
+                <option value="muharrem@dosyora.com">muharrem@dosyora.com (Muharrem)</option>
+                <option value="ege@dosyora.com">ege@dosyora.com (Ege)</option>
+              </select>
+            </div>
+
             {resetMessage ? (
-              <p className="mt-4 text-sm text-[var(--ds-color-text)]">{resetMessage}</p>
+              <div className="mt-4 rounded bg-blue-50 border border-blue-200 p-3 text-sm text-blue-900 space-y-2">
+                <p>{resetMessage}</p>
+                <div className="pt-2 border-t border-blue-200 flex justify-end">
+                  <button
+                    type="button"
+                    className="font-semibold text-blue-700 underline text-xs"
+                    onClick={() => router.push('/admin/reset-password')}
+                  >
+                    Kod ile Şifre Sıfırlama Ekranına Git →
+                  </button>
+                </div>
+              </div>
             ) : null}
+
             {resetError ? (
               <p role="alert" className="mt-4 text-sm text-[var(--ds-color-danger)]">
                 {resetError}
               </p>
             ) : null}
-            <div className="mt-5 flex justify-end gap-2">
-              <Button type="button" variant="ghost" onClick={() => setResetOpen(false)}>
-                Kapat
-              </Button>
-              <Button
+
+            <div className="mt-5 flex items-center justify-between gap-2">
+              <button
                 type="button"
-                variant="primary"
-                loading={resetLoading}
-                onClick={async () => {
-                  setResetLoading(true)
-                  setResetError(null)
-                  setResetMessage(null)
-                  try {
-                    const response = await fetch('/api/admin/forgot-password', { method: 'POST' })
-                    const payload = (await response.json()) as { error?: string; message?: string }
-                    if (!response.ok) {
-                      setResetError(payload.error ?? 'Talimat gönderilemedi.')
-                      return
-                    }
-                    setResetMessage(payload.message ?? 'Sıfırlama talimatı gönderildi.')
-                  } catch {
-                    setResetError('Bağlantı hatası. Lütfen tekrar deneyin.')
-                  } finally {
-                    setResetLoading(false)
-                  }
-                }}
+                className="text-xs text-[var(--ds-color-primary)] hover:underline"
+                onClick={() => router.push('/admin/reset-password')}
               >
-                Talimat gönder
-              </Button>
+                Zaten kodum var →
+              </button>
+              <div className="flex gap-2">
+                <Button type="button" variant="ghost" onClick={() => setResetOpen(false)}>
+                  Kapat
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  loading={resetLoading}
+                  onClick={async () => {
+                    setResetLoading(true)
+                    setResetError(null)
+                    setResetMessage(null)
+                    try {
+                      const response = await fetch('/api/admin/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: resetEmail }),
+                      })
+                      const payload = (await response.json()) as { error?: string; message?: string }
+                      if (!response.ok) {
+                        setResetError(payload.error ?? 'Talimat gönderilemedi.')
+                        return
+                      }
+                      setResetMessage(payload.message ?? 'Sıfırlama talimatı ve kod oluşturuldu.')
+                    } catch {
+                      setResetError('Bağlantı hatası. Lütfen tekrar deneyin.')
+                    } finally {
+                      setResetLoading(false)
+                    }
+                  }}
+                >
+                  Talimat Gönder
+                </Button>
+              </div>
             </div>
           </div>
         </div>

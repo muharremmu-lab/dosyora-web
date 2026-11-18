@@ -77,7 +77,7 @@ export default async function PortalDashboardPage({ searchParams }: Props) {
       name: 'Tebligat',
       desc: 'GİB E-Tebligat otomatik sorgulama, tebligat takibi ve anlık bildirim sistemi.',
       icon: Bell,
-      href: '/portal/tebligat',
+      href: '/tebligat',
       badge: 'GİB Otomasyon',
       color: 'border-blue-200 bg-blue-50/40 text-blue-900',
     },
