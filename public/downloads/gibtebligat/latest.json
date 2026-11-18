@@ -1,11 +1,10 @@
 {
-    "version":  "1.1.19",
-    "url":  "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-    "sha256":  "4f5e96ca396f9d9cfb67174822a8c4c94afd95d79db6dd672d26eab272b52d0b",
-    "fileSize":  325635217,
-    "releaseNotes":  "GibTebligat Pro 1.1.19. Obfuscation zorunlu; crash.log + MessageBox; gib-config otomatik.",
-    "notes":  "GibTebligat Pro 1.1.19. Obfuscation zorunlu; crash.log + MessageBox; gib-config otomatik.",
-    "releaseNote":  "GibTebligat Pro 1.1.19. Obfuscation zorunlu; crash.log + MessageBox; gib-config otomatik.",
-    "mandatory":  true,
-    "critical":  false
+  "version": "1.1.19",
+  "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
+  "sha256": "4d787cc2e74a66b09b3f84f0b28f928b2d62eb9090415ea62337f917aece0560",
+  "fileSize": 12641218,
+  "releaseNotes": "GibTebligat Pro Hibrit v1.1.19. Yeni nesil 12.6 MB yerel worker aracı.",
+  "notes": "Hibrit Sprint Faz 1: Yerel tarama ve bulut iş kuyruğu entegrasyonu.",
+  "mandatory": true,
+  "critical": false
 }
