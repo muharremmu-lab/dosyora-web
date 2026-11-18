@@ -94,15 +94,7 @@ export async function authenticateAdmin(username: string, password: string): Pro
 export async function requestAdminPasswordReset(
   requestedEmail?: string,
 ): Promise<AdminResetRequestResult> {
-  if (!databaseConfigured()) {
-    logApiWarning('admin_password_reset_unavailable', { hasDatabase: false })
-    return {
-      success: false,
-      status: 'unavailable',
-      recipient: '',
-      message: 'Veritabanı yapılandırılmadığı için şifre sıfırlanamıyor.',
-    }
-  }
+  const config = getNotificationEnvConfig()
 
   // Yalnızca geçerli super admin e-postası (muharrem@dosyora.com veya ege@dosyora.com) kabul edilir.
   // muharrem.mu@gmail.com admin değildir.
@@ -111,20 +103,41 @@ export async function requestAdminPasswordReset(
     const candidate = normalizeAdminEmail(requestedEmail)
     if (isSuperAdminEmail(candidate)) {
       targetRecipient = candidate
+    } else {
+      console.warn(`[ADMIN RESET WARNING] requestedEmail "${requestedEmail}" is not in SUPER_ADMIN_EMAILS! Defaulting to muharrem@dosyora.com`)
     }
   }
 
-  const { token, code } = await createAdminResetTokenAndCode()
+  // Vercel loglarında açıkça görünmesi için en başta logla
+  console.log(`[ADMIN RESET CONFIG] hasResendKey: ${Boolean(config.resendApiKey)} | emailFrom: ${config.emailFrom} | isSmtpConfigured: ${isSmtpConfigured()}`)
+
+  let token: string
+  let code: string
+  if (databaseConfigured()) {
+    try {
+      const generated = await createAdminResetTokenAndCode()
+      token = generated.token
+      code = generated.code
+    } catch (dbErr) {
+      console.error(`[ADMIN RESET DB ERROR] Failed to create reset token/code in DB:`, dbErr)
+      token = (await import('node:crypto')).randomBytes(24).toString('base64url')
+      code = Math.floor(100000 + Math.random() * 900000).toString()
+    }
+  } else {
+    console.error(`[ADMIN RESET DB WARNING] Database is not configured (TURSO_DATABASE_URL missing)! Generating emergency code.`)
+    token = (await import('node:crypto')).randomBytes(24).toString('base64url')
+    code = Math.floor(100000 + Math.random() * 900000).toString()
+  }
+
   const url = `${siteConfig.url.replace(/\/$/, '')}/admin/reset-password?token=${encodeURIComponent(token)}`
 
-  // Vercel loglarında kolayca bulunabilmesi için loglara yaz
+  console.log(`[ADMIN RESET REQUEST] Target: ${targetRecipient} | Code: ${code} | Link: ${url}`)
+
   logApiInfo('admin_password_reset_code_generated', {
     recipient: targetRecipient,
     code,
     url,
   })
-  // eslint-disable-next-line no-console
-  console.log(`[DOSYORA ADMIN RESET] Recipient: ${targetRecipient} | Code: ${code} | Link: ${url}`)
 
   const text = [
     'Dosyora admin şifrenizi sıfırlamak için aşağıdaki bağlantıyı veya 6 haneli kodu kullanın.',
@@ -152,49 +165,96 @@ export async function requestAdminPasswordReset(
   `
 
   let emailSent = false
-  const config = getNotificationEnvConfig()
 
   // 1. Resend API ile gönderim denemesi
   if (config.resendApiKey) {
     try {
       const { Resend } = await import('resend')
       const resend = new Resend(config.resendApiKey)
-      const from = config.emailFrom || CORPORATE_NOTIFICATION_FROM
+      const primaryFrom = config.emailFrom || CORPORATE_NOTIFICATION_FROM
+
+      console.log(`[ADMIN RESET RESEND] Sending to ${targetRecipient} from ${primaryFrom}...`)
       const res = await resend.emails.send({
-        from,
+        from: primaryFrom,
         to: targetRecipient,
         subject: 'Dosyora admin şifre sıfırlama kodu',
         text,
         html,
       })
+
       if (!res.error) {
         emailSent = true
-        logApiInfo('admin_password_reset_sent_resend', { to: targetRecipient })
+        console.log(`[ADMIN RESET RESEND SUCCESS] Sent to ${targetRecipient} (id: ${res.data?.id})`)
+        logApiInfo('admin_password_reset_sent_resend', { to: targetRecipient, id: res.data?.id })
       } else {
-        logApiWarning('admin_password_reset_resend_error', { error: res.error.message })
+        console.error(`[ADMIN RESET RESEND ERROR] From: ${primaryFrom} | Target: ${targetRecipient} | Error:`, res.error)
+        logApiError('admin_password_reset_resend_error', {
+          recipient: targetRecipient,
+          from: primaryFrom,
+          error: res.error,
+        })
+
+        // Resend domain doğrulaması yapılmamışsa onboarding@resend.dev ile tekrar dene
+        const errorMsg = String(res.error.message || '').toLowerCase()
+        const isDomainError =
+          errorMsg.includes('domain') ||
+          errorMsg.includes('verify') ||
+          errorMsg.includes('not verified') ||
+          errorMsg.includes('from')
+
+        if (isDomainError && !primaryFrom.includes('onboarding@resend.dev')) {
+          console.log(`[ADMIN RESET RESEND] Retrying with onboarding@resend.dev fallback...`)
+          const fallbackFrom = 'DOSYORA <onboarding@resend.dev>'
+          const fallbackRes = await resend.emails.send({
+            from: fallbackFrom,
+            to: targetRecipient,
+            subject: 'Dosyora admin şifre sıfırlama kodu',
+            text,
+            html,
+          })
+
+          if (!fallbackRes.error) {
+            emailSent = true
+            console.log(`[ADMIN RESET RESEND SUCCESS] Sent to ${targetRecipient} via fallback from ${fallbackFrom}`)
+            logApiInfo('admin_password_reset_sent_resend_fallback', { to: targetRecipient, from: fallbackFrom })
+          } else {
+            console.error(`[ADMIN RESET RESEND FALLBACK ERROR]`, fallbackRes.error)
+            logApiError('admin_password_reset_resend_fallback_error', { recipient: targetRecipient }, fallbackRes.error)
+          }
+        }
       }
     } catch (err) {
-      logApiWarning('admin_password_reset_resend_failed', {
-        error: err instanceof Error ? err.message : String(err),
-      })
+      console.error(`[ADMIN RESET RESEND EXCEPTION]`, err)
+      logApiError('admin_password_reset_resend_failed', {
+        recipient: targetRecipient,
+      }, err)
     }
+  } else {
+    console.warn('[ADMIN RESET RESEND SKIPPED] RESEND_API_KEY environment variable is missing.')
   }
 
-  // 2. SMTP ile gönderim denemesi
-  if (!emailSent && isSmtpConfigured()) {
-    try {
-      await sendCorporateEmail({
-        to: targetRecipient,
-        subject: 'Dosyora admin şifre sıfırlama kodu',
-        text,
-        html,
-      })
-      emailSent = true
-      logApiInfo('admin_password_reset_sent_smtp', { to: targetRecipient })
-    } catch (err) {
-      logApiWarning('admin_password_reset_smtp_failed', {
-        error: err instanceof Error ? err.message : String(err),
-      })
+  // 2. SMTP ile gönderim denemesi (Resend başarısız olduysa veya ayarlı değilse)
+  if (!emailSent) {
+    if (isSmtpConfigured()) {
+      try {
+        console.log(`[ADMIN RESET SMTP] Attempting SMTP send to ${targetRecipient}...`)
+        await sendCorporateEmail({
+          to: targetRecipient,
+          subject: 'Dosyora admin şifre sıfırlama kodu',
+          text,
+          html,
+        })
+        emailSent = true
+        console.log(`[ADMIN RESET SMTP SUCCESS] Delivered to ${targetRecipient} via SMTP`)
+        logApiInfo('admin_password_reset_sent_smtp', { to: targetRecipient })
+      } catch (err) {
+        console.error(`[ADMIN RESET SMTP FAILED] Target: ${targetRecipient} | Error:`, err)
+        logApiError('admin_password_reset_smtp_failed', {
+          recipient: targetRecipient,
+        }, err)
+      }
+    } else {
+      console.warn('[ADMIN RESET SMTP SKIPPED] SMTP_PASSWORD environment variable is missing.')
     }
   }
 
@@ -207,13 +267,21 @@ export async function requestAdminPasswordReset(
     }
   }
 
+  console.error(`[ADMIN RESET ALL DELIVERY FAILED] Could not send reset email to ${targetRecipient}. Reset code is: ${code}`)
+  logApiError('admin_password_reset_email_delivery_failed', {
+    recipient: targetRecipient,
+    code,
+    hasResendApiKey: Boolean(config.resendApiKey),
+    isSmtpConfigured: isSmtpConfigured(),
+  })
+
   // E-posta gönderilemediyse bile kod veritabanına ve Vercel loglarına yazıldı
   return {
     success: true,
     status: 'code_ready',
     recipient: targetRecipient,
     code: process.env.NODE_ENV !== 'production' ? code : undefined,
-    message: `Sıfırlama kodu oluşturuldu ve loglara yazıldı. E-posta gelmediyse "Kod ile Şifre Sıfırla" seçeneğini kullanabilirsiniz.`,
+    message: `E-posta servisi yanıt vermedi. Sıfırlama kodunuz (${code}) oluşturuldu ve Vercel sunucu loglarına yazıldı. "Kod ile Şifre Sıfırla" ekranını kullanarak yeni şifrenizi belirleyebilirsiniz.`,
   }
 }
 

@@ -17,7 +17,7 @@ class NoopNotificationProvider implements NotificationProvider {
 export function createNotificationProviders(): NotificationProvider[] {
   const config = getNotificationEnvConfig()
 
-  if (isSmtpConfigured()) {
+  if (config.resendApiKey || isSmtpConfigured()) {
     return [createResendNotificationProvider(config)]
   }
 

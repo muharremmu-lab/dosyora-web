@@ -37,7 +37,7 @@ export function getSmtpConfig(): SmtpConfig | null {
     host: process.env.SMTP_HOST?.trim() || DEFAULT_SMTP_HOST,
     port: Number.isFinite(port) ? port : DEFAULT_SMTP_PORT,
     user: process.env.SMTP_USER?.trim() || CORPORATE_NOTIFICATION_ADDRESS,
-    password,
+    password: password.replace(/\s+/g, ''),
   }
 }
 
@@ -60,6 +60,9 @@ export async function sendCorporateEmail(payload: CorporateEmailPayload): Promis
       user: config.user,
       pass: config.password,
     },
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 8000,
   })
 
   try {
@@ -71,6 +74,7 @@ export async function sendCorporateEmail(payload: CorporateEmailPayload): Promis
       html: payload.html,
     })
   } catch (error) {
+    console.error(`[SMTP ERROR] Host: ${config.host} | Port: ${config.port} | User: ${config.user}:`, error)
     logApiError('notification_smtp_failed', { host: config.host }, error)
     throw error
   }

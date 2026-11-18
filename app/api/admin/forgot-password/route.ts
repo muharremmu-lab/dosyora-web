@@ -9,13 +9,15 @@ import { checkRateLimit } from '@/lib/rate-limit'
 import { getRequestMeta } from '@/lib/request-meta'
 
 export async function POST(request: NextRequest) {
+  const meta = getRequestMeta(request)
+  console.log(`[ADMIN FORGOT PASSWORD API] POST hit from IP: ${meta.ip_address}`)
   try {
-    const meta = getRequestMeta(request)
     const rateLimit = checkRateLimit(`admin-forgot:${meta.ip_address || 'unknown'}`, {
-      limit: 6,
+      limit: 10,
       windowMs: 15 * 60 * 1000,
     })
     if (!rateLimit.allowed) {
+      console.warn(`[ADMIN FORGOT PASSWORD API] Rate limit reached for IP: ${meta.ip_address}`)
       const response = jsonError('Çok fazla deneme. Lütfen daha sonra tekrar deneyin.', 429)
       response.headers.set(
         'Retry-After',

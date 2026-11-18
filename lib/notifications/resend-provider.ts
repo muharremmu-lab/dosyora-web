@@ -310,5 +310,14 @@ export function createResendNotificationProvider(
   config: NotificationEnvConfig = getNotificationEnvConfig(),
   client?: ResendClientLike,
 ): NotificationProvider {
+  if (!client && config.resendApiKey) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { Resend } = require('resend')
+      client = new Resend(config.resendApiKey) as unknown as ResendClientLike
+    } catch {
+      // fallback
+    }
+  }
   return new ResendNotificationProvider(config, client)
 }

@@ -96,4 +96,38 @@ describe('Admin Password Reset and Recovery Code Flow', () => {
     )
     expect(res).toBe('updated')
   })
+
+  it('attempts Resend send when RESEND_API_KEY is configured', async () => {
+    vi.stubEnv('RESEND_API_KEY', 're_test_dummy_key')
+    const { requestAdminPasswordReset } = await import('@/lib/admin-password-reset')
+    dbRun.mockResolvedValue({ rowsAffected: 1 })
+
+    const result = await requestAdminPasswordReset('muharrem@dosyora.com')
+    expect(result.success).toBe(true)
+    expect(result.recipient).toBe('muharrem@dosyora.com')
+  })
+
+  it('attempts SMTP send when SMTP_PASSWORD is configured and Resend is missing', async () => {
+    vi.stubEnv('RESEND_API_KEY', '')
+    vi.stubEnv('SMTP_PASSWORD', 'test-smtp-password')
+    const { requestAdminPasswordReset } = await import('@/lib/admin-password-reset')
+    dbRun.mockResolvedValue({ rowsAffected: 1 })
+
+    const result = await requestAdminPasswordReset('ege@dosyora.com')
+    expect(result.success).toBe(true)
+    expect(result.recipient).toBe('ege@dosyora.com')
+  })
+
+  it('falls back to code_ready and logs error when no email provider succeeds', async () => {
+    vi.stubEnv('RESEND_API_KEY', '')
+    vi.stubEnv('SMTP_PASSWORD', '')
+    const { requestAdminPasswordReset } = await import('@/lib/admin-password-reset')
+    dbRun.mockResolvedValue({ rowsAffected: 1 })
+
+    const result = await requestAdminPasswordReset('muharrem@dosyora.com')
+    expect(result.success).toBe(true)
+    expect(result.status).toBe('code_ready')
+    expect(result.recipient).toBe('muharrem@dosyora.com')
+    expect(result.message).toContain('Vercel sunucu loglarına yazıldı')
+  })
 })

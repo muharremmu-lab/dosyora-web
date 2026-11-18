@@ -8,8 +8,8 @@ export type NotificationEnvConfig = {
 
 export function getNotificationEnvConfig(): NotificationEnvConfig {
   return {
-    resendApiKey: process.env.RESEND_API_KEY?.trim() || null,
-    emailFrom: process.env.EMAIL_FROM?.trim() || CORPORATE_NOTIFICATION_FROM,
+    resendApiKey: process.env.RESEND_API_KEY?.trim() || process.env.RESEND_KEY?.trim() || null,
+    emailFrom: process.env.EMAIL_FROM?.trim() || process.env.RESEND_FROM?.trim() || CORPORATE_NOTIFICATION_FROM,
     adminNotificationEmail: process.env.ADMIN_NOTIFICATION_EMAIL?.trim() || CORPORATE_NOTIFICATION_ADDRESS,
   }
 }
