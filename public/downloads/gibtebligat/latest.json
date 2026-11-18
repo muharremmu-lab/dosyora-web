@@ -1,10 +1,10 @@
 {
-  "version": "1.1.19",
+  "version": "1.1.20",
   "url": "https://dosyora.com/downloads/gibtebligat/GibTebligatPro.exe",
-  "sha256": "4d787cc2e74a66b09b3f84f0b28f928b2d62eb9090415ea62337f917aece0560",
-  "fileSize": 12641218,
-  "releaseNotes": "GibTebligat Pro Hibrit v1.1.19. Yeni nesil 12.6 MB yerel worker aracı.",
-  "notes": "Hibrit Sprint Faz 1: Yerel tarama ve bulut iş kuyruğu entegrasyonu.",
+  "sha256": "4cbce1b508721e8fcbd89740bad1b1fe9c31814870f8215e3ef32e077d1fcf34",
+  "fileSize": 12295540,
+  "releaseNotes": "GibTebligat Pro 1.1.20. Framework-dependent paket ve e_sqlite3.dll.",
+  "notes": "Native SQLite dosyası kurulumun yanında. GİB şifresi yerelde DPAPI ile kalır.",
   "mandatory": true,
   "critical": false
 }

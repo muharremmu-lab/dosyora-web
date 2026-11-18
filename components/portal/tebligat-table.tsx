@@ -138,6 +138,7 @@ export function TebligatTable({ initialCompanies }: TebligatTableProps) {
         setCompanies((prev) =>
           prev.map((c) => (c.id === id ? (data.company as TebligatCompanyRecord) : c)),
         )
+        if (data.message) alert(data.message)
       } else {
         alert(data.error || 'Sorgu tetiklenemedi.')
       }

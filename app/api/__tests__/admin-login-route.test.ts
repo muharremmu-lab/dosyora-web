@@ -70,7 +70,7 @@ describe('admin login route hardening', () => {
 
   it('creates a signed session cookie on successful login', async () => {
     const { POST } = await import('@/app/api/admin/login/route')
-    const response = await POST(loginRequest('admin', 'dosyora-admin'))
+    const response = await POST(loginRequest('muharrem@dosyora.com', 'dosyora-admin'))
 
     expect(response.status).toBe(200)
 
@@ -78,6 +78,13 @@ describe('admin login route hardening', () => {
     expect(cookie).toBeTruthy()
     expect(cookie).not.toBe('local-dev-session-secret-32-chars!!')
     expect(cookie).toContain('.')
+  })
+
+  it('rejects the legacy ADMIN_USERNAME even when the password matches', async () => {
+    const { POST } = await import('@/app/api/admin/login/route')
+    const response = await POST(loginRequest('admin', 'dosyora-admin'))
+
+    expect(response.status).toBe(401)
   })
 
   it('does not log submitted passwords', async () => {

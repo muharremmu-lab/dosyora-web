@@ -3,10 +3,8 @@ export const runtime = 'nodejs'
 import type { NextRequest } from 'next/server'
 
 import { jsonError, jsonOk } from '@/lib/api-response'
-import {
-  getTebligatCompanyById,
-  triggerTebligatQuery,
-} from '@/lib/db/tebligat-companies'
+import { getTebligatCompanyById } from '@/lib/db/tebligat-companies'
+import { createTebligatJob } from '@/lib/db/tebligat-jobs'
 import { getUserSession } from '@/lib/user-auth'
 import { hasPackageAccess } from '@/lib/packages-config'
 
@@ -34,10 +32,15 @@ export async function POST(_request: NextRequest, { params }: Props) {
     return jsonError('Yetkisiz işlem.', 403)
   }
 
-  const updated = await triggerTebligatQuery(id)
+  const job = await createTebligatJob(id)
+  if (!job) {
+    return jsonError('Firma pasif olduğu için sorgu işi açılmadı.', 409)
+  }
+
   return jsonOk({
     success: true,
-    message: 'Tebligat sorgusu başarıyla tetiklendi.',
-    company: updated,
+    message: 'Sorgu işi yerel araca yazıldı. GİB şifresi bu bilgisayarda kalır.',
+    job_id: job.id,
+    company: existing,
   })
 }

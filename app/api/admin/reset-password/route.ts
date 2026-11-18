@@ -19,14 +19,15 @@ export async function POST(request: NextRequest) {
       return jsonError('Çok fazla deneme. Lütfen daha sonra tekrar deneyin.', 429)
     }
 
-    const body = (await request.json()) as { token?: string; code?: string; password?: string }
+    const body = (await request.json()) as { token?: string; code?: string; password?: string; email?: string }
     const tokenOrCode = String(body.token ?? body.code ?? '').trim()
     const password = String(body.password ?? '')
+    const email = typeof body.email === 'string' ? body.email : undefined
     if (!tokenOrCode) {
       return jsonError('Sıfırlama kodu veya bağlantısı gereklidir.', 400)
     }
 
-    const result = await completeAdminPasswordReset(tokenOrCode, password)
+    const result = await completeAdminPasswordReset(tokenOrCode, password, email)
     if (result === 'weak') {
       return jsonError('Şifre en az 10 karakter olmalıdır.', 400)
     }

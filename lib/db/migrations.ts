@@ -1,5 +1,6 @@
 import type { Client, ResultSet } from '@libsql/client'
 
+import { SUPER_ADMIN_EMAILS } from '@/lib/admin/super-admins'
 import { logApiError, logApiInfo } from '@/lib/api-logger'
 
 import { executeWithClient, type SqlArgs } from './execute'
@@ -20,6 +21,7 @@ const REQUIRED_TABLES = [
   'device_heartbeats',
   'admin_password_resets',
   'admin_password_overrides',
+  'admin_passwords',
   'admin_accounts',
   'license_notifications',
   'site_feedback',
@@ -27,6 +29,7 @@ const REQUIRED_TABLES = [
   'packages',
   'user_packages',
   'tebligat_companies',
+  'tebligat_jobs',
 ] as const
 const ALLOWED_MIGRATION_TABLES = new Set<string>([...REQUIRED_TABLES])
 
@@ -343,6 +346,14 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
 )`,
     },
     {
+      operation: 'migration.create.admin_passwords',
+      sql: `CREATE TABLE IF NOT EXISTS admin_passwords (
+  email TEXT PRIMARY KEY,
+  password_hash TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+)`,
+    },
+    {
       operation: 'migration.create.license_notifications',
       sql: `CREATE TABLE IF NOT EXISTS license_notifications (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -486,6 +497,30 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
       operation: 'migration.index.tebligat_companies_user_id',
       sql: `CREATE INDEX IF NOT EXISTS idx_tebligat_companies_user_id ON tebligat_companies(user_id)`,
     },
+    {
+      operation: 'migration.create.tebligat_jobs',
+      sql: `CREATE TABLE IF NOT EXISTS tebligat_jobs (
+  id TEXT PRIMARY KEY,
+  company_id TEXT,
+  user_id TEXT,
+  vkn TEXT NOT NULL,
+  company_name TEXT NOT NULL,
+  phone TEXT,
+  whatsapp TEXT,
+  email TEXT,
+  query_time TEXT,
+  job_type TEXT NOT NULL,
+  status TEXT NOT NULL,
+  summary TEXT,
+  hardware_id TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+)`,
+    },
+    {
+      operation: 'migration.index.tebligat_jobs_status',
+      sql: `CREATE INDEX IF NOT EXISTS idx_tebligat_jobs_status ON tebligat_jobs(status, created_at)`,
+    },
   ]
 
   try {
@@ -496,7 +531,32 @@ ON license_orders(vkn) WHERE status = 'provisional'`,
       await runStatement(client, statement.operation, statement.sql)
     }
 
+    await addColumnIfMissing(client, 'admin_password_resets', 'admin_email', 'TEXT')
     await addColumnIfMissing(client, 'license_notifications', 'source', 'TEXT')
+
+    if (await tableExists(client, 'admin_password_overrides')) {
+      const shared = await client.execute(
+        'SELECT password_hash, updated_at FROM admin_password_overrides WHERE id = 1',
+      )
+      const sharedRow = shared.rows[0]
+      if (sharedRow) {
+        for (const email of SUPER_ADMIN_EMAILS) {
+          await executeWithClient(
+            client,
+            'migration.copy.admin_password',
+            `INSERT INTO admin_passwords (email, password_hash, updated_at)
+             SELECT ?, password_hash, updated_at FROM admin_password_overrides
+             WHERE id = 1 AND NOT EXISTS (SELECT 1 FROM admin_passwords WHERE email = ?)`,
+            [email, email],
+          )
+        }
+        await executeWithClient(
+          client,
+          'migration.delete.shared_admin_password',
+          'DELETE FROM admin_password_overrides WHERE id = 1',
+        )
+      }
+    }
     await addColumnIfMissing(client, 'license_notifications', 'hardware_id', 'TEXT')
     await addColumnIfMissing(client, 'license_notifications', 'license_key', 'TEXT')
     await addColumnIfMissing(client, 'license_notifications', 'license_plan', 'TEXT')

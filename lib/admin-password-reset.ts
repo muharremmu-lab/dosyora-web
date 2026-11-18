@@ -5,7 +5,6 @@ import { safeEqual } from '@/lib/admin-auth'
 import { getAdminCredentials, isAdminProductionConfigValid } from '@/lib/security/production-env'
 import {
   consumeAdminResetToken,
-  createAdminResetToken,
   createAdminResetTokenAndCode,
   databaseConfigured,
   readAdminPasswordOverride,
@@ -28,25 +27,25 @@ export type AdminLoginActor = {
 
 export type AdminResetRequestResult = {
   success: boolean
-  status: 'sent' | 'code_ready' | 'unavailable'
+  status: 'sent' | 'unavailable'
   recipient: string
   code?: string
   message: string
 }
 
-async function adminPasswordMatches(password: string): Promise<boolean> {
+async function adminPasswordMatches(email: string, password: string): Promise<boolean> {
   const credentials = getAdminCredentials()
   if (!credentials) {
     return false
   }
 
   try {
-    const override = await readAdminPasswordOverride()
+    const override = await readAdminPasswordOverride(email)
     if (override) {
       return verifyAdminPasswordHash(password, override)
     }
   } catch (error) {
-    logApiError('admin_password_override_unavailable', {}, error)
+    logApiError('admin_password_override_unavailable', { email }, error)
   }
 
   return safeEqual(password, credentials.password)
@@ -57,27 +56,20 @@ export async function resolveAdminLogin(username: string, password: string): Pro
     return null
   }
 
-  const credentials = getAdminCredentials()
-  if (!credentials) {
+  if (!getAdminCredentials()) {
     return null
   }
 
   const normalized = normalizeAdminEmail(username)
-  const superAdmin = isSuperAdminEmail(normalized)
-  const legacyAdmin = safeEqual(username, credentials.username)
-  if (!superAdmin && !legacyAdmin) {
+  if (!isSuperAdminEmail(normalized)) {
     return null
   }
 
-  if (!(await adminPasswordMatches(password))) {
+  if (!(await adminPasswordMatches(normalized, password))) {
     return null
   }
 
-  if (superAdmin) {
-    return { email: normalized, role: 'super_admin' }
-  }
-
-  return { email: null, role: 'admin' }
+  return { email: normalized, role: 'super_admin' }
 }
 
 export async function authenticateAdmin(username: string, password: string): Promise<boolean> {
@@ -88,8 +80,9 @@ export async function authenticateAdmin(username: string, password: string): Pro
  * Admin şifre sıfırlama talebi başlatır.
  * - muharrem@dosyora.com birincil süper yöneticidir.
  * - muharrem.mu@gmail.com admin değildir, kesinlikle birleştirilmez.
- * - Resend ve SMTP kanalları denenir.
- * - E-posta gönderilemese dahi 6 haneli kod veritabanına ve loglara yazılır.
+ * - Resend denenir, olmazsa SMTP denenir.
+ * - Kod ve bağlantı loga veya kullanıcı mesajına yazılmaz.
+ * - E-posta gitmezse başarı dönülmez.
  */
 export async function requestAdminPasswordReset(
   requestedEmail?: string,
@@ -113,30 +106,38 @@ export async function requestAdminPasswordReset(
 
   let token: string
   let code: string
-  if (databaseConfigured()) {
-    try {
-      const generated = await createAdminResetTokenAndCode()
-      token = generated.token
-      code = generated.code
-    } catch (dbErr) {
-      console.error(`[ADMIN RESET DB ERROR] Failed to create reset token/code in DB:`, dbErr)
-      token = (await import('node:crypto')).randomBytes(24).toString('base64url')
-      code = Math.floor(100000 + Math.random() * 900000).toString()
+  if (!databaseConfigured()) {
+    console.error('[ADMIN RESET DB WARNING] TURSO_DATABASE_URL missing. Reset was not stored.')
+    return {
+      success: false,
+      status: 'unavailable',
+      recipient: targetRecipient,
+      message: 'Şifre sıfırlama kaydı oluşturulamadı. Bir süre sonra tekrar deneyin.',
     }
-  } else {
-    console.error(`[ADMIN RESET DB WARNING] Database is not configured (TURSO_DATABASE_URL missing)! Generating emergency code.`)
-    token = (await import('node:crypto')).randomBytes(24).toString('base64url')
-    code = Math.floor(100000 + Math.random() * 900000).toString()
+  }
+
+  try {
+    const generated = await createAdminResetTokenAndCode(targetRecipient)
+    token = generated.token
+    code = generated.code
+  } catch (dbErr) {
+    console.error('[ADMIN RESET DB ERROR] Failed to create reset token/code in DB.')
+    logApiError('admin_password_reset_store_failed', { recipient: targetRecipient }, dbErr)
+    return {
+      success: false,
+      status: 'unavailable',
+      recipient: targetRecipient,
+      message: 'Şifre sıfırlama kaydı oluşturulamadı. Bir süre sonra tekrar deneyin.',
+    }
   }
 
   const url = `${siteConfig.url.replace(/\/$/, '')}/admin/reset-password?token=${encodeURIComponent(token)}`
 
-  console.log(`[ADMIN RESET REQUEST] Target: ${targetRecipient} | Code: ${code} | Link: ${url}`)
-
-  logApiInfo('admin_password_reset_code_generated', {
+  console.log(`[ADMIN RESET REQUEST] Target: ${targetRecipient} | channel order: resend, then smtp`)
+  logApiInfo('admin_password_reset_started', {
     recipient: targetRecipient,
-    code,
-    url,
+    hasResendApiKey: Boolean(config.resendApiKey),
+    isSmtpConfigured: isSmtpConfigured(),
   })
 
   const text = [
@@ -267,27 +268,25 @@ export async function requestAdminPasswordReset(
     }
   }
 
-  console.error(`[ADMIN RESET ALL DELIVERY FAILED] Could not send reset email to ${targetRecipient}. Reset code is: ${code}`)
+  console.error(`[ADMIN RESET ALL DELIVERY FAILED] Could not send reset email to ${targetRecipient}.`)
   logApiError('admin_password_reset_email_delivery_failed', {
     recipient: targetRecipient,
-    code,
     hasResendApiKey: Boolean(config.resendApiKey),
     isSmtpConfigured: isSmtpConfigured(),
   })
 
-  // E-posta gönderilemediyse bile kod veritabanına ve Vercel loglarına yazıldı
   return {
-    success: true,
-    status: 'code_ready',
+    success: false,
+    status: 'unavailable',
     recipient: targetRecipient,
-    code: process.env.NODE_ENV !== 'production' ? code : undefined,
-    message: `E-posta servisi yanıt vermedi. Sıfırlama kodunuz (${code}) oluşturuldu ve Vercel sunucu loglarına yazıldı. "Kod ile Şifre Sıfırla" ekranını kullanarak yeni şifrenizi belirleyebilirsiniz.`,
+    message: 'E-posta gönderilemedi. Bir süre sonra tekrar deneyin.',
   }
 }
 
 export async function completeAdminPasswordReset(
   tokenOrCode: string,
   password: string,
+  recoveryEmail?: string,
 ): Promise<'updated' | 'invalid' | 'weak'> {
   const weakness = adminPasswordError(password)
   if (weakness) {
@@ -299,11 +298,21 @@ export async function completeAdminPasswordReset(
     return 'invalid'
   }
 
+  const recoveryCode = process.env.ADMIN_RECOVERY_CODE?.trim() || process.env.ADMIN_RESET_CODE?.trim()
+  if (recoveryCode && safeEqual(trimmed, recoveryCode)) {
+    const email = normalizeAdminEmail(recoveryEmail ?? '')
+    if (!isSuperAdminEmail(email)) {
+      return 'invalid'
+    }
+    await saveAdminPasswordOverride(email, await hashAdminPassword(password))
+    return 'updated'
+  }
+
   const consumed = await consumeAdminResetToken(trimmed)
-  if (!consumed) {
+  if (!consumed || !isSuperAdminEmail(consumed.email)) {
     return 'invalid'
   }
 
-  await saveAdminPasswordOverride(await hashAdminPassword(password))
+  await saveAdminPasswordOverride(consumed.email, await hashAdminPassword(password))
   return 'updated'
 }
