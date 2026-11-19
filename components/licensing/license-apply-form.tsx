@@ -6,7 +6,7 @@ import { Button } from '@/components/ui'
 import { formInputClassName } from '@/lib/form-styles'
 
 const PACKAGES = [
-  { code: 'F1', label: 'Firma Paketi', price: '100 TL', detail: '1 firma' },
+  { code: 'F1', label: 'Firma Paketi', price: '200 TL', detail: '1 firma' },
   { code: 'MM50', label: 'Mali Müşavir 50', price: '500 TL', detail: '50 müşteri' },
   { code: 'MM100', label: 'Mali Müşavir 100', price: '750 TL', detail: '100 müşteri' },
   { code: 'MM200', label: 'Mali Müşavir 200', price: '1.000 TL', detail: '200 müşteri' },

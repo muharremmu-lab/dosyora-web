@@ -1,9 +1,9 @@
 'use client'
 
-import { Archive, Check, ChevronDown, Download, ScanSearch, ShieldCheck, Workflow } from 'lucide-react'
+import { Archive, Check, ChevronDown, ScanSearch, ShieldCheck, Workflow } from 'lucide-react'
 import { useState } from 'react'
 
-import { gibTebligatInstallerHref, gibTebligatPlans, gibTebligatTrialHref } from '@/lib/gibtebligat-plans'
+import { gibTebligatPlans } from '@/lib/gibtebligat-plans'
 
 const inputClassName =
   'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition duration-200 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30'
@@ -120,21 +120,6 @@ export default function LicensingView() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-5 flex flex-col gap-2">
-                  <a
-                    href={gibTebligatTrialHref}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    <Download className="size-4" aria-hidden="true" />
-                    14 gün ücretsiz dene
-                  </a>
-                  <a
-                    href={gibTebligatInstallerHref}
-                    className="inline-flex items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-800 transition duration-200 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    Kurulum dosyasını indir
-                  </a>
-                </div>
               </div>
             ) : null}
           </article>

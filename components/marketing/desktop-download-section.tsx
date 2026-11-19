@@ -6,7 +6,7 @@ import { DownloadAnchor } from './download-anchor'
 import type { LucideIcon } from '@/components/ui/icon'
 import { homepageScrollMt, homepageSectionY } from '@/lib/homepage-content'
 
-export const desktopDownloadHref = '/downloads/gibtebligat/GibTebligatPro-Kurulum.exe'
+export const desktopDownloadHref = '/downloads/gibtebligat/GibTebligatPro.exe'
 
 const features: { title: string; icon: LucideIcon }[] = [
   { title: 'Otomatik GİB e-Tebligat tarama', icon: ScanSearch },

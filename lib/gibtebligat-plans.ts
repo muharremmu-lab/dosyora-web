@@ -1,7 +1,7 @@
 export const gibTebligatPlans = [
   {
     name: 'Firma Paketi',
-    price: '100 TL',
+    price: '200 TL',
     cadence: 'Yıllık / KDV dahil',
     capacity: '1 firma',
     features: ['1 Firma kapasitesi', 'Sınırsız sorgu', '14 gün ücretsiz deneme'],

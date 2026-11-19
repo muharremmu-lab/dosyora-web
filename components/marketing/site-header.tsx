@@ -67,9 +67,6 @@ export function SiteHeader() {
           >
             Giriş
           </ButtonLink>
-          <ButtonLink href="/#gibtebligat" variant="primary">
-            GibTebligat İndir
-          </ButtonLink>
         </div>
 
         <button
@@ -107,9 +104,6 @@ export function SiteHeader() {
               {...(customerLoginExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
               Giriş
-            </ButtonLink>
-            <ButtonLink href="/#gibtebligat" variant="primary" className="mt-3 w-full" onClick={() => setMobileOpen(false)}>
-              GibTebligat İndir
             </ButtonLink>
           </nav>
         </div>

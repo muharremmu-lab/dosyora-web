@@ -3,7 +3,7 @@ import { createHmac } from 'node:crypto'
 const FALLBACK_SECRET = 'f3c8a1d6e9b0472c5a8e1d4f7b0c6a93e2d5f8a1b4c7e0d3'
 
 export const LICENSE_PACKAGES = {
-  F1: { title: 'Firma Paketi', priceTl: 100, capacity: 1 },
+  F1: { title: 'Firma Paketi', priceTl: 200, capacity: 1 },
   MM50: { title: 'Mali Müşavir 50', priceTl: 500, capacity: 50 },
   MM100: { title: 'Mali Müşavir 100', priceTl: 750, capacity: 100 },
   MM200: { title: 'Mali Müşavir 200', priceTl: 1000, capacity: 200 },
