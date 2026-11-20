@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import type { NextRequest } from 'next/server'
 
+import { createLicenseNotification } from '@/lib/db/license-notifications'
 import { jsonError, jsonOk } from '@/lib/api-response'
 import { logDbRouteError } from '@/lib/db/libsql-log'
 import { applyForLicense, getBankSettings } from '@/lib/licensing/orders'
@@ -67,6 +68,23 @@ export async function POST(request: NextRequest) {
       applyForLicense({ hwid, packageCode, fullName, vkn, email, phone, clientIp: getClientIp(request) }),
       getBankSettings(),
     ])
+    if (!reused) {
+      try {
+        await createLicenseNotification({
+          full_name: order.fullName,
+          email: order.email,
+          tax_number: order.vkn,
+          tax_office: '',
+          address: '',
+          source: 'desktop_app',
+          hardware_id: order.hwid,
+          license_plan: order.packageCode,
+        })
+      } catch (error) {
+        logDbRouteError('gibtebligat_license_apply_notification_failed', error, { operation: 'licenseApplyNotification' })
+      }
+    }
+
     const granted = order.status === 'provisional' && !reused
     try {
       await notificationService.notifyLicenseApplicant({
@@ -89,6 +107,8 @@ export async function POST(request: NextRequest) {
       priceTl: order.priceTl,
       licenseKey: order.licenseKey,
       expiresAt: order.expiresAt,
+      paymentDueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: order.createdAt,
       paymentCode: order.paymentCode,
       bank: {
         iban: bank.iban,
